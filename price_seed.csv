@@ -1,0 +1,7 @@
+material,source,min_price,max_price,currency,region,fetched_at
+Anode Rod,Grainger,18,45,USD,US,2025-08-18T00:00:00Z
+T&P Valve,Grainger,15,35,USD,US,2025-08-18T00:00:00Z
+Dielectric Union,Amazon,6,14,USD,US,2025-08-18T00:00:00Z
+Copper Tubing,HomeDepot,2,4.5,USD,US,2025-08-18T00:00:00Z
+Pipe Insulation,HomeDepot,1.5,3.5,USD,US,2025-08-18T00:00:00Z
+Flex Connectors,Lowe's,12,28,USD,US,2025-08-18T00:00:00Z
