@@ -104,6 +104,7 @@ def extract_reason_codes(reasons: list, price_info: Dict) -> list:
     return list(set(codes)) if codes else ['UNKNOWN']
 
 @app.route('/health', methods=['GET'])
+@app.route('/', methods=['GET'])
 def health():
     """Health check endpoint."""
     return jsonify({"ok": True})
@@ -196,6 +197,11 @@ def validate():
         return jsonify({
             "error": "Internal server error"
         }), 500
+
+# For Vercel compatibility
+def handler(event, context):
+    """Vercel handler function."""
+    return app(event, context)
 
 if __name__ == '__main__':
     app.run(debug=False)

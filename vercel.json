@@ -3,15 +3,5 @@
     "api/*.py": {
       "runtime": "python3.11"
     }
-  },
-  "routes": [
-    {
-      "src": "/validate",
-      "dest": "/api/validate.py"
-    },
-    {
-      "src": "/health",
-      "dest": "/api/validate.py"
-    }
-  ]
+  }
 }
