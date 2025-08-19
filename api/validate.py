@@ -80,7 +80,7 @@ def validate(path):
     mode_fallback = False
     
     # Check env toggle - default to stub for safety
-    validator_mode = os.environ.get("VALIDATOR_MODE", "stub")
+    validator_mode = os.environ.get("VALIDATOR_MODE", "stub").strip()
     
     if validator_mode != "real":
         # Use stub logic
