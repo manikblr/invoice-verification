@@ -124,6 +124,6 @@ class handler(BaseHTTPRequestHandler):
         
         self.send_response(200)
         self.send_header("Content-type","text/html; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(html_content.encode('utf-8'))
-        return
