@@ -5,6 +5,8 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { getMeta, validateInvoice } from '../lib/api'
 import { MetaResponse, ServiceType, ValidationResponse } from '../lib/types'
 import LineItemsTable from './LineItemsTable'
+import TypeaheadInput from './TypeaheadInput'
+import CurrencyInput from './CurrencyInput'
 
 interface InvoiceFormData {
   scope_of_work: string
@@ -209,15 +211,20 @@ export default function InvoiceForm() {
             {materialFields.map((field, index) => (
               <div key={field.id} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end">
                 <div>
-                  <input
-                    {...register(`materials.${index}.name`)}
+                  <TypeaheadInput
+                    value={watch(`materials.${index}.name`) || ''}
+                    onChange={(value) => setValue(`materials.${index}.name`, value)}
+                    onSelect={(label) => setValue(`materials.${index}.name`, label)}
+                    kind="material"
+                    serviceLineId={selectedServiceLineId || undefined}
+                    serviceTypeId={watch('service_type_id') || undefined}
                     placeholder="Material name"
-                    className="w-full p-2 border border-gray-300 rounded text-sm"
                   />
                 </div>
                 <div>
                   <input
                     type="number"
+                    min="0"
                     {...register(`materials.${index}.quantity`, { valueAsNumber: true })}
                     placeholder="Qty"
                     className="w-full p-2 border border-gray-300 rounded text-sm"
@@ -231,12 +238,10 @@ export default function InvoiceForm() {
                   />
                 </div>
                 <div>
-                  <input
-                    type="number"
-                    step="0.01"
-                    {...register(`materials.${index}.unit_price`, { valueAsNumber: true })}
-                    placeholder="Price"
-                    className="w-full p-2 border border-gray-300 rounded text-sm"
+                  <CurrencyInput
+                    value={watch(`materials.${index}.unit_price`)}
+                    onChange={(value) => setValue(`materials.${index}.unit_price`, value || 0)}
+                    placeholder="0.00"
                   />
                 </div>
                 <div>
@@ -270,15 +275,20 @@ export default function InvoiceForm() {
             {equipmentFields.map((field, index) => (
               <div key={field.id} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end">
                 <div>
-                  <input
-                    {...register(`equipment.${index}.name`)}
+                  <TypeaheadInput
+                    value={watch(`equipment.${index}.name`) || ''}
+                    onChange={(value) => setValue(`equipment.${index}.name`, value)}
+                    onSelect={(label) => setValue(`equipment.${index}.name`, label)}
+                    kind="equipment"
+                    serviceLineId={selectedServiceLineId || undefined}
+                    serviceTypeId={watch('service_type_id') || undefined}
                     placeholder="Equipment name"
-                    className="w-full p-2 border border-gray-300 rounded text-sm"
                   />
                 </div>
                 <div>
                   <input
                     type="number"
+                    min="0"
                     {...register(`equipment.${index}.quantity`, { valueAsNumber: true })}
                     placeholder="Qty"
                     className="w-full p-2 border border-gray-300 rounded text-sm"
@@ -292,12 +302,10 @@ export default function InvoiceForm() {
                   />
                 </div>
                 <div>
-                  <input
-                    type="number"
-                    step="0.01"
-                    {...register(`equipment.${index}.unit_price`, { valueAsNumber: true })}
-                    placeholder="Price"
-                    className="w-full p-2 border border-gray-300 rounded text-sm"
+                  <CurrencyInput
+                    value={watch(`equipment.${index}.unit_price`)}
+                    onChange={(value) => setValue(`equipment.${index}.unit_price`, value || 0)}
+                    placeholder="0.00"
                   />
                 </div>
                 <div>
