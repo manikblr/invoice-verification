@@ -1,42 +1,33 @@
+from flask import Flask, request, jsonify
 import sys
 import os
 import logging
 from typing import Dict, Any, Optional
 
-# Add parent directory to path to import our modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from flask import Flask, request, jsonify
-
-# Import validation functions with error handling
-IMPORTS_AVAILABLE = True
-IMPORT_ERRORS = []
-
-try:
-    from material_validator import validate_material
-except Exception as e:
-    IMPORT_ERRORS.append(f"material_validator: {str(e)}")
-    validate_material = None
-
-try:
-    from app_core.validate import validate_invoice
-except Exception as e:
-    IMPORT_ERRORS.append(f"app_core.validate: {str(e)}")
-    validate_invoice = None
-
-try:
-    from app_core.db import get_supabase_client
-except Exception as e:
-    IMPORT_ERRORS.append(f"app_core.db: {str(e)}")
-    get_supabase_client = None
-
-if validate_material is None or validate_invoice is None or get_supabase_client is None:
-    IMPORTS_AVAILABLE = False
-
 app = Flask(__name__)
 
 # Configure logging for minimal output
 logging.basicConfig(level=logging.WARNING)
+
+# Import validation functions with error handling - AFTER Flask app creation
+IMPORTS_AVAILABLE = False
+IMPORT_ERRORS = []
+
+try:
+    # Add parent directory to path to import our modules
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    
+    from material_validator import validate_material
+    from app_core.validate import validate_invoice  
+    from app_core.db import get_supabase_client
+    IMPORTS_AVAILABLE = True
+    
+except Exception as e:
+    IMPORT_ERRORS.append(f"Import error: {str(e)}")
+    # Set fallback functions
+    validate_material = None
+    validate_invoice = None
+    get_supabase_client = None
 
 def normalize_input(material: str) -> str:
     """Normalize material input text."""
