@@ -1,89 +1,52 @@
-"""
-Business rules engine for invoice validation
-"""
-from typing import Dict, List, Any
+# evaluate rules across a set of canonical items with quantities
+# rule_type ∈ {'CANNOT_DUPLICATE','MUTEX','REQUIRES','MAX_QTY'}
 from collections import defaultdict
-from .db import get_supabase_client
 
-def load_business_rules() -> List[Dict]:
-    """Load all business rules from database."""
-    client = get_supabase_client()
-    
-    try:
-        result = client.table('item_rules') \
-            .select('rule_type, a_item_id, b_item_id, max_qty, rationale') \
-            .execute()
-        
-        return result.data or []
-    except Exception:
-        return []
+def load_rules(supabase, ids):
+    if not ids: return []
+    res = supabase.table("item_rules").select("*").in_("a_item_id", list(ids)).execute().data or []
+    # include symmetric MUTEX by also checking b_item_id in ids
+    mutex_extra = supabase.table("item_rules").select("*").eq("rule_type","MUTEX").in_("b_item_id", list(ids)).execute().data or []
+    by_id = {(r.get("id")): r for r in res}
+    for r in mutex_extra:
+        by_id[r["id"]] = r
+    return list(by_id.values())
 
-def validate_business_rules(line_items: List[Dict]) -> List[Dict]:
-    """
-    Validate line items against business rules.
-    Returns list of rule violations.
-    """
-    violations = []
-    rules = load_business_rules()
-    
-    if not rules:
-        return violations
-    
-    # Group line items by canonical_item_id for analysis
-    item_counts = defaultdict(float)
-    item_names = {}
-    items_present = set()
-    
-    for item in line_items:
-        canonical_id = item.get('canonical_item_id')
-        if canonical_id:
-            item_counts[canonical_id] += float(item.get('quantity', 0))
-            item_names[canonical_id] = item.get('canonical_name', item.get('raw_name', 'Unknown'))
-            items_present.add(canonical_id)
-    
-    # Check each rule
-    for rule in rules:
-        rule_type = rule['rule_type']
-        a_item_id = rule['a_item_id']
-        b_item_id = rule.get('b_item_id')
-        rationale = rule.get('rationale', '')
-        
-        if rule_type == 'MAX_QTY':
-            max_qty = rule.get('max_qty', 1)
-            if a_item_id in item_counts and item_counts[a_item_id] > max_qty:
-                violations.append({
-                    "rule_type": "MAX_QTY",
-                    "item_name": item_names.get(a_item_id, 'Unknown'),
-                    "actual_qty": item_counts[a_item_id],
-                    "max_qty": max_qty,
-                    "rationale": rationale
-                })
-        
-        elif rule_type == 'CANNOT_DUPLICATE':
-            if a_item_id in item_counts and item_counts[a_item_id] > 1:
-                violations.append({
-                    "rule_type": "CANNOT_DUPLICATE",
-                    "item_name": item_names.get(a_item_id, 'Unknown'),
-                    "actual_qty": item_counts[a_item_id],
-                    "rationale": rationale
-                })
-        
-        elif rule_type == 'MUTEX':
-            if a_item_id in items_present and b_item_id in items_present:
-                violations.append({
-                    "rule_type": "MUTEX",
-                    "item_a": item_names.get(a_item_id, 'Unknown'),
-                    "item_b": item_names.get(b_item_id, 'Unknown'),
-                    "rationale": rationale
-                })
-        
-        elif rule_type == 'REQUIRES':
-            if a_item_id in items_present and b_item_id not in items_present:
-                violations.append({
-                    "rule_type": "REQUIRES",
-                    "item_a": item_names.get(a_item_id, 'Unknown'),
-                    "required_item": item_names.get(b_item_id, 'Unknown'),
-                    "rationale": rationale
-                })
-    
-    return violations
+def evaluate(all_lines):
+    # all_lines: list of {"canonical_id", "quantity", "line_index", "type"}
+    # returns dict: line_index -> list of reason codes
+    qty_by = defaultdict(float)
+    by_item_lines = defaultdict(list)
+    for ln in all_lines:
+        cid = ln.get("canonical_id")
+        if not cid: continue
+        qty_by[cid] += float(ln.get("quantity") or 0)
+        by_item_lines[cid].append(ln["line_index"])
+    sup = set(qty_by.keys())
+    return qty_by, by_item_lines, sup
+
+def apply_rules(rules, qty_by, by_item_lines, present_ids):
+    reasons_by_line = defaultdict(list)
+    for r in rules:
+        rt = r["rule_type"]
+        a = r["a_item_id"]; b = r.get("b_item_id")
+        if rt == "CANNOT_DUPLICATE":
+            if qty_by.get(a, 0) > 1 or (a in present_ids and len(by_item_lines.get(a,[])) > 1):
+                for li in by_item_lines.get(a, []):
+                    reasons_by_line[li].append("DUPLICATE_ITEM")
+        elif rt == "MAX_QTY":
+            maxq = r.get("max_qty")
+            if maxq is not None and qty_by.get(a, 0) > float(maxq):
+                for li in by_item_lines.get(a, []):
+                    reasons_by_line[li].append("QUANTITY_EXCEEDS_MAX")
+        elif rt == "MUTEX":
+            if (a in present_ids and b in present_ids):
+                for li in by_item_lines.get(a, []):
+                    reasons_by_line[li].append("MUTEX_CONFLICT")
+                for li in by_item_lines.get(b, []):
+                    reasons_by_line[li].append("MUTEX_CONFLICT")
+        elif rt == "REQUIRES":
+            if (a in present_ids) and (b not in present_ids):
+                for li in by_item_lines.get(a, []):
+                    reasons_by_line[li].append("MISSING_REQUIRED_ITEM")
+    return reasons_by_line

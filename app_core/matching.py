@@ -1,87 +1,69 @@
-"""
-Name normalization and canonical item matching
-"""
+# name normalization + canonical match using our new tables
+# Strategy:
+# - normalize name (lower/strip/punct collapse)
+# - exact match on canonical_items(canonical_name, kind, is_active)
+# - lookup in item_synonyms(lower(synonym))
+# - if still not found and rapidfuzz available, fuzzy over union of names+synonyms
+# - prefer matches scoped to provided service_line_id/service_type_id when available
+# Return dict: { "canonical_id", "canonical", "confidence" } or None
+from typing import Optional, Dict, Any
 import re
-from typing import Dict, List, Optional, Tuple
-from rapidfuzz import fuzz
-from .db import get_supabase_client
 
-def normalize_text(text: str) -> str:
-    """Normalize input text for matching."""
-    if not text:
-        return ""
-    
-    # Convert to lowercase and strip
-    normalized = text.lower().strip()
-    
-    # Remove bullets, numbers, punctuation from start
-    normalized = re.sub(r'^[\s•\-\–\—\*\d\)\(\.\s]+', '', normalized)
-    
-    # Collapse multiple spaces
-    normalized = re.sub(r'\s+', ' ', normalized)
-    
-    return normalized.strip()
+def normalize(s: str) -> str:
+    s = (s or "").strip().lower()
+    s = re.sub(r"[^\w\s\.-]+", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
 
-def find_canonical_item(raw_name: str, item_kind: str) -> Tuple[Optional[str], Optional[str], float]:
-    """
-    Find canonical item by name and kind.
-    Returns (canonical_item_id, canonical_name, confidence_score)
-    """
-    if not raw_name or not item_kind:
-        return None, None, 0.0
-    
-    client = get_supabase_client()
-    normalized_input = normalize_text(raw_name)
-    
+def choose_best(candidates):
+    # candidates: list of (score, rowdict)
+    if not candidates: return None
+    candidates.sort(key=lambda x: x[0], reverse=True)
+    return candidates[0][1]
+
+def match_item(supabase, name: str, kind: str, service_line_id=None, service_type_id=None) -> Optional[Dict[str, Any]]:
+    n = normalize(name)
+    # 1) exact canonical
+    q = supabase.table("canonical_items").select("*").eq("is_active", True).eq("kind", kind)
+    # prefer scoped rows first
+    rows = q.execute().data or []
+    exact = [r for r in rows if r.get("canonical_name","").strip().lower() == n]
+    if service_type_id: exact = [r for r in exact if r.get("service_type_id")==service_type_id] or exact
+    if service_line_id: exact = [r for r in exact if r.get("service_line_id")==service_line_id] or exact
+    if exact:
+        r = exact[0]
+        return {"canonical_id": r["id"], "canonical": r["canonical_name"], "confidence": 1.0}
+
+    # 2) synonyms
+    syn = supabase.table("item_synonyms").select("*, canonical_items!inner(id,canonical_name,kind,service_line_id,service_type_id)") \
+        .eq("canonical_items.kind", kind).execute().data or []
+    cand = []
+    for s in syn:
+        syn_l = (s["synonym"] or "").strip().lower()
+        if syn_l == n:
+            base = s["canonical_items"]
+            # small preference for scoped matches
+            bonus = 0.02 * ((service_type_id and base.get("service_type_id")==service_type_id) + (service_line_id and base.get("service_line_id")==service_line_id))
+            cand.append((1.0 + bonus, {"canonical_id": base["id"], "canonical": base["canonical_name"], "confidence": 0.95}))
+    best = choose_best(cand)
+    if best:
+        return best
+
+    # 3) fuzzy optional
     try:
-        # First try direct canonical item match
-        result = client.table('canonical_items') \
-            .select('id, canonical_name') \
-            .eq('kind', item_kind) \
-            .execute()
-        
-        if not result.data:
-            return None, None, 0.0
-        
-        # Try exact match first
-        for item in result.data:
-            if normalize_text(item['canonical_name']) == normalized_input:
-                return str(item['id']), item['canonical_name'], 0.98
-        
-        # Then try synonym matches
-        synonym_result = client.table('item_synonyms') \
-            .select('canonical_item_id, synonym, weight, canonical_items(canonical_name, kind)') \
-            .execute()
-        
-        best_score = 0.0
-        best_match = None
-        best_id = None
-        
-        # Check synonyms first (they have explicit weights)
-        for syn in synonym_result.data or []:
-            if syn['canonical_items']['kind'] == item_kind:
-                syn_score = fuzz.token_set_ratio(normalized_input, normalize_text(syn['synonym'])) / 100.0
-                # Weight by synonym confidence
-                weighted_score = syn_score * syn['weight']
-                
-                if weighted_score > best_score and syn_score >= 0.85:
-                    best_score = weighted_score
-                    best_match = syn['canonical_items']['canonical_name']
-                    best_id = str(syn['canonical_item_id'])
-        
-        # If no good synonym match, fall back to fuzzy matching canonical names
-        if best_score < 0.85:
-            for item in result.data:
-                score = fuzz.token_set_ratio(normalized_input, normalize_text(item['canonical_name'])) / 100.0
-                if score > best_score and score >= 0.86:
-                    best_score = score
-                    best_match = item['canonical_name']
-                    best_id = str(item['id'])
-        
-        if best_match:
-            return best_id, best_match, best_score
-        
-        return None, None, 0.0
-        
+        from rapidfuzz import process, fuzz
+        names = [{"id": r["id"], "name": r["canonical_name"], "row": r} for r in rows]
+        syn_pairs = []
+        for s in syn:
+            base = s["canonical_items"]
+            syn_pairs.append({"id": base["id"], "name": s["synonym"], "row": base})
+        universe = names + syn_pairs
+        choices = [x["name"] for x in universe]
+        match = process.extractOne(n, choices, scorer=fuzz.WRatio)
+        if match and match[1] >= 80:
+            pick = universe[choices.index(match[0])]
+            return {"canonical_id": pick["id"], "canonical": pick["name"], "confidence": match[1]/100.0}
     except Exception:
-        return None, None, 0.0
+        pass
+
+    return None
