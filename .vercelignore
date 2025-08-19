@@ -1,0 +1,14 @@
+supabase/
+db/
+*.py
+!api/*.py
+seed_*.py
+import_*.py
+bootstrap_*.py
+kb_search.py
+material_validator.py
+.env
+.env.*
+__pycache__/
+*.pyc
+.pytest_cache/
