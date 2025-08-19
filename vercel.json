@@ -5,20 +5,26 @@
       "runtime": "@vercel/python"
     }
   },
-  "builds": [
+  "rewrites": [
     {
-      "src": "api/*.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "source": "/health",
+      "destination": "/api/health"
     },
     {
-      "src": "/(.*)",
-      "dest": "/api/validate"
+      "source": "/validate-invoice",
+      "destination": "/api/validate"
+    },
+    {
+      "source": "/test",
+      "destination": "/api/test"
+    },
+    {
+      "source": "/debug", 
+      "destination": "/api/debug"
+    },
+    {
+      "source": "/",
+      "destination": "/api/index"
     }
   ]
 }
