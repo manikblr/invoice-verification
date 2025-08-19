@@ -26,4 +26,4 @@ test_*.py
 
 # Large dependencies that might cause build timeouts
 material_validator.py
-app_core/
+# app_core/ - NEEDED for deployment, don't ignore
