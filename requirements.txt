@@ -1,4 +1,1 @@
 flask==3.0.3
-supabase
-rapidfuzz
-python-dotenv
