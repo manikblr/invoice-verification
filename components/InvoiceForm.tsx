@@ -98,6 +98,8 @@ export default function InvoiceForm() {
     }
   }
 
+  const showSamples = process.env.NEXT_PUBLIC_SHOW_SAMPLES !== 'false'
+
   if (!meta) {
     return <div className="text-center">Loading...</div>
   }
@@ -284,60 +286,65 @@ export default function InvoiceForm() {
           </div>
         </div>
 
-        {/* Test Buttons */}
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-medium text-center mb-4">Quick Tests</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <button
-              type="button"
-              onClick={() => runTest('Test A: ALLOW', {
-                scope_of_work: 'Water heater replacement',
-                service_line_id: 14,
-                service_type_id: 2,
-                labor_hours: 2.5,
-                materials: [{ name: 'Anode Rod', quantity: 1, unit: 'pcs', unit_price: 1200 }],
-                equipment: [{ name: 'Pipe Wrench', quantity: 1, unit: 'day', unit_price: 400 }]
-              })}
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-            >
-              Test A: ALLOW<br /><small>(Anode Rod@1200 + Pipe Wrench@400)</small>
-            </button>
-            <button
-              type="button"
-              onClick={() => runTest('Test B: PRICE_HIGH', {
-                scope_of_work: 'Water heater replacement',
-                service_line_id: 14,
-                service_type_id: 2,
-                labor_hours: 2.5,
-                materials: [{ name: 'Anode Rod', quantity: 1, unit: 'pcs', unit_price: 20000 }],
-                equipment: []
-              })}
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50"
-            >
-              Test B: PRICE_HIGH<br /><small>(Anode Rod@20000)</small>
-            </button>
-            <button
-              type="button"
-              onClick={() => runTest('Test C: MUTEX', {
-                scope_of_work: 'Equipment conflict',
-                service_line_id: 14,
-                service_type_id: 2,
-                labor_hours: 0,
-                materials: [],
-                equipment: [
-                  { name: 'Pipe Wrench', quantity: 1, unit: 'day', unit_price: 400 },
-                  { name: 'Drain Snake', quantity: 1, unit: 'day', unit_price: 800 }
-                ]
-              })}
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-            >
-              Test C: MUTEX<br /><small>(Pipe Wrench + Drain Snake)</small>
-            </button>
+        {/* Sample Invoices */}
+        {showSamples && (
+          <div className="border-t pt-6">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-medium mb-2">Sample Invoices (demo)</h3>
+              <p className="text-sm text-gray-500">These fill the form with example data and run validation to illustrate outcomes.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <button
+                type="button"
+                onClick={() => runTest('Sample A — ALLOW', {
+                  scope_of_work: 'Water heater replacement',
+                  service_line_id: 14,
+                  service_type_id: 2,
+                  labor_hours: 2.5,
+                  materials: [{ name: 'Anode Rod', quantity: 1, unit: 'pcs', unit_price: 1200 }],
+                  equipment: [{ name: 'Pipe Wrench', quantity: 1, unit: 'day', unit_price: 400 }]
+                })}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+              >
+                Sample A — ALLOW<br /><small>(Anode Rod@1200 + Pipe Wrench@400)</small>
+              </button>
+              <button
+                type="button"
+                onClick={() => runTest('Sample B — PRICE_HIGH', {
+                  scope_of_work: 'Water heater replacement',
+                  service_line_id: 14,
+                  service_type_id: 2,
+                  labor_hours: 2.5,
+                  materials: [{ name: 'Anode Rod', quantity: 1, unit: 'pcs', unit_price: 20000 }],
+                  equipment: []
+                })}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50"
+              >
+                Sample B — PRICE_HIGH<br /><small>(Anode Rod@20000)</small>
+              </button>
+              <button
+                type="button"
+                onClick={() => runTest('Sample C — MUTEX', {
+                  scope_of_work: 'Equipment conflict',
+                  service_line_id: 14,
+                  service_type_id: 2,
+                  labor_hours: 0,
+                  materials: [],
+                  equipment: [
+                    { name: 'Pipe Wrench', quantity: 1, unit: 'day', unit_price: 400 },
+                    { name: 'Drain Snake', quantity: 1, unit: 'day', unit_price: 800 }
+                  ]
+                })}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+              >
+                Sample C — MUTEX<br /><small>(Pipe Wrench + Drain Snake)</small>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="text-center">
           <button
@@ -345,7 +352,7 @@ export default function InvoiceForm() {
             disabled={isSubmitting}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
-            {isSubmitting ? 'Validating...' : 'Validate Custom Invoice'}
+            {isSubmitting ? 'Validating...' : 'Validate Invoice'}
           </button>
         </div>
       </form>
