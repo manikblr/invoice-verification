@@ -40,6 +40,7 @@ export interface ValidationResponse {
   mode: string
   invoice_status: 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT'
   invoice_id: string | null
+  testName?: string
   summary: {
     allow: number
     needs_review: number

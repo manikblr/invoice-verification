@@ -21,7 +21,9 @@ export default function LineItemsTable({ result }: LineItemsTableProps) {
   return (
     <div className="mt-8 space-y-4">
       <div className="flex items-center gap-4">
-        <h3 className="text-xl font-semibold">Validation Result</h3>
+        <h3 className="text-xl font-semibold">
+          {result.testName ? result.testName : 'Validation Result'}
+        </h3>
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(result.invoice_status)}`}>
           {result.invoice_status}
         </span>
