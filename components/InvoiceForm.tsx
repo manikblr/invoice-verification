@@ -30,6 +30,7 @@ export default function InvoiceForm() {
   const [filteredServiceTypes, setFilteredServiceTypes] = useState<ServiceType[]>([])
   const [result, setResult] = useState<ValidationResponse | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [saveEnabled, setSaveEnabled] = useState(false)
 
   const { register, control, handleSubmit, watch, setValue } = useForm<InvoiceFormData>({
     defaultValues: {
@@ -74,7 +75,7 @@ export default function InvoiceForm() {
     setIsSubmitting(true)
     setResult(null)
     try {
-      const response = await validateInvoice(data)
+      const response = await validateInvoice(data, saveEnabled)
       setResult(response)
     } catch (error) {
       console.error('Validation failed:', error)
@@ -88,7 +89,7 @@ export default function InvoiceForm() {
     setIsSubmitting(true)
     setResult(null)
     try {
-      const response = await validateInvoice(testData)
+      const response = await validateInvoice(testData, saveEnabled)
       setResult({ ...response, testName })
     } catch (error) {
       console.error('Test failed:', error)
@@ -345,6 +346,20 @@ export default function InvoiceForm() {
             </div>
           </div>
         )}
+
+        {/* Save Toggle */}
+        <div className="flex items-center justify-center gap-2 pb-4">
+          <input
+            type="checkbox"
+            id="save-toggle"
+            checked={saveEnabled}
+            onChange={(e) => setSaveEnabled(e.target.checked)}
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <label htmlFor="save-toggle" className="text-sm text-gray-700">
+            Save validation run to database
+          </label>
+        </div>
 
         <div className="text-center">
           <button

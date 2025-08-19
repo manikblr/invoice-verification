@@ -78,6 +78,7 @@ def validate(path):
 
     payload = request.get_json(silent=True) or {}
     mode_fallback = False
+    save_requested = payload.get("save", False)
     
     # Check env toggle - default to stub for safety
     validator_mode = os.environ.get("VALIDATOR_MODE", "stub").strip()
@@ -99,6 +100,19 @@ def validate(path):
                 "equipment": payload.get("equipment") or []
             }
             result = _stub_invoice(invoice)
+            
+            # Handle save request for stub mode
+            if save_requested:
+                try:
+                    from app_core.persist import save_validation_run
+                    invoice_id = save_validation_run(result, invoice)
+                    if invoice_id:
+                        result["invoice_id"] = invoice_id
+                    else:
+                        result["save_warning"] = "Failed to save validation run"
+                except Exception as e:
+                    result["save_warning"] = f"Save failed: {str(e)[:50]}"
+            
             return jsonify({"ok": True, "service": "validate", "mode": "stub", "schema": "invoice", **result})
     
     # Try real validation with lazy imports
@@ -120,6 +134,19 @@ def validate(path):
                 "equipment": payload.get("equipment") or []
             }
             result = validate_invoice(invoice)
+            
+            # Handle save request for real mode
+            if save_requested:
+                try:
+                    from app_core.persist import save_validation_run
+                    invoice_id = save_validation_run(result, invoice)
+                    if invoice_id:
+                        result["invoice_id"] = invoice_id
+                    else:
+                        result["save_warning"] = "Failed to save validation run"
+                except Exception as e:
+                    result["save_warning"] = f"Save failed: {str(e)[:50]}"
+            
             return jsonify({"ok": True, "service": "validate", "mode": "real", "schema": "invoice", **result})
             
     except Exception as e:
@@ -140,4 +167,17 @@ def validate(path):
                 "equipment": payload.get("equipment") or []
             }
             result = _stub_invoice(invoice)
+            
+            # Handle save request for fallback mode
+            if save_requested:
+                try:
+                    from app_core.persist import save_validation_run
+                    invoice_id = save_validation_run(result, invoice)
+                    if invoice_id:
+                        result["invoice_id"] = invoice_id
+                    else:
+                        result["save_warning"] = "Failed to save validation run"
+                except Exception as save_e:
+                    result["save_warning"] = f"Save failed: {str(save_e)[:50]}"
+            
             return jsonify({"ok": True, "service": "validate", "mode": "stub", "mode_fallback": True, "fallback_reason": str(e)[:100], "schema": "invoice", **result})
