@@ -9,14 +9,28 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from flask import Flask, request, jsonify
 
 # Import validation functions with error handling
+IMPORTS_AVAILABLE = True
+IMPORT_ERRORS = []
+
 try:
     from material_validator import validate_material
-    from app_core.validate import validate_invoice
-    from app_core.db import get_supabase_client
-    IMPORTS_AVAILABLE = True
 except Exception as e:
-    # Log import error but don't fail immediately
-    print(f"Warning: Some imports failed: {e}")
+    IMPORT_ERRORS.append(f"material_validator: {str(e)}")
+    validate_material = None
+
+try:
+    from app_core.validate import validate_invoice
+except Exception as e:
+    IMPORT_ERRORS.append(f"app_core.validate: {str(e)}")
+    validate_invoice = None
+
+try:
+    from app_core.db import get_supabase_client
+except Exception as e:
+    IMPORT_ERRORS.append(f"app_core.db: {str(e)}")
+    get_supabase_client = None
+
+if validate_material is None or validate_invoice is None or get_supabase_client is None:
     IMPORTS_AVAILABLE = False
 
 app = Flask(__name__)
@@ -282,6 +296,7 @@ def health():
     return jsonify({
         "ok": True, 
         "imports_available": IMPORTS_AVAILABLE,
+        "import_errors": IMPORT_ERRORS,
         "python_path": sys.path[:3],  # Show first 3 paths
         "working_dir": os.getcwd()
     })
