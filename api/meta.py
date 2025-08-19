@@ -10,10 +10,10 @@ def meta(path):
         supabase = get_supabase()
 
         # fetch service lines
-        sl = supabase.table("service_lines").select("id,name,is_active").eq("is_active", True).order("name").execute().data or []
+        sl = supabase.table("service_lines").select("id,name").order("name").execute().data or []
 
         # fetch service types
-        st = supabase.table("service_types").select("id,service_line_id,name,is_active").eq("is_active", True).order("name").execute().data or []
+        st = supabase.table("service_types").select("id,service_line_id,name").order("name").execute().data or []
 
         # group types under their line
         types_by_line = {}
