@@ -1,12 +1,4 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "api/*.py", "use": "@vercel/python" }
-  ],
-  "routes": [
-    { "src": "^/api/ping$", "dest": "/api/ping.py" },
-    { "src": "^/api/ping/.*$", "dest": "/api/ping.py" }
-  ],
   "functions": {
     "api/*.py": {
       "runtime": "python3.11"

@@ -1,7 +1,9 @@
-def handler(event, context):
-    """Minimal Vercel handler"""
-    return {
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
-        "body": '{"ok": true, "message": "Simple handler working"}'
-    }
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+@app.get("/")
+def root():
+    return jsonify({"ok": True, "service": "simple"})
+
+# keep very small to avoid dependency issues
