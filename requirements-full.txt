@@ -1,0 +1,6 @@
+flask==3.0.3
+openai
+supabase
+rapidfuzz
+python-dotenv
+pandas

@@ -1,11 +1,29 @@
+# Development files
 supabase/
 db/
+scripts/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment files
+.env
+.env.*
+
+# Development scripts
 seed_*.py
 import_*.py
 bootstrap_*.py
 kb_search.py
-.env
-.env.*
-__pycache__/
-*.pyc
-.pytest_cache/
+test_*.py
+
+# Documentation
+*.md
+!README.md
+
+# Large dependencies that might cause build timeouts
+material_validator.py
+app_core/
