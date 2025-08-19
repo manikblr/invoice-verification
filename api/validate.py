@@ -279,7 +279,12 @@ def extract_reason_codes(reasons: list, price_info: Dict) -> list:
 @app.route('/', methods=['GET'])
 def health():
     """Health check endpoint."""
-    return jsonify({"ok": True})
+    return jsonify({
+        "ok": True, 
+        "imports_available": IMPORTS_AVAILABLE,
+        "python_path": sys.path[:3],  # Show first 3 paths
+        "working_dir": os.getcwd()
+    })
 
 @app.route('/validate', methods=['POST'])
 def validate():
