@@ -7,9 +7,17 @@ from typing import Dict, Any, Optional
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, request, jsonify
-from material_validator import validate_material
-from app_core.validate import validate_invoice
-from app_core.db import get_supabase_client
+
+# Import validation functions with error handling
+try:
+    from material_validator import validate_material
+    from app_core.validate import validate_invoice
+    from app_core.db import get_supabase_client
+    IMPORTS_AVAILABLE = True
+except Exception as e:
+    # Log import error but don't fail immediately
+    print(f"Warning: Some imports failed: {e}")
+    IMPORTS_AVAILABLE = False
 
 app = Flask(__name__)
 
@@ -276,6 +284,11 @@ def health():
 @app.route('/validate', methods=['POST'])
 def validate():
     """Main validation endpoint."""
+    if not IMPORTS_AVAILABLE:
+        return jsonify({
+            "error": "Service temporarily unavailable - imports failed"
+        }), 503
+    
     try:
         # Parse and validate request
         if not request.is_json:
@@ -365,6 +378,11 @@ def validate():
 @app.route('/validate-invoice', methods=['POST'])
 def validate_invoice_endpoint():
     """Full invoice validation endpoint."""
+    if not IMPORTS_AVAILABLE:
+        return jsonify({
+            "error": "Service temporarily unavailable - imports failed"
+        }), 503
+    
     try:
         # Parse and validate request
         if not request.is_json:

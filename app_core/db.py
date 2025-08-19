@@ -3,13 +3,12 @@ Database client factory for Supabase connection
 """
 import os
 from typing import Optional
-from supabase import create_client, Client
 from dotenv import load_dotenv
 
 # Module-level cache
-_client: Optional[Client] = None
+_client: Optional['Client'] = None
 
-def get_supabase_client() -> Client:
+def get_supabase_client() -> 'Client':
     """
     Get Supabase client instance. Reads environment variables but does NOT log values.
     Returns cached client instance for efficiency.
@@ -17,6 +16,12 @@ def get_supabase_client() -> Client:
     global _client
     
     if _client is None:
+        # Lazy import to avoid issues during Vercel build
+        try:
+            from supabase import create_client
+        except ImportError:
+            raise ImportError("supabase package is required but not installed")
+        
         load_dotenv()
         
         supabase_url = os.getenv('SUPABASE_URL')
