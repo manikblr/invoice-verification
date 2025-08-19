@@ -65,7 +65,16 @@ def _stub_invoice(inv):
 @app.route("/<path:path>", methods=["GET","POST"])
 def validate(path):
     if request.method == "GET":
-        return jsonify({"ok": True, "service": "validate", "mode": "flask", "method": "GET", "path_seen": request.path})
+        return jsonify({
+            "ok": True, 
+            "service": "validate", 
+            "mode": "flask", 
+            "method": "GET", 
+            "path_seen": request.path,
+            "validator_mode": os.environ.get("VALIDATOR_MODE", "NOT_SET"),
+            "supabase_url_set": bool(os.environ.get("SUPABASE_URL")),
+            "supabase_key_set": bool(os.environ.get("SUPABASE_SERVICE_KEY"))
+        })
 
     payload = request.get_json(silent=True) or {}
     mode_fallback = False
