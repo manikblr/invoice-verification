@@ -25,7 +25,10 @@ def validate_invoice(invoice):
     flat = []
     for kind, seq in (("material", mat), ("equipment", eqp)):
         for item in seq:
-            nm = item.get("name")
+            nm = (item.get("name") or "").strip()
+            if not nm:
+                # skip blank name rows entirely
+                continue
             qty = item.get("quantity", 1)
             up  = item.get("unit_price")
             m = match_item(supabase, nm, kind, sl, st)

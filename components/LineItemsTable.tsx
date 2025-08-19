@@ -1,4 +1,6 @@
 import { ValidationResponse } from '../lib/types'
+import TypeaheadInput from './TypeaheadInput'
+import CurrencyInput from './CurrencyInput'
 
 interface LineItemsTableProps {
   result: ValidationResponse
@@ -99,7 +101,7 @@ export default function LineItemsTable({ result }: LineItemsTableProps) {
                 <td className="px-4 py-2 text-sm text-gray-900">
                   {line.type === 'labor' ? 
                     `${line.input.hours} hours` : 
-                    `${line.input.name} (${line.input.quantity} × ₹${line.input.unit_price})`
+                    `${line.input.name} (${line.input.quantity} × $${line.input.unit_price})`
                   }
                 </td>
                 <td className="px-4 py-2">
@@ -132,7 +134,7 @@ export default function LineItemsTable({ result }: LineItemsTableProps) {
                 </td>
                 <td className="px-4 py-2 text-sm text-gray-600">
                   {line.pricing && line.pricing.min && line.pricing.max ? 
-                    `₹${line.pricing.min}-₹${line.pricing.max}` : 
+                    `$${line.pricing.min}-$${line.pricing.max}` : 
                     '-'
                   }
                 </td>

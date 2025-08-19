@@ -32,7 +32,7 @@ export default function InvoiceForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [saveEnabled, setSaveEnabled] = useState(false)
 
-  const { register, control, handleSubmit, watch, setValue } = useForm<InvoiceFormData>({
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<InvoiceFormData>({
     defaultValues: {
       scope_of_work: '',
       service_line_id: 0,
@@ -75,7 +75,17 @@ export default function InvoiceForm() {
     setIsSubmitting(true)
     setResult(null)
     try {
-      const response = await validateInvoice(data, saveEnabled)
+      // Filter out blank item names before sending
+      const materials = data.materials.filter(m => (m.name || '').trim() !== '')
+      const equipment = data.equipment.filter(e => (e.name || '').trim() !== '')
+      
+      const payload = {
+        ...data,
+        materials,
+        equipment
+      }
+      
+      const response = await validateInvoice(payload, saveEnabled)
       setResult(response)
     } catch (error) {
       console.error('Validation failed:', error)
@@ -89,7 +99,17 @@ export default function InvoiceForm() {
     setIsSubmitting(true)
     setResult(null)
     try {
-      const response = await validateInvoice(testData, saveEnabled)
+      // Filter out blank item names before sending
+      const materials = testData.materials.filter(m => (m.name || '').trim() !== '')
+      const equipment = testData.equipment.filter(e => (e.name || '').trim() !== '')
+      
+      const payload = {
+        ...testData,
+        materials,
+        equipment
+      }
+      
+      const response = await validateInvoice(payload, saveEnabled)
       setResult({ ...response, testName })
     } catch (error) {
       console.error('Test failed:', error)
@@ -112,13 +132,21 @@ export default function InvoiceForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Scope of Work
+              Scope of Work <span className="text-red-500">*</span>
             </label>
             <input
-              {...register('scope_of_work')}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              {...register('scope_of_work', { 
+                required: 'Scope of work is required',
+                validate: (value) => value?.trim() ? true : 'Scope of work cannot be empty'
+              })}
+              className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.scope_of_work ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="Describe the work to be done"
             />
+            {errors.scope_of_work && (
+              <p className="mt-1 text-sm text-red-500">{errors.scope_of_work.message}</p>
+            )}
           </div>
 
           <div>
