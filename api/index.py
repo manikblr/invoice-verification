@@ -1,7 +1,9 @@
-from flask import Flask, jsonify
+from http.server import BaseHTTPRequestHandler
 
-app = Flask(__name__)
-
-@app.get("/")
-def root():
-    return jsonify({"ok": True, "service": "index"})
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type","text/plain; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(b"Hello, world!")
+        return
