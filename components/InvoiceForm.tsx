@@ -2,28 +2,28 @@
 
 import { useState, useEffect } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
-import { z } from 'zod'
 import { getMeta, validateInvoice } from '../lib/api'
 import { MetaResponse, ServiceType, ValidationResponse } from '../lib/types'
 import LineItemsTable from './LineItemsTable'
 
-const lineItemSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  quantity: z.number().min(1, 'Quantity must be at least 1'),
-  unit: z.string().min(1, 'Unit is required'),
-  unit_price: z.number().min(0, 'Unit price must be positive'),
-})
-
-const invoiceSchema = z.object({
-  scope_of_work: z.string().min(1, 'Scope of work is required'),
-  service_line_id: z.number().min(1, 'Service line is required'),
-  service_type_id: z.number().min(1, 'Service type is required'),
-  labor_hours: z.number().min(0, 'Labor hours must be positive'),
-  materials: z.array(lineItemSchema),
-  equipment: z.array(lineItemSchema),
-})
-
-type InvoiceFormData = z.infer<typeof invoiceSchema>
+interface InvoiceFormData {
+  scope_of_work: string
+  service_line_id: number
+  service_type_id: number
+  labor_hours: number
+  materials: Array<{
+    name: string
+    quantity: number
+    unit: string
+    unit_price: number
+  }>
+  equipment: Array<{
+    name: string
+    quantity: number
+    unit: string
+    unit_price: number
+  }>
+}
 
 export default function InvoiceForm() {
   const [meta, setMeta] = useState<MetaResponse | null>(null)
@@ -31,7 +31,7 @@ export default function InvoiceForm() {
   const [result, setResult] = useState<ValidationResponse | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<InvoiceFormData>({
+  const { register, control, handleSubmit, watch, setValue } = useForm<InvoiceFormData>({
     defaultValues: {
       scope_of_work: '',
       service_line_id: 0,
@@ -102,9 +102,6 @@ export default function InvoiceForm() {
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Describe the work to be done"
             />
-            {errors.scope_of_work && (
-              <p className="text-red-500 text-sm mt-1">{errors.scope_of_work.message}</p>
-            )}
           </div>
 
           <div>
@@ -117,9 +114,6 @@ export default function InvoiceForm() {
               {...register('labor_hours', { valueAsNumber: true })}
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            {errors.labor_hours && (
-              <p className="text-red-500 text-sm mt-1">{errors.labor_hours.message}</p>
-            )}
           </div>
 
           <div>
@@ -135,9 +129,6 @@ export default function InvoiceForm() {
                 <option key={line.id} value={line.id}>{line.name}</option>
               ))}
             </select>
-            {errors.service_line_id && (
-              <p className="text-red-500 text-sm mt-1">{errors.service_line_id.message}</p>
-            )}
           </div>
 
           <div>
@@ -154,9 +145,6 @@ export default function InvoiceForm() {
                 <option key={type.id} value={type.id}>{type.name}</option>
               ))}
             </select>
-            {errors.service_type_id && (
-              <p className="text-red-500 text-sm mt-1">{errors.service_type_id.message}</p>
-            )}
           </div>
         </div>
 
