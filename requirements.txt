@@ -2,3 +2,8 @@ flask==3.0.3
 supabase==2.7.4
 rapidfuzz==3.9.6
 python-dotenv==1.0.1
+crewai==0.80.0
+pydantic==2.11.2
+langfuse>=2.33.0
+openai>=1.0.0
+numpy>=1.21.0

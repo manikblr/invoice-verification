@@ -1,0 +1,11 @@
+id,vendor_id,vendor_sku,name,canonical_item_id
+vc_001,ACME_CORP,AC-CHAIR-001,Executive Office Chair,canonical_001
+vc_002,ACME_CORP,AC-MOUSE-002,Wireless Optical Mouse,canonical_002
+vc_003,ACME_CORP,AC-PAPER-003,Premium A4 Copy Paper,canonical_003
+vc_004,ACME_CORP,AC-CABLE-004,Cat6 Ethernet Cable 5ft,canonical_004
+vc_005,ACME_CORP,AC-LAMP-005,LED Desk Reading Light,canonical_005
+vc_006,ACME_CORP,AC-FILE-006,4-Drawer Metal Filing Cabinet,canonical_006
+vc_007,ACME_CORP,AC-TONER-007,HP Compatible Black Toner,canonical_007
+vc_008,ACME_CORP,AC-DESK-008,Height Adjustable Standing Desk,canonical_008
+vc_009,ACME_CORP,AC-USB-009,32GB USB 3.0 Flash Drive,canonical_009
+vc_010,ACME_CORP,AC-NOTE-010,College Ruled Spiral Notebook,canonical_010

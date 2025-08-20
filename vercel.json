@@ -1,0 +1,17 @@
+{
+  "functions": {
+    "api/*.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/relearn",
+      "schedule": "0 21 * * *"
+    },
+    {
+      "path": "/api/safety_scan", 
+      "schedule": "30 21 * * *"
+    }
+  ]
+}

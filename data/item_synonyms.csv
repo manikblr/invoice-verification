@@ -1,0 +1,20 @@
+id,canonical_item_id,synonym,confidence
+syn_001,canonical_001,Desk Chair,0.95
+syn_002,canonical_001,Office Seat,0.90
+syn_003,canonical_001,Task Chair,0.88
+syn_004,canonical_002,Computer Mouse,0.98
+syn_005,canonical_002,Optical Mouse,0.92
+syn_006,canonical_003,Copy Paper,0.95
+syn_007,canonical_003,Printer Paper,0.90
+syn_008,canonical_004,Network Cable,0.85
+syn_009,canonical_004,Cat6 Cable,0.90
+syn_010,canonical_005,Reading Lamp,0.80
+syn_011,canonical_005,Task Light,0.85
+syn_012,canonical_006,Filing Cabinet,0.98
+syn_013,canonical_007,Laser Toner,0.95
+syn_014,canonical_007,Toner Cartridge,0.92
+syn_015,canonical_008,Sit Stand Desk,0.90
+syn_016,canonical_009,Thumb Drive,0.88
+syn_017,canonical_009,Memory Stick,0.85
+syn_018,canonical_010,Legal Pad,0.75
+syn_019,canonical_010,Writing Pad,0.78
