@@ -10,25 +10,72 @@ const supabase = createClient(
 
 export async function GET() {
   try {
+    // Check if Supabase is configured
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      console.warn('[taxonomy] Supabase not configured, using fallback data')
+      return NextResponse.json({
+        ok: true,
+        service_lines: [
+          { id: 1, name: "Plumbing" },
+          { id: 2, name: "Electrical" },
+          { id: 3, name: "HVAC" }
+        ],
+        service_types: [
+          {
+            service_line_id: 1,
+            types: [
+              { id: 101, name: "Repair" },
+              { id: 102, name: "Install" },
+              { id: 103, name: "Inspection" }
+            ]
+          },
+          {
+            service_line_id: 2,
+            types: [
+              { id: 201, name: "Repair" },
+              { id: 202, name: "Install" },
+              { id: 203, name: "Inspection" }
+            ]
+          },
+          {
+            service_line_id: 3,
+            types: [
+              { id: 301, name: "Repair" },
+              { id: 302, name: "Install" },
+              { id: 303, name: "Maintenance" }
+            ]
+          }
+        ]
+      })
+    }
+
     // Fetch service lines
     const { data: serviceLines, error: linesError } = await supabase
       .from('service_lines')
       .select('id, name')
-      .eq('is_active', true)
       .order('name')
 
     // Fetch service types  
     const { data: serviceTypes, error: typesError } = await supabase
       .from('service_types')
       .select('id, name, service_line_id')
-      .eq('is_active', true)
       .order('name')
 
     if (linesError || typesError) {
-      // Fallback to empty arrays on DB error
+      console.warn('[taxonomy] DB error:', linesError || typesError)
+      // Fallback to demo data on DB error
       return NextResponse.json({
-        serviceTypes: [],
-        serviceLines: []
+        ok: true,
+        service_lines: [
+          { id: 1, name: "Plumbing" },
+          { id: 2, name: "Electrical" },
+          { id: 3, name: "HVAC" }
+        ],
+        service_types: [
+          { service_line_id: 1, types: [{ id: 101, name: "Repair" }] },
+          { service_line_id: 2, types: [{ id: 201, name: "Repair" }] },
+          { service_line_id: 3, types: [{ id: 301, name: "Repair" }] }
+        ]
       })
     }
 

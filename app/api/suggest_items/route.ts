@@ -24,6 +24,12 @@ export async function GET(request: Request) {
   }
 
   try {
+    // Check if Supabase is configured
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      console.warn('[suggest_items] Supabase not configured, returning empty suggestions')
+      return NextResponse.json({ suggestions: [] })
+    }
+
     // Fuzzy search on canonical_name (not name)
     const { data: items, error } = await supabase
       .from('canonical_items')

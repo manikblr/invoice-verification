@@ -61,8 +61,29 @@ export default function InvoiceForm() {
     // Fetch live taxonomy data instead of hardcoded demo data
     fetch('/api/taxonomy')
       .then(res => res.json())
-      .then(setMeta)
-      .catch(console.error)
+      .then(data => {
+        // Ensure data has expected structure to prevent crashes
+        if (data && data.service_lines && data.service_types) {
+          setMeta(data)
+        } else {
+          console.warn('Invalid taxonomy data received:', data)
+          // Set empty but valid structure to prevent crashes
+          setMeta({
+            ok: true,
+            service_lines: [],
+            service_types: []
+          })
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch taxonomy:', err)
+        // Set fallback data to prevent crashes
+        setMeta({
+          ok: true,
+          service_lines: [],
+          service_types: []
+        })
+      })
   }, [])
 
   useEffect(() => {
@@ -176,7 +197,7 @@ export default function InvoiceForm() {
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value={0}>Select Service Line</option>
-              {meta.service_lines.map(line => (
+              {(meta?.service_lines || []).map(line => (
                 <option key={line.id} value={line.id}>{line.name}</option>
               ))}
             </select>
@@ -192,7 +213,7 @@ export default function InvoiceForm() {
               disabled={!selectedServiceLineId}
             >
               <option value={0}>Select Service Type</option>
-              {filteredServiceTypes.map(type => (
+              {(filteredServiceTypes || []).map(type => (
                 <option key={type.id} value={type.id}>{type.name}</option>
               ))}
             </select>
