@@ -10,7 +10,7 @@ const supabase = createClient(
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const q = searchParams.get('q')
+  const q = searchParams.get('q')?.trim()
   const vendorId = searchParams.get('vendorId')
 
   // Enforce min query length
@@ -18,12 +18,18 @@ export async function GET(request: Request) {
     return NextResponse.json({ suggestions: [] })
   }
 
+  // Log in dev/staging (not prod)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[suggest_items] q="${q}", vendorId="${vendorId || 'none'}"`)
+  }
+
   try {
-    // Basic fuzzy search on canonical items
+    // Fuzzy search on canonical_name (not name)
     const { data: items, error } = await supabase
       .from('canonical_items')
-      .select('id, name')
-      .ilike('name', `%${q}%`)
+      .select('id, canonical_name')
+      .ilike('canonical_name', `%${q}%`)
+      .eq('is_active', true)
       .limit(8)
 
     if (error) {
@@ -35,10 +41,15 @@ export async function GET(request: Request) {
       })
     }
 
+    // Log results count in dev/staging
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[suggest_items] Found ${items?.length || 0} results`)
+    }
+
     // Format suggestions with basic scoring
     const suggestions = (items || []).map((item, index) => ({
       id: item.id,
-      name: item.name,
+      name: item.canonical_name, // Use canonical_name field
       score: Math.max(0.1, 1 - (index * 0.1)), // Simple ranking score
       reason: 'fuzzy' as const
     }))

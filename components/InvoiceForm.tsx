@@ -58,7 +58,11 @@ export default function InvoiceForm() {
   const selectedServiceLineId = watch('service_line_id')
 
   useEffect(() => {
-    getMeta().then(setMeta).catch(console.error)
+    // Fetch live taxonomy data instead of hardcoded demo data
+    fetch('/api/taxonomy')
+      .then(res => res.json())
+      .then(setMeta)
+      .catch(console.error)
   }, [])
 
   useEffect(() => {
