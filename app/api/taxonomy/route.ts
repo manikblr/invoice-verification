@@ -3,11 +3,6 @@ import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_ANON_KEY || ''
-)
-
 export async function GET() {
   try {
     // Check if Supabase is configured
@@ -48,6 +43,12 @@ export async function GET() {
         ]
       })
     }
+
+    // Create Supabase client (credentials already verified above)
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_ANON_KEY!
+    )
 
     // Fetch service lines
     const { data: serviceLines, error: linesError } = await supabase

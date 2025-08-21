@@ -126,7 +126,9 @@ export async function POST(request: NextRequest) {
         lineId: decision.lineId,
         policy: decision.policy,
         canonicalItemId: decision.canonicalItemId || undefined,
-        priceBand: decision.priceBand || undefined,
+        priceBand: decision.priceBand && typeof decision.priceBand.min === 'number' && typeof decision.priceBand.max === 'number' 
+          ? decision.priceBand as { min: number; max: number }
+          : undefined,
         reasons: decision.reasons,
       });
       

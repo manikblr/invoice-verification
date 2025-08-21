@@ -137,49 +137,70 @@ export async function GET(request: Request) {
           id: item.id,
           name: item.canonical_name,
           score: Math.max(0.0, Math.min(1.0, score)),
-          reason: reason as const
+          reason: reason
         }
       })
     } else {
       // No fuzzy results - scope-aware fallbacks
-      let fallbackQuery = supabase
-        .from('canonical_items')
-        .select('id, canonical_name, popularity, service_line_id')
-        .eq('is_active', true);
-      
+      let fallbackItems: any[] = [];
+      let fallbackError: any = null;
       let fallbackReason = 'popular';
       
       if (serviceLineId) {
-        fallbackQuery = fallbackQuery.eq('service_line_id', parseInt(serviceLineId));
+        const result = await supabase
+          .from('canonical_items')
+          .select('id, canonical_name, popularity, service_line_id')
+          .eq('is_active', true)
+          .eq('service_line_id', parseInt(serviceLineId))
+          .order('popularity', { ascending: false })
+          .limit(8);
+        fallbackItems = result.data || [];
+        fallbackError = result.error;
         fallbackReason = 'popular';
       } else if (serviceTypeId) {
-        fallbackQuery = fallbackQuery
-          .select('id, canonical_name, popularity, service_line_id, service_lines(service_type_id)')
-          .eq('service_lines.service_type_id', parseInt(serviceTypeId));
+        const result = await supabase
+          .from('canonical_items')
+          .select('id, canonical_name, popularity, service_line_id, service_lines!inner(service_type_id)')
+          .eq('service_lines.service_type_id', parseInt(serviceTypeId))
+          .eq('is_active', true)
+          .order('popularity', { ascending: false })
+          .limit(8);
+        fallbackItems = result.data || [];
+        fallbackError = result.error;
         fallbackReason = 'popular';
       } else if (vendorId) {
         // Get popular items for specific vendor
-        fallbackQuery = supabase
+        const result = await supabase
           .from('canonical_items')
           .select(`
             id, canonical_name, popularity,
             vendor_catalog_items!inner(vendor_id)
           `)
           .eq('vendor_catalog_items.vendor_id', vendorId)
-          .eq('is_active', true);
+          .eq('is_active', true)
+          .order('popularity', { ascending: false })
+          .limit(8);
+        fallbackItems = result.data || [];
+        fallbackError = result.error;
         fallbackReason = 'vendor_popular';
+      } else {
+        const result = await supabase
+          .from('canonical_items')
+          .select('id, canonical_name, popularity, service_line_id')
+          .eq('is_active', true)
+          .order('popularity', { ascending: false })
+          .limit(8);
+        fallbackItems = result.data || [];
+        fallbackError = result.error;
       }
-      
-      const { data: fallbackItems, error: fallbackError } = await fallbackQuery
-        .order('popularity', { ascending: false })
-        .limit(8);
+
 
       if (!fallbackError && fallbackItems && fallbackItems.length > 0) {
         suggestions = fallbackItems.map((item, index) => ({
           id: item.id,
           name: item.canonical_name,
           score: Math.max(0.1, Math.min(1.0, 0.8 - (index * 0.1))),
-          reason: fallbackReason as const
+          reason: fallbackReason
         }));
         reason = fallbackReason;
       }
