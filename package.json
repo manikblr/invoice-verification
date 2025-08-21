@@ -14,21 +14,28 @@
     "check": "npm run test:type && npm run test:e2e",
     "setup:eval": "pip install -r tools/requirements.txt",
     "seed:demo": "ts-node --transpile-only scripts/seed/items_demo.ts",
-    "seed:items:csv": "ts-node --transpile-only scripts/seed/items_from_csv.ts --dir=./ --vendor=demo_vendor"
+    "seed:items:csv": "ts-node --transpile-only scripts/seed/items_from_csv.ts --dir=./ --vendor=demo_vendor",
+    "vendor:autofetch": "ts-node --transpile-only scripts/vendors/autofetch.ts --vendors grainger,msc,zoro,fastenal,amazon,homedepot --lines Plumbing,Electrical,Handyman --limit 150"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "cheerio": "^1.1.2",
+    "dotenv": "^17.2.1",
     "langfuse": "^3.38.4",
     "next": "14.2.18",
+    "node-fetch": "^2.7.0",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.62.0",
+    "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
+    "@types/cheerio": "^0.22.35",
     "@types/jest": "^29",
     "@types/node": "^20",
+    "@types/node-fetch": "^2.6.13",
     "@types/pg": "^8.10.9",
     "@types/react": "^18",
     "@types/react-dom": "^18",
