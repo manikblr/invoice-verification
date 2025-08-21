@@ -1,21 +1,39 @@
 import { NextResponse } from 'next/server'
-import { env } from '@/config/env'
 
 export async function GET() {
-  try {
-    return NextResponse.json({
-      name: "Invoice Verification",
-      env: process.env.VERCEL_ENV || process.env.NODE_ENV || "dev",
-      version: process.env.VERCEL_GIT_COMMIT_SHA || process.env.npm_package_version || "dev",
-      cron_enabled: env.CRON_ENABLED === true
-    })
-  } catch (error) {
-    // Fallback if env import fails
-    return NextResponse.json({
-      name: "Invoice Verification",
-      env: process.env.VERCEL_ENV || process.env.NODE_ENV || "dev", 
-      version: process.env.VERCEL_GIT_COMMIT_SHA || "dev",
-      cron_enabled: false
-    })
-  }
+  // Return business metadata for InvoiceForm
+  return NextResponse.json({
+    ok: true,
+    service_lines: [
+      { id: 1, name: "Facility Maintenance" },
+      { id: 2, name: "IT Services" },
+      { id: 3, name: "Consulting" }
+    ],
+    service_types: [
+      {
+        service_line_id: 1,
+        types: [
+          { id: 101, name: "HVAC Repair" },
+          { id: 102, name: "Plumbing" },
+          { id: 103, name: "Electrical" }
+        ]
+      },
+      {
+        service_line_id: 2,
+        types: [
+          { id: 201, name: "Hardware Support" },
+          { id: 202, name: "Software Installation" },
+          { id: 203, name: "Network Setup" }
+        ]
+      },
+      {
+        service_line_id: 3,
+        types: [
+          { id: 301, name: "Strategy" },
+          { id: 302, name: "Implementation" },
+          { id: 303, name: "Training" }
+        ]
+      }
+    ]
+  })
 }
