@@ -9,7 +9,7 @@ import { useState } from 'react';
 
 interface PolicyReasonsProps {
   /** List of reason strings */
-  reasons: string[];
+  reasons?: string[];
   /** Whether panel starts expanded */
   initiallyOpen?: boolean;
   /** Additional CSS classes */
@@ -23,7 +23,7 @@ interface PolicyReasonsProps {
  * - Accessible with proper ARIA attributes
  */
 export function PolicyReasons({ 
-  reasons, 
+  reasons = [], 
   initiallyOpen = false, 
   className = '' 
 }: PolicyReasonsProps): JSX.Element {

@@ -11,6 +11,7 @@ import { runAgent, suggestItems } from '@/lib/api';
 import { sendFeedback } from '@/lib/feedback';
 import { LineItemRow } from '@/components/LineItemRow';
 import { ToastContainer, toast } from '@/components/ui/Toast';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { FLAGS } from '@/config/flags';
 
 interface InvoiceLine {
@@ -271,14 +272,16 @@ export default function VerifyPage(): JSX.Element {
         </div>
 
         {/* Line items */}
-        <div className="space-y-6">
-          {invoice.lines.map(line => (
-            <LineItemRow
+        <ErrorBoundary>
+          <div className="space-y-6">
+            {invoice.lines.map(line => (
+              <LineItemRow
               key={line.id}
               decision={decisions[line.id] || {
                 lineId: line.id,
                 policy: 'NEEDS_MORE_INFO',
                 reasons: ['Pending verification'],
+                proposals: [],
               }}
               editableName={editableNames[line.id] || line.description}
               onNameChange={(name) => handleNameChange(line.id, name)}
@@ -288,7 +291,8 @@ export default function VerifyPage(): JSX.Element {
               fetchSuggestions={createFetchSuggestions(line.id)}
             />
           ))}
-        </div>
+          </div>
+        </ErrorBoundary>
 
         {/* Empty state */}
         {!hasRunAgent && (

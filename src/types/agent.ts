@@ -126,12 +126,12 @@ export const ZProposal = z.object({
 export const ZLineDecision = z.object({
   lineId: z.string(),
   policy: ZPolicyCode,
-  reasons: z.array(z.string()),
+  reasons: z.array(z.string()).default([]),
   canonicalItemId: z.string().nullable().optional(),
   priceBand: ZPriceBand.nullable().optional(),
   judge: ZJudgeScores.optional(),
   traceId: z.string().optional(),
-  proposals: z.array(ZProposal).optional(),
+  proposals: z.array(ZProposal).default([]),
 });
 
 /**

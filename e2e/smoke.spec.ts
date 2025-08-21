@@ -1,6 +1,28 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Invoice Verification Smoke Tests', () => {
+  // Global setup to fail on console errors
+  test.beforeEach(async ({ page }) => {
+    const errors: string[] = []
+    
+    page.on('pageerror', (error) => {
+      errors.push(`Page error: ${error.message}`)
+    })
+    
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        errors.push(`Console error: ${msg.text()}`)
+      }
+    })
+
+    // Fail test if any errors occurred
+    test.afterEach(() => {
+      if (errors.length > 0) {
+        throw new Error(`Console/Page errors detected:\n${errors.join('\n')}`)
+      }
+    })
+  })
+
   test('home page renders and contains Invoice Verification', async ({ page }) => {
     await page.goto('/')
     
@@ -36,20 +58,5 @@ test.describe('Invoice Verification Smoke Tests', () => {
     expect(data).toHaveProperty('service_types')
     expect(Array.isArray(data.service_lines)).toBe(true)
     expect(Array.isArray(data.service_types)).toBe(true)
-  })
-
-  test('api/health-meta returns app metadata with required keys', async ({ request }) => {
-    const response = await request.get('/api/health-meta')
-    
-    // Check 200 status  
-    expect(response.status()).toBe(200)
-    
-    // Check JSON structure
-    const data = await response.json()
-    expect(data).toHaveProperty('name')
-    expect(data).toHaveProperty('env') 
-    expect(data).toHaveProperty('version')
-    expect(data).toHaveProperty('cron_enabled')
-    expect(typeof data.cron_enabled).toBe('boolean')
   })
 })

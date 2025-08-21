@@ -9,7 +9,9 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:e2e": "playwright test",
+    "test:type": "tsc -p tsconfig.json --noEmit",
+    "test:e2e": "playwright test --reporter=list",
+    "check": "npm run test:type && npm run test:e2e",
     "setup:eval": "pip install -r tools/requirements.txt"
   },
   "dependencies": {
