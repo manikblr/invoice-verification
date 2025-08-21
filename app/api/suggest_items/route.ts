@@ -76,15 +76,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ suggestions: [] })
     }
 
-    // Build query with service line/type filters
+    // Build enhanced query with vendor catalog data
     let query = supabase
       .from('canonical_items')
       .select(`
         id, 
         canonical_name, 
         popularity,
+        kind,
         service_line_id,
-        service_lines(id, name)
+        service_lines(id, name),
+        vendor_catalog_items(vendor_id, name, vendor_sku)
       `)
       .ilike('canonical_name', `${q}%`)
       .eq('is_active', true)
@@ -102,6 +104,29 @@ export async function GET(request: Request) {
     const { data: items, error } = await query
       .order('popularity', { ascending: false })
       .limit(8)
+    
+    // If we have fewer than 4 results, try synonym search as well
+    let synonymItems: any[] = []
+    if (items && items.length < 4 && q.length >= 3) {
+      const { data: synonymResults } = await supabase
+        .from('canonical_items')
+        .select(`
+          id, canonical_name, popularity, kind, service_line_id,
+          service_lines(name),
+          vendor_catalog_items(vendor_id, name, vendor_sku),
+          item_synonyms!inner(synonym)
+        `)
+        .ilike('item_synonyms.synonym', `${q}%`)
+        .eq('is_active', true)
+        .order('popularity', { ascending: false })
+        .limit(4)
+      
+      if (synonymResults) {
+        synonymItems = synonymResults.filter(item => 
+          !items?.some(existing => existing.id === item.id) // Avoid duplicates
+        )
+      }
+    }
 
     if (error) {
       // Graceful fallback on DB error
@@ -115,30 +140,66 @@ export async function GET(request: Request) {
     let suggestions = []
     let reason = 'fuzzy'
 
-    if (items && items.length > 0) {
-      // Format fuzzy search results with enhanced scoring
-      suggestions = items.map((item, index) => {
+    // Combine primary and synonym results
+    const allItems = [...(items || []), ...synonymItems]
+
+    if (allItems && allItems.length > 0) {
+      // Enhanced scoring with vendor data and item kind
+      suggestions = allItems.map((item: any, index) => {
         let score = Math.max(0.1, 1 - (index * 0.1))
-        let reason = 'fuzzy'
+        let reason = index < (items?.length || 0) ? 'fuzzy' : 'synonym'
         
-        // Vendor boost (disabled until vendor_catalog_items is loaded)
-        // if (vendorId && item.vendor_catalog_items?.some((v: any) => v.vendor_id === vendorId)) {
-        //   score = Math.min(1.0, score * 1.2)
-        //   reason = 'vendor_boost'
-        // }
+        // Vendor boost - now enabled with real data
+        if (vendorId && item.vendor_catalog_items?.some((v: any) => v.vendor_id === vendorId)) {
+          score = Math.min(1.0, score * 1.3) // Stronger boost for vendor matches
+          reason = 'vendor_boost'
+        }
         
         // Service line match bonus
         if (serviceLineId && item.service_line_id === parseInt(serviceLineId)) {
           score = Math.min(1.0, score * 1.1)
-          reason = reason === 'vendor_boost' ? 'vendor_boost' : 'band_bonus'
+          reason = reason === 'vendor_boost' ? 'vendor_boost' : 'service_line_bonus'
         }
         
-        return {
+        // Equipment items get slight boost (usually more valuable/specific)
+        if (item.kind === 'equipment') {
+          score = Math.min(1.0, score * 1.05)
+          reason = reason === 'vendor_boost' ? 'vendor_boost' : 
+                   reason === 'service_line_bonus' ? 'service_line_bonus' : 'equipment_boost'
+        }
+        
+        // High popularity boost
+        if (item.popularity && item.popularity > 10) {
+          score = Math.min(1.0, score * 1.08)
+        }
+        
+        // Build result with enhanced metadata
+        const result: any = {
           id: item.id,
           name: item.canonical_name,
           score: Math.max(0.0, Math.min(1.0, score)),
           reason: reason
         }
+        
+        // Add vendor info if available
+        if (item.vendor_catalog_items && item.vendor_catalog_items.length > 0) {
+          result.vendors = item.vendor_catalog_items.map((v: any) => ({
+            vendor_id: v.vendor_id,
+            vendor_name: v.name
+          }))
+        }
+        
+        // Add kind for UI differentiation
+        if (item.kind) {
+          result.kind = item.kind
+        }
+        
+        // Add service line context
+        if (item.service_lines) {
+          result.service_line = item.service_lines.name
+        }
+        
+        return result
       })
     } else {
       // No fuzzy results - scope-aware fallbacks
@@ -149,7 +210,11 @@ export async function GET(request: Request) {
       if (serviceLineId) {
         const result = await supabase
           .from('canonical_items')
-          .select('id, canonical_name, popularity, service_line_id')
+          .select(`
+            id, canonical_name, popularity, kind, service_line_id,
+            service_lines(name),
+            vendor_catalog_items(vendor_id, name, vendor_sku)
+          `)
           .eq('is_active', true)
           .eq('service_line_id', parseInt(serviceLineId))
           .order('popularity', { ascending: false })
@@ -160,7 +225,11 @@ export async function GET(request: Request) {
       } else if (serviceTypeId) {
         const result = await supabase
           .from('canonical_items')
-          .select('id, canonical_name, popularity, service_line_id, service_lines!inner(service_type_id)')
+          .select(`
+            id, canonical_name, popularity, kind, service_line_id,
+            service_lines!inner(service_type_id, name),
+            vendor_catalog_items(vendor_id, name, vendor_sku)
+          `)
           .eq('service_lines.service_type_id', parseInt(serviceTypeId))
           .eq('is_active', true)
           .order('popularity', { ascending: false })
@@ -169,12 +238,13 @@ export async function GET(request: Request) {
         fallbackError = result.error;
         fallbackReason = 'popular';
       } else if (vendorId) {
-        // Get popular items for specific vendor
+        // Get popular items for specific vendor with enhanced data
         const result = await supabase
           .from('canonical_items')
           .select(`
-            id, canonical_name, popularity,
-            vendor_catalog_items!inner(vendor_id)
+            id, canonical_name, popularity, kind,
+            service_lines(name),
+            vendor_catalog_items!inner(vendor_id, name, vendor_sku)
           `)
           .eq('vendor_catalog_items.vendor_id', vendorId)
           .eq('is_active', true)
@@ -186,7 +256,11 @@ export async function GET(request: Request) {
       } else {
         const result = await supabase
           .from('canonical_items')
-          .select('id, canonical_name, popularity, service_line_id')
+          .select(`
+            id, canonical_name, popularity, kind, service_line_id,
+            service_lines(name),
+            vendor_catalog_items(vendor_id, name, vendor_sku)
+          `)
           .eq('is_active', true)
           .order('popularity', { ascending: false })
           .limit(8);
@@ -196,12 +270,44 @@ export async function GET(request: Request) {
 
 
       if (!fallbackError && fallbackItems && fallbackItems.length > 0) {
-        suggestions = fallbackItems.map((item, index) => ({
-          id: item.id,
-          name: item.canonical_name,
-          score: Math.max(0.1, Math.min(1.0, 0.8 - (index * 0.1))),
-          reason: fallbackReason
-        }));
+        suggestions = fallbackItems.map((item: any, index) => {
+          let score = Math.max(0.1, Math.min(1.0, 0.8 - (index * 0.1)))
+          
+          // Apply same scoring boosts as fuzzy results
+          if (vendorId && item.vendor_catalog_items?.some((v: any) => v.vendor_id === vendorId)) {
+            score = Math.min(1.0, score * 1.3)
+          }
+          
+          if (item.kind === 'equipment') {
+            score = Math.min(1.0, score * 1.05)
+          }
+          
+          // Build enhanced result
+          const result: any = {
+            id: item.id,
+            name: item.canonical_name,
+            score: Math.max(0.1, Math.min(1.0, score)),
+            reason: fallbackReason
+          }
+          
+          // Add metadata
+          if (item.vendor_catalog_items && item.vendor_catalog_items.length > 0) {
+            result.vendors = item.vendor_catalog_items.map((v: any) => ({
+              vendor_id: v.vendor_id,
+              vendor_name: v.name
+            }))
+          }
+          
+          if (item.kind) {
+            result.kind = item.kind
+          }
+          
+          if (item.service_lines) {
+            result.service_line = item.service_lines.name
+          }
+          
+          return result
+        });
         reason = fallbackReason;
       }
     }
