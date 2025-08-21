@@ -35,6 +35,10 @@ const envSchema = z.object({
   FEATURE_USE_EMBEDDINGS: z.string().transform(val => val === 'true').default('false'),
   FLAGS_AUTO_APPLY_SAFE_SYNONYMS: z.string().transform(val => val === 'true').default('false'),
   
+  // Tracing Configuration
+  LANGFUSE_SAMPLE_RATE: z.string().transform(val => Math.max(0, Math.min(1, parseFloat(val) || 1))).default('1'),
+  TRACE_ONLY_ERRORS: z.string().transform(val => val === 'true').default('false'),
+  
   // Production API Security (disabled for experimental use)
   // FEEDBACK_API_KEY: z.string().optional(),
 });

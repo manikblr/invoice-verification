@@ -9,6 +9,7 @@ AI-powered invoice verification system with human-in-the-loop feedback and autom
 - **Observability**: Langfuse integration for tracing and monitoring
 - **Model Routing**: OpenRouter integration for hosted AI model access
 - **Data Management**: Seeding system for canonical items, synonyms, and vendor catalogs
+- **Suggestion API**: Fast typeahead suggestions with vendor/service-line filtering and RLS security
 - **Judge System**: Automated evaluation of agent decisions
 
 ## Quick Start
@@ -203,13 +204,48 @@ curl -X POST -H "Content-Type: application/json" -d '{"lineId":"test","action":"
 # Expected: 200 Success
 ```
 
+## API Reference
+
+### Suggestion API
+The `/api/suggest_items` endpoint provides fast typeahead suggestions with filtering:
+
+**Query Parameters:**
+- `q` (required): Search query (min 2 characters)
+- `vendorId` (optional): Boost items from specific vendor
+- `serviceLineId` (optional): Filter to specific service line
+- `serviceTypeId` (optional): Filter to specific service type
+
+**Performance Targets:**
+- p95 < 200ms, p99 < 350ms on staging dataset
+- Server-side execution with SERVICE_ROLE key + RLS security
+- Automatic fallback to popular items when no fuzzy matches found
+
+**Example:**
+```bash
+curl "$BASE_URL/api/suggest_items?q=pip&serviceLineId=1&vendorId=demo_vendor"
+```
+
 ## API Security
+
+### Suggestion API
+- Uses `SUPABASE_SERVICE_ROLE_KEY` for database access
+- Row Level Security (RLS) enabled - denies anonymous access by default
+- Performance monitoring and query logging in dev/staging only
 
 ### Feedback API
 **Authentication disabled for experimental use:**
 - `/api/feedback` endpoint accepts requests without authentication
 - No API keys required
 - Suitable for development and testing
+
+### Popularity Recompute
+The system includes an admin endpoint for refreshing item popularity rankings:
+
+**Endpoint**: `POST /api/admin/recompute_popularity`  
+**Authentication**: Requires `x-admin-key: $FEEDBACK_API_KEY` header  
+**When to run**: After large seed imports or when suggestion quality degrades  
+**What it does**: Recalculates popularity scores based on vendor catalog item frequency  
+**Idempotent**: Safe to run multiple times, updates timestamps only when values change
 
 ### Health Endpoints
 - `/api/health` and `/api/cron_status` are publicly accessible

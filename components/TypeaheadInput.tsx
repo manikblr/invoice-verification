@@ -52,12 +52,18 @@ export default function TypeaheadInput({
       if (serviceLineId) params.append('service_line_id', serviceLineId.toString())
       if (serviceTypeId) params.append('service_type_id', serviceTypeId.toString())
 
-      const response = await fetch(`/api/suggest?${params}`)
+      const response = await fetch(`/api/suggest_items?${params}`)
       const data = await response.json()
       
-      if (data.ok && data.items) {
-        setSuggestions(data.items)
-        setShowDropdown(data.items.length > 0)
+      if (data.suggestions && Array.isArray(data.suggestions)) {
+        // Map suggest_items format to TypeaheadInput format
+        const mappedSuggestions = data.suggestions.map((item: any) => ({
+          canonical_id: item.id,
+          label: item.name,
+          source: 'name' as const
+        }))
+        setSuggestions(mappedSuggestions)
+        setShowDropdown(mappedSuggestions.length > 0)
       } else {
         setSuggestions([])
         setShowDropdown(false)
@@ -125,6 +131,7 @@ export default function TypeaheadInput({
         placeholder={placeholder}
         className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         autoComplete="off"
+        data-testid={`typeahead-input-${kind}`}
       />
       
       {isLoading && (
@@ -134,12 +141,13 @@ export default function TypeaheadInput({
       )}
 
       {showDropdown && suggestions.length > 0 && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto" data-testid="suggestions-dropdown">
           {suggestions.slice(0, 8).map((suggestion, index) => (
             <div
               key={`${suggestion.canonical_id}-${index}`}
               onClick={() => handleSuggestionClick(suggestion)}
               className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+              data-testid="suggestion-item"
             >
               <div className="text-sm text-gray-900">{suggestion.label}</div>
               {suggestion.synonym && (

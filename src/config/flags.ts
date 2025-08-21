@@ -15,6 +15,9 @@ export const FLAGS = {
   
   /** Whether to show proposal counts in line items */
   SHOW_PROPOSAL_COUNTS: true,
+  
+  /** Whether to enable Langfuse tracing */
+  ENABLE_LANGFUSE: true,
 } as const;
 
 /**

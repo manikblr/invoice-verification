@@ -153,7 +153,7 @@ export default function InvoiceForm() {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-lg shadow-md" data-testid="invoice-form">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Invoice Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

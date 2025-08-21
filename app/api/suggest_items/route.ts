@@ -5,37 +5,102 @@ export const dynamic = 'force-dynamic'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_ANON_KEY || ''
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || ''
 )
 
+/**
+ * Get popular items within service line/type scope
+ */
+async function getScopedPopularItems(serviceLineId?: string, serviceTypeId?: string, startTime?: bigint) {
+  let query = supabase
+    .from('canonical_items')
+    .select('id, canonical_name, popularity, service_line_id')
+    .eq('is_active', true)
+  
+  if (serviceLineId) {
+    query = query.eq('service_line_id', parseInt(serviceLineId))
+  } else if (serviceTypeId) {
+    query = query.eq('service_lines.service_type_id', parseInt(serviceTypeId))
+  }
+  
+  const { data: items, error } = await query
+    .order('popularity', { ascending: false })
+    .limit(8)
+  
+  if (error || !items) {
+    return NextResponse.json({ suggestions: [] })
+  }
+  
+  const suggestions = items.map((item, index) => ({
+    id: item.id,
+    name: item.canonical_name,
+    score: Math.max(0.1, 0.8 - (index * 0.1)),
+    reason: 'popular' as const
+  }))
+  
+  // Performance logging
+  if (startTime && process.env.NODE_ENV !== 'production') {
+    const elapsed = Number(process.hrtime.bigint() - startTime) / 1_000_000
+    console.log(`[suggest_items] Scoped popular: ${suggestions.length} items in ${elapsed.toFixed(1)}ms`)
+  }
+  
+  return NextResponse.json({ suggestions })
+}
+
 export async function GET(request: Request) {
+  const startTime = process.hrtime.bigint()
   const { searchParams } = new URL(request.url)
   const q = searchParams.get('q')?.trim()
   const vendorId = searchParams.get('vendorId')
+  const serviceLineId = searchParams.get('serviceLineId')
+  const serviceTypeId = searchParams.get('serviceTypeId')
 
-  // Enforce min query length
+  // Enforce min query length, but allow scoped popular queries
   if (!q || q.length < 2) {
+    if (serviceLineId || serviceTypeId) {
+      // Return top popular items in scope
+      return await getScopedPopularItems(serviceLineId, serviceTypeId, startTime)
+    }
     return NextResponse.json({ suggestions: [] })
   }
 
-  // Log in dev/staging (not prod)
+  // Enhanced logging in dev/staging
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`[suggest_items] q="${q}", vendorId="${vendorId || 'none'}"`)
+    console.log(`[suggest_items] q="${q}", vendorId="${vendorId || 'none'}", serviceLineId="${serviceLineId || 'none'}", serviceTypeId="${serviceTypeId || 'none'}"`)
   }
 
   try {
     // Check if Supabase is configured
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    if (!process.env.SUPABASE_URL || (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_ANON_KEY)) {
       console.warn('[suggest_items] Supabase not configured, returning empty suggestions')
       return NextResponse.json({ suggestions: [] })
     }
 
-    // Fuzzy search on canonical_name (not name)
-    const { data: items, error } = await supabase
+    // Build query with service line/type filters
+    let query = supabase
       .from('canonical_items')
-      .select('id, canonical_name')
-      .ilike('canonical_name', `%${q}%`)
+      .select(`
+        id, 
+        canonical_name, 
+        popularity,
+        service_line_id,
+        service_lines(id, name)
+      `)
+      .ilike('canonical_name', `${q}%`)
       .eq('is_active', true)
+    
+    // Apply service line filter
+    if (serviceLineId) {
+      query = query.eq('service_line_id', parseInt(serviceLineId))
+    }
+    
+    // Apply service type filter (requires join)
+    if (serviceTypeId && !serviceLineId) {
+      query = query.eq('service_lines.service_type_id', parseInt(serviceTypeId))
+    }
+    
+    const { data: items, error } = await query
+      .order('popularity', { ascending: false })
       .limit(8)
 
     if (error) {
@@ -47,18 +112,88 @@ export async function GET(request: Request) {
       })
     }
 
-    // Log results count in dev/staging
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[suggest_items] Found ${items?.length || 0} results`)
+    let suggestions = []
+    let reason = 'fuzzy'
+
+    if (items && items.length > 0) {
+      // Format fuzzy search results with enhanced scoring
+      suggestions = items.map((item, index) => {
+        let score = Math.max(0.1, 1 - (index * 0.1))
+        let reason = 'fuzzy'
+        
+        // Vendor boost (disabled until vendor_catalog_items is loaded)
+        // if (vendorId && item.vendor_catalog_items?.some((v: any) => v.vendor_id === vendorId)) {
+        //   score = Math.min(1.0, score * 1.2)
+        //   reason = 'vendor_boost'
+        // }
+        
+        // Service line match bonus
+        if (serviceLineId && item.service_line_id === parseInt(serviceLineId)) {
+          score = Math.min(1.0, score * 1.1)
+          reason = reason === 'vendor_boost' ? 'vendor_boost' : 'band_bonus'
+        }
+        
+        return {
+          id: item.id,
+          name: item.canonical_name,
+          score: Math.max(0.0, Math.min(1.0, score)),
+          reason: reason as const
+        }
+      })
+    } else {
+      // No fuzzy results - scope-aware fallbacks
+      let fallbackQuery = supabase
+        .from('canonical_items')
+        .select('id, canonical_name, popularity, service_line_id')
+        .eq('is_active', true);
+      
+      let fallbackReason = 'popular';
+      
+      if (serviceLineId) {
+        fallbackQuery = fallbackQuery.eq('service_line_id', parseInt(serviceLineId));
+        fallbackReason = 'popular';
+      } else if (serviceTypeId) {
+        fallbackQuery = fallbackQuery
+          .select('id, canonical_name, popularity, service_line_id, service_lines(service_type_id)')
+          .eq('service_lines.service_type_id', parseInt(serviceTypeId));
+        fallbackReason = 'popular';
+      } else if (vendorId) {
+        // Get popular items for specific vendor
+        fallbackQuery = supabase
+          .from('canonical_items')
+          .select(`
+            id, canonical_name, popularity,
+            vendor_catalog_items!inner(vendor_id)
+          `)
+          .eq('vendor_catalog_items.vendor_id', vendorId)
+          .eq('is_active', true);
+        fallbackReason = 'vendor_popular';
+      }
+      
+      const { data: fallbackItems, error: fallbackError } = await fallbackQuery
+        .order('popularity', { ascending: false })
+        .limit(8);
+
+      if (!fallbackError && fallbackItems && fallbackItems.length > 0) {
+        suggestions = fallbackItems.map((item, index) => ({
+          id: item.id,
+          name: item.canonical_name,
+          score: Math.max(0.1, Math.min(1.0, 0.8 - (index * 0.1))),
+          reason: fallbackReason as const
+        }));
+        reason = fallbackReason;
+      }
     }
 
-    // Format suggestions with basic scoring
-    const suggestions = (items || []).map((item, index) => ({
-      id: item.id,
-      name: item.canonical_name, // Use canonical_name field
-      score: Math.max(0.1, 1 - (index * 0.1)), // Simple ranking score
-      reason: 'fuzzy' as const
-    }))
+    // Performance telemetry in dev/staging
+    const elapsed = Number(process.hrtime.bigint() - startTime) / 1_000_000 // Convert to ms
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[suggest_items] {q:"${q}", vendorId:"${vendorId || 'none'}", lineId:"${serviceLineId || 'none'}", typeId:"${serviceTypeId || 'none'}", resultCount:${suggestions.length}, ms:${elapsed.toFixed(1)}}`)
+      // Perf target: p95 < 200ms, p99 < 350ms on staging dataset
+      if (elapsed > 200) {
+        console.warn(`[suggest_items] SLOW QUERY: ${elapsed.toFixed(1)}ms > 200ms target`)
+      }
+    }
 
     return NextResponse.json({ suggestions })
   } catch (error) {

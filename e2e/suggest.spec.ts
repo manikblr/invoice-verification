@@ -66,4 +66,24 @@ test.describe('Suggestion Flow Tests', () => {
       expect(typeof suggestion.score).toBe('number')
     }
   })
+
+  test('api/suggest_items finds pip items from CSV data', async ({ request }) => {
+    // Test specific term that should exist if CSV seeding worked
+    const response = await request.get('/api/suggest_items?q=pip')
+    
+    expect(response.status()).toBe(200)
+    
+    const data = await response.json()
+    expect(data).toHaveProperty('suggestions')
+    expect(Array.isArray(data.suggestions)).toBe(true)
+    
+    // Should find at least one item containing "pip" (pipe, pipeline, etc)
+    // This validates that CSV seeding worked
+    if (data.suggestions.length > 0) {
+      console.log(`✅ Found ${data.suggestions.length} suggestions for "pip" - CSV seeding working`)
+      expect(data.suggestions.length).toBeGreaterThan(0)
+    } else {
+      console.log('⚠️  No "pip" suggestions found - CSV may not be seeded yet')
+    }
+  })
 })

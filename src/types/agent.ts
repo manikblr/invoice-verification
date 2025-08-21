@@ -75,6 +75,8 @@ export interface AgentRunResponse {
   decisions: LineDecision[];
   /** Unique identifier for this agent run */
   runId: string;
+  /** Langfuse trace ID for the entire run */
+  runTraceId?: string;
   /** Aggregate judge scores across all decisions */
   judgeSummary?: {
     /** Average policy compliance score */
@@ -140,6 +142,7 @@ export const ZLineDecision = z.object({
 export const ZAgentRunResponse = z.object({
   decisions: z.array(ZLineDecision),
   runId: z.string(),
+  runTraceId: z.string().optional(),
   judgeSummary: z.object({
     avgPolicyScore: z.number().min(0).max(1),
     avgPriceCheckScore: z.number().min(0).max(1),
