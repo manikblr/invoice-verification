@@ -15,6 +15,7 @@
     "setup:eval": "pip install -r tools/requirements.txt"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
     "next": "14.2.18",
     "react": "^18",
     "react-dom": "^18",
