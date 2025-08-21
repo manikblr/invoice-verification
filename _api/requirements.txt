@@ -1,0 +1,2 @@
+# Lightweight requirements for Vercel serverless functions
+python-dotenv==1.0.1

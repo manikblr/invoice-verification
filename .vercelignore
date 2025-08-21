@@ -4,6 +4,13 @@ db/
 scripts/
 venv/
 
+# Heavy Python directories that cause deployment timeouts
+agents/
+llm/
+obs/
+tools/
+tests/
+
 # Python cache
 __pycache__/
 *.pyc
@@ -26,4 +33,13 @@ test_*.py
 
 # Large dependencies that might cause build timeouts
 material_validator.py
-# app_core/ - NEEDED for deployment, don't ignore
+requirements.txt
+
+# Data files not needed for serverless functions
+data/
+sql/
+dist/
+
+# Configuration files not needed for deployment
+jest.config.js
+jest.setup.js

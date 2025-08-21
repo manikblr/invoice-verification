@@ -1,12 +1,7 @@
 {
-  "crons": [
-    {
-      "path": "/api/relearn",
-      "schedule": "0 21 * * *"
-    },
-    {
-      "path": "/api/safety_scan", 
-      "schedule": "30 21 * * *"
+  "build": {
+    "env": {
+      "PYTHON_VERSION": "3.9"
     }
-  ]
+  }
 }
