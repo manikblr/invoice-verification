@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   try {
     // Check if Supabase is configured
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    if (!process.env.SUPABASE_URL || (!process.env.SUPABASE_ANON_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY)) {
       console.warn('[taxonomy] Supabase not configured, using fallback data')
       return NextResponse.json({
         ok: true,
@@ -47,7 +47,7 @@ export async function GET() {
     // Create Supabase client (credentials already verified above)
     const supabase = createClient(
       process.env.SUPABASE_URL!,
-      process.env.SUPABASE_ANON_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!
     )
 
     // Fetch service lines

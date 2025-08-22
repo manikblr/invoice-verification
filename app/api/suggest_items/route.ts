@@ -76,7 +76,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ suggestions: [] })
     }
 
-    // Build enhanced query with vendor catalog data
+    // Build enhanced query without problematic vendor catalog join for now
     let query = supabase
       .from('canonical_items')
       .select(`
@@ -85,8 +85,7 @@ export async function GET(request: Request) {
         popularity,
         kind,
         service_line_id,
-        service_lines(id, name),
-        vendor_catalog_items(vendor_id, name, vendor_sku)
+        service_lines(id, name)
       `)
       .ilike('canonical_name', `${q}%`)
       .eq('is_active', true)
@@ -113,7 +112,6 @@ export async function GET(request: Request) {
         .select(`
           id, canonical_name, popularity, kind, service_line_id,
           service_lines(name),
-          vendor_catalog_items(vendor_id, name, vendor_sku),
           item_synonyms!inner(synonym)
         `)
         .ilike('item_synonyms.synonym', `${q}%`)
@@ -131,9 +129,12 @@ export async function GET(request: Request) {
     if (error) {
       // Graceful fallback on DB error
       const isProduction = process.env.NODE_ENV === 'production'
+      if (!isProduction) {
+        console.error('[suggest_items] Database error:', error)
+      }
       return NextResponse.json({
         suggestions: [],
-        ...(isProduction ? {} : { debug: 'db_error' })
+        ...(isProduction ? {} : { debug: 'db_error', error: error.message })
       })
     }
 
@@ -149,11 +150,11 @@ export async function GET(request: Request) {
         let score = Math.max(0.1, 1 - (index * 0.1))
         let reason = index < (items?.length || 0) ? 'fuzzy' : 'synonym'
         
-        // Vendor boost - now enabled with real data
-        if (vendorId && item.vendor_catalog_items?.some((v: any) => v.vendor_id === vendorId)) {
-          score = Math.min(1.0, score * 1.3) // Stronger boost for vendor matches
-          reason = 'vendor_boost'
-        }
+        // Vendor boost - disabled for now due to schema issues
+        // if (vendorId && item.vendor_catalog_items?.some((v: any) => v.vendor_id === vendorId)) {
+        //   score = Math.min(1.0, score * 1.3) // Stronger boost for vendor matches
+        //   reason = 'vendor_boost'
+        // }
         
         // Service line match bonus
         if (serviceLineId && item.service_line_id === parseInt(serviceLineId)) {
@@ -181,13 +182,13 @@ export async function GET(request: Request) {
           reason: reason
         }
         
-        // Add vendor info if available
-        if (item.vendor_catalog_items && item.vendor_catalog_items.length > 0) {
-          result.vendors = item.vendor_catalog_items.map((v: any) => ({
-            vendor_id: v.vendor_id,
-            vendor_name: v.name
-          }))
-        }
+        // Add vendor info if available - disabled for now
+        // if (item.vendor_catalog_items && item.vendor_catalog_items.length > 0) {
+        //   result.vendors = item.vendor_catalog_items.map((v: any) => ({
+        //     vendor_id: v.vendor_id,
+        //     vendor_name: v.name
+        //   }))
+        // }
         
         // Add kind for UI differentiation (ensure it's always present)
         result.kind = item.kind || 'material' // Default to material if not specified
