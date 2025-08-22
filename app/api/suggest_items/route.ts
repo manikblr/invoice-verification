@@ -189,10 +189,8 @@ export async function GET(request: Request) {
           }))
         }
         
-        // Add kind for UI differentiation
-        if (item.kind) {
-          result.kind = item.kind
-        }
+        // Add kind for UI differentiation (ensure it's always present)
+        result.kind = item.kind || 'material' // Default to material if not specified
         
         // Add service line context
         if (item.service_lines) {
@@ -298,9 +296,8 @@ export async function GET(request: Request) {
             }))
           }
           
-          if (item.kind) {
-            result.kind = item.kind
-          }
+          // Add kind for UI differentiation (ensure it's always present)
+          result.kind = item.kind || 'material' // Default to material if not specified
           
           if (item.service_lines) {
             result.service_line = item.service_lines.name

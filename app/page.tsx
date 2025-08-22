@@ -1,13 +1,16 @@
 import Link from 'next/link'
-import InvoiceForm from '../components/InvoiceForm'
+import UnifiedInvoiceForm from '../components/UnifiedInvoiceForm'
 
 export default function Home() {
   return (
-    <main className="max-w-4xl mx-auto p-6">
+    <main className="max-w-6xl mx-auto p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
           Invoice Verification System
         </h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          Enter materials and equipment in a single unified interface. The system will automatically categorize and validate your items using intelligent agents.
+        </p>
         <div className="flex space-x-4">
           <Link 
             href="/verify" 
@@ -18,7 +21,7 @@ export default function Home() {
         </div>
       </div>
       
-      <InvoiceForm />
+      <UnifiedInvoiceForm />
     </main>
   )
 }

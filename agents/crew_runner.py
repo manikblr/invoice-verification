@@ -1,6 +1,7 @@
 import os
 import json
 import uuid
+import time
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 from .agents import AgentCreator
@@ -9,6 +10,10 @@ from .tools.pricing_tool import PriceValidationResult
 from .tools.rules_tool import RuleResult, Decision
 from obs.langfuse_client import with_span
 from .judges import JudgeRunner
+from .enhanced_judge_system import (
+    enhanced_judge_system, start_agent_evaluation, record_performance_metric,
+    judge_agent_output, finalize_agent_evaluation, AgentType, MetricType
+)
 
 
 @dataclass
@@ -50,7 +55,7 @@ class CrewRunner:
         
     def run_crew(self, invoice_id: str, vendor_id: str, items: List[Dict[str, Any]], trace: Optional[Any] = None) -> Dict[str, Any]:
         """
-        Run the CrewAI pipeline for invoice verification
+        Run the CrewAI pipeline for invoice verification with comprehensive evaluation
         
         Args:
             invoice_id: UUID of the invoice
@@ -63,6 +68,22 @@ class CrewRunner:
         
         if not self.enabled:
             return self._create_disabled_response(invoice_id, items)
+        
+        # Start comprehensive evaluation
+        crew_session_id = f"crew_{invoice_id}_{int(time.time())}"
+        start_agent_evaluation(
+            crew_session_id, 
+            AgentType.CREW_ORCHESTRATOR,
+            {
+                "invoice_id": invoice_id,
+                "vendor_id": vendor_id,
+                "item_count": len(items),
+                "items": items
+            },
+            trace_id=getattr(trace, 'id', None) if trace else None
+        )
+        
+        start_time = time.time()
         
         with with_span(trace, "crew_initialization", 
                       input_data={'invoice_id': invoice_id, 'item_count': len(items)}) as span:
@@ -157,33 +178,81 @@ class CrewRunner:
                 'judge_enabled': self.judge_runner.enabled
             }
         
-        # Finalize with summary stats
+        # Finalize with summary stats and comprehensive evaluation
         with with_span(trace, "finalize", 
                       input_data={'decisions_count': len(decisions)}) as span:
             
             summary_stats = self._calculate_summary_stats(decisions)
             
+            # Record performance metrics
+            total_time = time.time() - start_time
+            record_performance_metric(crew_session_id, MetricType.RESPONSE_TIME, total_time)
+            record_performance_metric(crew_session_id, MetricType.THROUGHPUT, len(items) / total_time if total_time > 0 else 0)
+            record_performance_metric(crew_session_id, MetricType.ACCURACY, summary_stats.get('approval_rate', 0))
+            
+            # Judge crew orchestrator output
+            crew_output = {
+                'decisions': decisions,
+                'summary_stats': summary_stats,
+                'performance': {
+                    'total_time': total_time,
+                    'items_processed': len(items),
+                    'proposals_created': len(all_proposals)
+                }
+            }
+            
+            crew_judge_result = judge_agent_output(crew_session_id, crew_output)
+            
+            # Finalize evaluation
+            final_evaluation = finalize_agent_evaluation(crew_session_id)
+            
             # Log pipeline completion
             supabase.log_event(invoice_id, None, 'CREW_COMPLETE', {
                 **summary_stats,
-                'total_proposals': len(all_proposals)
+                'total_proposals': len(all_proposals),
+                'evaluation_score': final_evaluation.overall_score if final_evaluation else 0,
+                'processing_time': total_time
             })
             
             span['output'] = {
                 'summary_stats': summary_stats,
-                'total_proposals': len(all_proposals)
+                'total_proposals': len(all_proposals),
+                'evaluation': {
+                    'overall_score': final_evaluation.overall_score if final_evaluation else 0,
+                    'confidence': final_evaluation.confidence if final_evaluation else 0,
+                    'judge_score': crew_judge_result.score,
+                    'recommendations': crew_judge_result.recommendations
+                }
             }
         
-        return {
+        result = {
             'invoice_id': invoice_id,
             'decisions': decisions,
             'pipeline_stats': summary_stats,
             'dry_run': self.dry_run
         }
+        
+        # Add evaluation data if available
+        if final_evaluation:
+            result['evaluation'] = {
+                'session_id': crew_session_id,
+                'overall_score': final_evaluation.overall_score,
+                'confidence': final_evaluation.confidence,
+                'recommendations': final_evaluation.recommendations,
+                'performance_metrics': [
+                    {
+                        'type': metric.metric_type.value,
+                        'value': metric.value,
+                        'timestamp': metric.timestamp.isoformat()
+                    } for metric in final_evaluation.performance_metrics
+                ]
+            }
+        
+        return result
     
     def _process_line_item(self, line_item: LineItem, vendor_id: str, 
                           invoice_id: str, tools: Dict[str, Any], trace: Optional[Any] = None) -> tuple[LineItemDecision, List[str]]:
-        """Process a single line item through the pipeline"""
+        """Process a single line item through the pipeline with individual agent evaluation"""
         
         matching_tool = tools['matching']
         pricing_tool = tools['pricing']
@@ -191,47 +260,94 @@ class CrewRunner:
         
         proposals = []
         
-        # Stage 1: ItemMatcher
+        # Create evaluation sessions for each agent
+        matcher_session_id = f"matcher_{line_item.id}_{int(time.time())}"
+        pricer_session_id = f"pricer_{line_item.id}_{int(time.time())}"
+        rules_session_id = f"rules_{line_item.id}_{int(time.time())}"
+        
+        # Stage 1: ItemMatcher with evaluation
         with with_span(trace, "ItemMatcher", 
                       input_data={'line_item_id': line_item.id, 'description': line_item.description}) as span:
+            
+            # Start evaluation
+            start_agent_evaluation(
+                matcher_session_id,
+                AgentType.ITEM_MATCHER,
+                {'description': line_item.description, 'line_item_id': line_item.id}
+            )
+            
+            match_start_time = time.time()
             
             match_result: MatchResult = matching_tool.match_item(
                 line_item.description, line_item.id
             )
             
-            if match_result.proposal_id:
-                proposals.append(match_result.proposal_id)
+            # Record performance metrics and judge output
+            match_time = time.time() - match_start_time
+            record_performance_metric(matcher_session_id, MetricType.RESPONSE_TIME, match_time)
+            record_performance_metric(matcher_session_id, MetricType.CONFIDENCE, match_result.confidence)
             
-            span['output'] = {
+            match_output = {
                 'canonical_item_id': match_result.canonical_item_id,
                 'canonical_name': match_result.canonical_name,
                 'match_confidence': match_result.confidence,
                 'match_type': match_result.match_type,
                 'proposal_created': match_result.proposal_id is not None
             }
+            
+            judge_agent_output(matcher_session_id, match_output)
+            finalize_agent_evaluation(matcher_session_id)
+            
+            if match_result.proposal_id:
+                proposals.append(match_result.proposal_id)
+            
+            span['output'] = match_output
         
-        # Stage 2: PriceLearner
+        # Stage 2: PriceLearner with evaluation
         with with_span(trace, "PriceLearner", 
                       input_data={
                           'canonical_item_id': match_result.canonical_item_id,
                           'unit_price': line_item.unit_price
                       }) as span:
             
+            # Start evaluation
+            start_agent_evaluation(
+                pricer_session_id,
+                AgentType.PRICE_LEARNER,
+                {
+                    'canonical_item_id': match_result.canonical_item_id,
+                    'unit_price': line_item.unit_price,
+                    'line_item_id': line_item.id
+                }
+            )
+            
+            price_start_time = time.time()
+            
             price_result: PriceValidationResult = pricing_tool.validate_price(
                 match_result.canonical_item_id, line_item.unit_price, line_item.id
             )
             
-            if price_result.proposal_id:
-                proposals.append(price_result.proposal_id)
+            # Record performance metrics and judge output
+            price_time = time.time() - price_start_time
+            record_performance_metric(pricer_session_id, MetricType.RESPONSE_TIME, price_time)
+            record_performance_metric(pricer_session_id, MetricType.ACCURACY, 1.0 if price_result.is_valid else 0.0)
             
-            span['output'] = {
+            price_output = {
                 'is_valid': price_result.is_valid,
                 'expected_range': price_result.expected_range,
                 'variance_percent': price_result.variance_percent,
                 'proposal_created': price_result.proposal_id is not None
             }
+            
+            judge_agent_output(pricer_session_id, price_output)
+            finalize_agent_evaluation(pricer_session_id)
+            
+            if price_result.proposal_id:
+                proposals.append(price_result.proposal_id)
+            
+            span['output'] = price_output
         
-        # Stage 3: RuleApplier
+        # Stage 3: RuleApplier with evaluation
         with with_span(trace, "RuleApplier", 
                       input_data={
                           'canonical_item_id': match_result.canonical_item_id,
@@ -240,6 +356,22 @@ class CrewRunner:
                           'match_confidence': match_result.confidence,
                           'price_is_valid': price_result.is_valid
                       }) as span:
+            
+            # Start evaluation
+            start_agent_evaluation(
+                rules_session_id,
+                AgentType.RULE_APPLIER,
+                {
+                    'canonical_item_id': match_result.canonical_item_id,
+                    'unit_price': line_item.unit_price,
+                    'quantity': line_item.quantity,
+                    'match_confidence': match_result.confidence,
+                    'price_is_valid': price_result.is_valid,
+                    'vendor_id': vendor_id
+                }
+            )
+            
+            rules_start_time = time.time()
             
             rule_result: RuleResult = rules_tool.apply_rules(
                 match_result.canonical_item_id,
@@ -251,12 +383,23 @@ class CrewRunner:
                 vendor_id
             )
             
-            span['output'] = {
+            # Record performance metrics and judge output
+            rules_time = time.time() - rules_start_time
+            record_performance_metric(rules_session_id, MetricType.RESPONSE_TIME, rules_time)
+            record_performance_metric(rules_session_id, MetricType.CONFIDENCE, rule_result.confidence)
+            
+            rules_output = {
                 'decision': rule_result.decision.value,
                 'policy_codes': rule_result.policy_codes,
                 'reasons_count': len(rule_result.reasons),
-                'confidence': rule_result.confidence
+                'confidence': rule_result.confidence,
+                'reasons': rule_result.reasons
             }
+            
+            judge_agent_output(rules_session_id, rules_output)
+            finalize_agent_evaluation(rules_session_id)
+            
+            span['output'] = rules_output
         
         # Create final decision
         decision = LineItemDecision(

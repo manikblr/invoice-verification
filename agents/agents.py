@@ -5,6 +5,7 @@ from .tools.supabase_tool import SupabaseTool
 from .tools.matching_tool import MatchingTool
 from .tools.pricing_tool import PricingTool
 from .tools.rules_tool import RulesTool
+from .langfuse_integration import get_prompt
 
 
 class ItemMatcherTool(BaseTool):
@@ -68,7 +69,7 @@ class AgentCreator:
         item_matcher = Agent(
             role='Item Matcher',
             goal='Match invoice line items to canonical items with high accuracy',
-            backstory=(
+            backstory=get_prompt("item_matcher_backstory") or (
                 'You are an expert at matching product descriptions to standardized catalog items. '
                 'You use exact matching, synonyms, and fuzzy matching to find the best matches. '
                 'When confidence is medium (0.75-0.85), you propose new synonyms for human review.'
@@ -81,7 +82,7 @@ class AgentCreator:
         price_learner = Agent(
             role='Price Learner',
             goal='Validate prices and learn from pricing patterns to improve ranges',
-            backstory=(
+            backstory=get_prompt("price_learner_backstory") or (
                 'You are a pricing analyst that validates unit prices against expected ranges. '
                 'When prices fall outside normal ranges, you propose range adjustments based on '
                 'market data and pricing patterns.'
@@ -94,7 +95,7 @@ class AgentCreator:
         rule_applier = Agent(
             role='Rule Applier',
             goal='Apply business rules to determine approval status for line items',
-            backstory=(
+            backstory=get_prompt("rule_applier_backstory") or (
                 'You are a compliance officer that applies business rules to invoice line items. '
                 'You make decisions based on match confidence, price validity, quantity limits, '
                 'and other business policies. You provide clear reasons for each decision.'
