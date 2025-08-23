@@ -255,6 +255,21 @@ export async function processDomainEvent(event: DomainEvent): Promise<boolean> {
             reason: `Matched to canonical item: ${event.canonicalItemId}`,
             metadata: { confidence: event.confidence },
           }, lockToken);
+          
+          // Automatically trigger price validation after successful matching
+          if (success && event.canonicalItemId) {
+            try {
+              const { triggerPriceValidationAfterMatch } = await import('../price-validation/price-trigger');
+              await triggerPriceValidationAfterMatch({
+                lineItemId,
+                canonicalItemId: event.canonicalItemId,
+              });
+              console.log(`[Orchestrator] Price validation triggered for matched item ${lineItemId}`);
+            } catch (error) {
+              console.error(`[Orchestrator] Failed to trigger price validation for ${lineItemId}:`, error);
+              // Don't fail the matching process if price validation trigger fails
+            }
+          }
         }
         break;
         
