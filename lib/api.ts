@@ -13,6 +13,20 @@ import {
   ZSuggestResponse 
 } from '@/types/suggest';
 
+// Legacy API types for backward compatibility
+export interface MetaResponse {
+  service_lines: Array<{ id: number; name: string }>;
+  service_types: Array<{ id: number; name: string }>;
+}
+
+export interface ValidationResponse {
+  decisions: Array<{
+    lineId: string;
+    policy: string;
+    reasons: string[];
+  }>;
+}
+
 /**
  * Server error response structure
  */
@@ -206,4 +220,42 @@ export function getErrorMessage(error: unknown): string {
   }
   
   return 'An unknown error occurred';
+}
+
+/**
+ * Legacy API functions for backward compatibility
+ */
+
+// Mock implementation for getMeta
+export async function getMeta(): Promise<MetaResponse> {
+  return {
+    service_lines: [
+      { id: 1, name: 'Plumbing' },
+      { id: 2, name: 'Electrical' },
+      { id: 3, name: 'HVAC' },
+      { id: 4, name: 'General Maintenance' },
+    ],
+    service_types: [
+      { id: 1, name: 'Installation' },
+      { id: 2, name: 'Repair' },
+      { id: 3, name: 'Maintenance' },
+      { id: 4, name: 'Inspection' },
+    ],
+  };
+}
+
+// Mock implementation for validateInvoice
+export async function validateInvoice(invoiceData: any, saveEnabled?: boolean): Promise<ValidationResponse> {
+  return {
+    decisions: invoiceData.items?.map((item: any, index: number) => ({
+      lineId: item.id || `line-${index}`,
+      policy: 'ALLOW',
+      reasons: ['Mock validation - always allows'],
+    })) || [],
+  };
+}
+
+// Mock implementation for validateUnifiedInvoice
+export async function validateUnifiedInvoice(invoiceData: any): Promise<ValidationResponse> {
+  return validateInvoice(invoiceData);
 }
