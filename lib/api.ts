@@ -19,14 +19,6 @@ export interface MetaResponse {
   service_types: Array<{ id: number; name: string }>;
 }
 
-export interface ValidationResponse {
-  decisions: Array<{
-    lineId: string;
-    policy: string;
-    reasons: string[];
-  }>;
-}
-
 /**
  * Server error response structure
  */
@@ -245,17 +237,81 @@ export async function getMeta(): Promise<MetaResponse> {
 }
 
 // Mock implementation for validateInvoice
-export async function validateInvoice(invoiceData: any, saveEnabled?: boolean): Promise<ValidationResponse> {
+export async function validateInvoice(invoiceData: any, saveEnabled?: boolean): Promise<import('@/lib/types').ValidationResponse> {
+  // Process materials and equipment items
+  const materials = invoiceData.materials || [];
+  const equipment = invoiceData.equipment || [];
+  const allItems = [...materials, ...equipment];
+  
+  let allowCount = 0;
+  let rejectCount = 0;
+  let reviewCount = 0;
+  
+  const lines = allItems.map((item: any, index: number) => {
+    // Simple mock logic based on item characteristics
+    let status: 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT' = 'ALLOW';
+    let reasonCodes: string[] = [];
+    
+    // Mock price validation
+    if (item.unit_price > 15000) {
+      status = 'NEEDS_REVIEW';
+      reasonCodes = ['PRICE_HIGH'];
+      reviewCount++;
+    } else if (item.name?.toLowerCase().includes('coffee') || item.name?.toLowerCase().includes('lunch')) {
+      status = 'REJECT';
+      reasonCodes = ['PERSONAL_ITEM'];
+      rejectCount++;
+    } else {
+      allowCount++;
+      reasonCodes = ['VALID_ITEM'];
+    }
+    
+    return {
+      type: materials.includes(item) ? 'material' as const : 'equipment' as const,
+      index,
+      input: item,
+      status,
+      reason_codes: reasonCodes,
+      match: status === 'ALLOW' ? {
+        canonical: item.name,
+        canonical_id: `canonical_${index}`,
+        confidence: 0.95
+      } : undefined,
+      pricing: {
+        unit_price: item.unit_price,
+        currency: 'USD',
+        min: item.unit_price * 0.8,
+        max: item.unit_price * 1.2,
+      }
+    };
+  });
+  
+  const totalLines = lines.length;
+  let invoiceStatus: 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT' = 'ALLOW';
+  
+  if (rejectCount > 0) {
+    invoiceStatus = 'REJECT';
+  } else if (reviewCount > 0) {
+    invoiceStatus = 'NEEDS_REVIEW';
+  }
+  
   return {
-    decisions: invoiceData.items?.map((item: any, index: number) => ({
-      lineId: item.id || `line-${index}`,
-      policy: 'ALLOW',
-      reasons: ['Mock validation - always allows'],
-    })) || [],
+    ok: true,
+    mode: 'mock',
+    invoice_status: invoiceStatus,
+    invoice_id: saveEnabled ? `mock_inv_${Date.now()}` : null,
+    save_warning: saveEnabled ? undefined : 'Validation run not saved (save disabled)',
+    summary: {
+      allow: allowCount,
+      needs_review: reviewCount,
+      reject: rejectCount,
+      total_lines: totalLines,
+    },
+    lines,
   };
 }
 
 // Mock implementation for validateUnifiedInvoice
-export async function validateUnifiedInvoice(invoiceData: any): Promise<ValidationResponse> {
-  return validateInvoice(invoiceData);
+export async function validateUnifiedInvoice(invoiceData: any, saveEnabled?: boolean): Promise<import('@/lib/types').ValidationResponse> {
+  return validateInvoice(invoiceData, saveEnabled);
 }
