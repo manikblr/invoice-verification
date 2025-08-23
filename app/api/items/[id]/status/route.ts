@@ -5,9 +5,11 @@ import { getValidationHistory } from '@/lib/validation/validation-service';
 export const runtime = 'nodejs';
 
 // Supabase client setup
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+// Create client only if environment variables are available
+const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
 interface StatusResponse {
   success: boolean;
@@ -50,6 +52,18 @@ export async function GET(
 ) {
   try {
     const lineItemId = params.id;
+    
+    // Check if Supabase is configured
+    if (!supabase) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Database not configured',
+          message: 'Supabase environment variables are missing',
+        },
+        { status: 503 }
+      );
+    }
     
     // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -161,8 +175,20 @@ export async function PATCH(
 ) {
   try {
     const lineItemId = params.id;
-    const body = await request.json();
     
+    // Check if Supabase is configured
+    if (!supabase) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Database not configured',
+          message: 'Supabase environment variables are missing',
+        },
+        { status: 503 }
+      );
+    }
+    
+    const body = await request.json();
     const { status, orchestratorLock } = body;
     
     // Validate status value

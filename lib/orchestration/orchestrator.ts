@@ -7,9 +7,11 @@ import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 
 // Supabase client setup
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+// Create client only if environment variables are available
+const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
 export type LineItemStatus = 
   | 'NEW'
@@ -168,6 +170,12 @@ function isValidTransition(from: LineItemStatus, to: LineItemStatus): boolean {
  */
 export async function processDomainEvent(event: DomainEvent): Promise<boolean> {
   const { lineItemId } = event;
+  
+  // Check if Supabase is configured
+  if (!supabase) {
+    console.warn('[Orchestrator] Database not configured, cannot process domain events');
+    return false;
+  }
   
   // Acquire lock for this operation
   const lockToken = await acquireOrchestratorLock(lineItemId, event.type);
