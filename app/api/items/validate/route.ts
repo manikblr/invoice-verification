@@ -44,7 +44,11 @@ export async function POST(request: NextRequest) {
     if ('items' in validatedRequest) {
       // Batch validation
       const requests: ValidationRequest[] = validatedRequest.items.map(item => ({
-        ...item,
+        lineItemId: item.lineItemId,
+        itemName: item.itemName,
+        itemDescription: item.itemDescription,
+        serviceLine: item.serviceLine,
+        serviceType: item.serviceType,
         userId: item.userId || userId,
       }));
       
@@ -53,9 +57,14 @@ export async function POST(request: NextRequest) {
       
     } else {
       // Single validation
+      const singleRequest = validatedRequest as typeof SingleValidationRequestSchema._output;
       const request: ValidationRequest = {
-        ...validatedRequest,
-        userId: validatedRequest.userId || userId,
+        lineItemId: singleRequest.lineItemId,
+        itemName: singleRequest.itemName,
+        itemDescription: singleRequest.itemDescription,
+        serviceLine: singleRequest.serviceLine,
+        serviceType: singleRequest.serviceType,
+        userId: singleRequest.userId || userId,
       };
       
       console.log(`[Validate API] Single validation requested for item: ${request.itemName}`);

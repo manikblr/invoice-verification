@@ -43,14 +43,25 @@ export async function POST(request: NextRequest) {
     // Handle single vs batch matching
     if ('items' in validatedRequest) {
       // Batch matching
-      const requests: MatchingRequest[] = validatedRequest.items;
+      const requests: MatchingRequest[] = validatedRequest.items.map(item => ({
+        lineItemId: item.lineItemId,
+        itemName: item.itemName,
+        itemDescription: item.itemDescription,
+        forceMatcher: item.forceMatcher,
+      }));
       
       console.log(`[Match API] Batch matching requested for ${requests.length} items`);
       results = await matchMultipleLineItems(requests);
       
     } else {
       // Single matching
-      const request: MatchingRequest = validatedRequest;
+      const singleRequest = validatedRequest as typeof SingleMatchRequestSchema._output;
+      const request: MatchingRequest = {
+        lineItemId: singleRequest.lineItemId,
+        itemName: singleRequest.itemName,
+        itemDescription: singleRequest.itemDescription,
+        forceMatcher: singleRequest.forceMatcher,
+      };
       
       console.log(`[Match API] Single matching requested for item: ${request.itemName}`);
       const result = await matchLineItemWithValidation(request);
