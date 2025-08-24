@@ -282,6 +282,35 @@ export async function processDomainEvent(event: DomainEvent): Promise<boolean> {
             toStatus: targetStatus,
             reason: event.validated ? 'Price validation passed' : 'Price validation failed',
           }, lockToken);
+          
+          // Automatically trigger rule evaluation after successful price validation
+          if (success && event.validated) {
+            try {
+              const { evaluateRulesForLineItem } = await import('../rule-engine/rule-service');
+              
+              // Get line item details for rule evaluation
+              const { data: lineItem } = await supabase
+                .from('invoice_line_items')
+                .select('raw_name, unit_price, quantity, canonical_item_id')
+                .eq('id', lineItemId)
+                .single();
+              
+              if (lineItem) {
+                await evaluateRulesForLineItem({
+                  lineItemId,
+                  itemName: lineItem.raw_name,
+                  unitPrice: lineItem.unit_price || 0,
+                  quantity: lineItem.quantity || 1,
+                  canonicalItemId: lineItem.canonical_item_id,
+                  priceIsValid: true,
+                });
+                console.log(`[Orchestrator] Rule evaluation triggered for price-validated item ${lineItemId}`);
+              }
+            } catch (error) {
+              console.error(`[Orchestrator] Failed to trigger rule evaluation for ${lineItemId}:`, error);
+              // Don't fail the price validation if rule evaluation fails
+            }
+          }
         }
         break;
         
@@ -301,6 +330,19 @@ export async function processDomainEvent(event: DomainEvent): Promise<boolean> {
           // Note: Transition to READY_FOR_SUBMISSION or DENIED happens after explanation evaluation
           console.log(`[Orchestrator] Explanation submitted for ${lineItemId}: ${event.explanationId}`);
           success = true;
+          
+          // Automatically trigger explanation verification
+          try {
+            const { explanationAgent } = await import('../explanation/explanation-agent');
+            await explanationAgent.verifyExplanation({
+              explanationId: event.explanationId,
+              lineItemId,
+            });
+            console.log(`[Orchestrator] Explanation verification triggered for ${lineItemId}`);
+          } catch (error) {
+            console.error(`[Orchestrator] Failed to trigger explanation verification for ${lineItemId}:`, error);
+            // Don't fail the domain event processing if verification fails
+          }
         }
         break;
         

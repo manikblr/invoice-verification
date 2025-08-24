@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import Navigation from '../components/Navigation'
 
 export const metadata: Metadata = {
-  title: 'Invoice Validator',
-  description: 'Invoice validation system',
+  title: 'Invoice Verification Pipeline',
+  description: 'Validation-first invoice processing with real-time status tracking',
 }
 
 export default function RootLayout({
@@ -14,10 +15,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50">
-        <div className="container mx-auto py-8">
-          <h1 className="text-3xl font-bold text-center mb-8">Invoice Verification</h1>
-          {children}
-        </div>
+        <Navigation />
+        {children}
       </body>
     </html>
   )

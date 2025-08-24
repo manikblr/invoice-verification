@@ -35,8 +35,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedRequest = ValidationRequestSchema.parse(body);
     
-    // Extract user information from headers
+    // Extract tracing information from headers (implementation.md requirement)
     const userId = request.headers.get('X-User') || 'anonymous';
+    const invoiceId = request.headers.get('X-Invoice-ID') || 'unknown';
+    const traceId = `validate_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.log(`[Validate API] Starting validation with trace: ${traceId}, user: ${userId}, invoice: ${invoiceId}`);
     
     let results;
     
@@ -85,12 +89,21 @@ export async function POST(request: NextRequest) {
       `${approvedCount} approved, ${rejectedCount} rejected, ${reviewCount} need review`
     );
     
-    // Return appropriate response
+    // Return appropriate response matching implementation.md specification
     if ('items' in validatedRequest) {
       // Batch response
       return NextResponse.json({
         success: allSuccessful,
-        results,
+        results: results.map(r => ({
+          // implementation.md specification: { verdict, reasons, score }
+          verdict: r.result.verdict,
+          reasons: r.result.reasons,
+          score: r.result.score,
+          // Additional metadata
+          lineItemId: r.lineItemId,
+          validationEventId: r.validationEventId,
+          blacklistedTerm: r.result.blacklistedTerm,
+        })),
         summary: {
           total: results.length,
           approved: approvedCount,
@@ -101,11 +114,16 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString(),
       });
     } else {
-      // Single response
+      // Single response matching implementation.md specification
+      const result = results[0].result;
       return NextResponse.json({
-        success: results[0].success,
-        validation: results[0].result,
+        // implementation.md specification: { verdict, reasons, score }
+        verdict: result.verdict,
+        reasons: result.reasons,
+        score: result.score,
+        // Additional metadata
         validationEventId: results[0].validationEventId,
+        blacklistedTerm: result.blacklistedTerm,
         durationMs: duration,
         timestamp: new Date().toISOString(),
       });

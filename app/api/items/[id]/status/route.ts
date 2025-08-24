@@ -53,6 +53,13 @@ export async function GET(
   try {
     const lineItemId = params.id;
     
+    // Extract tracing information from headers (implementation.md requirement)
+    const userId = request.headers.get('X-User') || 'anonymous';
+    const invoiceId = request.headers.get('X-Invoice-ID') || 'unknown';
+    const traceId = `status_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.log(`[Status API] Starting with trace: ${traceId}, user: ${userId}, invoice: ${invoiceId}, lineItem: ${lineItemId}`);
+    
     // Check if Supabase is configured
     if (!supabase) {
       return NextResponse.json(
@@ -141,12 +148,15 @@ export async function GET(
       };
     }
     
-    const response: StatusResponse = {
-      success: true,
-      lineItemId: lineItem.id,
+    // implementation.md specification: { status, stage_details }
+    const response = {
       status: lineItem.status || 'NEW',
-      stageDetails,
+      stage_details: stageDetails,
+      // Additional metadata
+      lineItemId: lineItem.id,
+      itemName: lineItem.raw_name,
       lastUpdated: lineItem.created_at,
+      timestamp: new Date().toISOString(),
     };
     
     return NextResponse.json(response);

@@ -85,12 +85,78 @@ Item Name: "${itemName}"`;
 }
 
 /**
- * Call Claude Code's LLM with the classification prompt
+ * Call Langfuse LLM integration using validator_v2 prompt
+ */
+async function callLangfuseLLM(request: LLMClassificationRequest): Promise<LLMClassificationResponse | null> {
+  try {
+    // Call internal API endpoint that bridges to Python Langfuse integration
+    const response = await fetch('/api/internal/llm-classify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt_name: 'validator_v2',
+        variables: {
+          item_name: request.itemName,
+          item_description: request.itemDescription || 'No description provided',
+          service_line: request.serviceLine || 'Not specified',
+          service_type: request.serviceType || 'Not specified',
+          context: 'Pre-validation classification'
+        },
+        task_type: 'validation',
+        trace_name: 'pre_validation_classifier_v2',
+        metadata: {
+          classifier_version: '2.0.0',
+          integration: 'langfuse_typescript'
+        }
+      })
+    });
+
+    if (!response.ok) {
+      console.warn(`[LLM Classifier] Langfuse API returned ${response.status}`);
+      return null;
+    }
+
+    const result = await response.json();
+    
+    // Parse LLM response (expecting JSON format from validator_v2 prompt)
+    let parsedResponse;
+    try {
+      parsedResponse = typeof result.response === 'string' ? JSON.parse(result.response) : result.response;
+    } catch (parseError) {
+      console.warn('[LLM Classifier] Failed to parse Langfuse LLM response as JSON:', parseError);
+      return null;
+    }
+
+    // Convert to our expected format
+    return {
+      verdict: parsedResponse.verdict || 'NEEDS_REVIEW',
+      score: parsedResponse.score || 0.5,
+      reasons: parsedResponse.reasons || ['Langfuse classification completed'],
+      category: parsedResponse.category,
+      confidence: parsedResponse.confidence || 0.5,
+    };
+
+  } catch (error) {
+    console.warn('[LLM Classifier] Langfuse integration failed:', error);
+    return null;
+  }
+}
+
+/**
+ * Call Langfuse-integrated LLM with the validator_v2 prompt
  */
 async function callLLMClassifier(request: LLMClassificationRequest): Promise<LLMClassificationResponse> {
   try {
-    // For now, we'll implement a mock classifier that follows the expected patterns
-    // In a real implementation, this would call Claude Code's LLM API
+    // Try to use Langfuse integration first
+    const langfuseResponse = await callLangfuseLLM(request);
+    if (langfuseResponse) {
+      return langfuseResponse;
+    }
+    
+    // Fallback to mock classifier
+    console.log('[LLM Classifier] Langfuse not available, using mock classifier');
     const response = await mockLLMClassifier(request);
     return response;
   } catch (error) {
@@ -201,27 +267,12 @@ export async function classifyWithLLM(input: ValidationInput): Promise<PreValida
       serviceType: input.serviceType,
     };
     
-    // TODO: Add Langfuse trace start here
-    // const trace = langfuse.trace({
-    //   name: 'pre_validation_classifier',
-    //   input: request,
-    //   metadata: { version: 'v2' }
-    // });
+    console.log(`[LLM Classifier v2] Classifying: ${input.name} (with Langfuse validator_v2 prompt)`);
     
-    // Call LLM classifier
+    // Call LLM classifier (which now includes Langfuse integration)
     const llmResponse = await callLLMClassifier(request);
     
     const duration = Date.now() - startTime;
-    
-    // TODO: Add Langfuse trace completion here
-    // trace.update({
-    //   output: llmResponse,
-    //   metadata: { 
-    //     duration_ms: duration,
-    //     model: 'claude-3-haiku', // or whatever model is used
-    //     prompt_version: 'validator_v2'
-    //   }
-    // });
     
     // Convert LLM response to PreValidationResult format
     const result: PreValidationResult = {
@@ -230,12 +281,14 @@ export async function classifyWithLLM(input: ValidationInput): Promise<PreValida
       reasons: llmResponse.reasons,
     };
     
-    console.log(`[LLM Classifier] ${input.name} -> ${llmResponse.verdict} (${llmResponse.score}) in ${duration}ms`);
+    console.log(`[LLM Classifier v2] ${input.name} -> ${llmResponse.verdict} (${llmResponse.score}) in ${duration}ms`);
+    console.log(`[LLM Classifier v2] Category: ${llmResponse.category || 'N/A'}, Confidence: ${llmResponse.confidence || 0}`);
+    console.log(`[LLM Classifier v2] Reasons: ${llmResponse.reasons.join(', ')}`);
     
     return result;
     
   } catch (error) {
-    console.error('[LLM Classifier] Error:', error);
+    console.error('[LLM Classifier v2] Error:', error);
     
     // Return safe fallback
     return {

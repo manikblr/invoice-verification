@@ -38,6 +38,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedRequest = MatchRequestSchema.parse(body);
     
+    // Extract tracing information from headers (implementation.md requirement)
+    const userId = request.headers.get('X-User') || 'anonymous';
+    const invoiceId = request.headers.get('X-Invoice-ID') || 'unknown';
+    const traceId = `match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.log(`[Match API] Starting matching with trace: ${traceId}, user: ${userId}, invoice: ${invoiceId}`);
+    
     let results;
     
     // Handle single vs batch matching
@@ -81,12 +88,21 @@ export async function POST(request: NextRequest) {
       `${matchedCount} matched, ${missedCount} missed, ${blockedCount} blocked`
     );
     
-    // Return appropriate response
+    // Return appropriate response matching implementation.md specification
     if ('items' in validatedRequest) {
       // Batch response
       return NextResponse.json({
         success: allSuccessful,
-        results,
+        results: results.map(r => ({
+          // implementation.md specification: { matched: bool, canonical_item_id?, confidence }
+          matched: !!r.matchResult?.canonicalItemId,
+          canonical_item_id: r.matchResult?.canonicalItemId || null,
+          confidence: r.matchResult?.confidence || 0,
+          // Additional metadata
+          lineItemId: r.lineItemId,
+          status: r.status,
+          reason: r.reason,
+        })),
         summary: {
           total: results.length,
           matched: matchedCount,
@@ -97,12 +113,16 @@ export async function POST(request: NextRequest) {
         timestamp: new Date().toISOString(),
       });
     } else {
-      // Single response
+      // Single response matching implementation.md specification
+      const result = results[0];
       return NextResponse.json({
-        success: results[0].success,
-        matching: results[0].matchResult,
-        status: results[0].status,
-        reason: results[0].reason,
+        // implementation.md specification: { matched: bool, canonical_item_id?, confidence }
+        matched: !!result.matchResult?.canonicalItemId,
+        canonical_item_id: result.matchResult?.canonicalItemId || null,
+        confidence: result.matchResult?.confidence || 0,
+        // Additional metadata
+        status: result.status,
+        reason: result.reason,
         durationMs: duration,
         timestamp: new Date().toISOString(),
       });

@@ -281,7 +281,54 @@ Respond with JSON:
   "reasoning": "detailed price assessment",
   "market_factors": ["relevant market considerations"],
   "recommendations": ["pricing recommendations"]
-}}"""
+}}""",
+
+            "validator_v2": """You are an advanced facility management (FM) item validator. Your job is to classify user-submitted items as legitimate FM materials/equipment or inappropriate submissions.
+
+ITEM TO VALIDATE:
+Name: {item_name}
+Description: {item_description}
+Service Line: {service_line}
+Service Type: {service_type}
+Context: {context}
+
+APPROVED items include:
+- Construction materials (pipes, fittings, lumber, concrete, rebar, insulation)
+- Plumbing supplies (valves, gaskets, seals, pumps, fixtures)
+- Electrical components (wire, conduit, switches, outlets, panels, breakers)
+- HVAC equipment (filters, ducts, thermostats, compressors, coils)
+- Tools and hardware (screws, bolts, wrenches, drills, safety equipment)
+- Maintenance supplies (lubricants, cleaning supplies, replacement parts)
+- Safety equipment (hard hats, safety glasses, protective gear)
+
+REJECTED items include:
+- Personal items (food, beverages, clothing, personal electronics)
+- Labor/services (technician fees, hourly work, consultation services)
+- Administrative costs (taxes, processing fees, convenience charges)
+- Inappropriate content (profanity, nonsensical text, spam)
+- Non-FM materials (office furniture, decorative items, consumables)
+
+NEEDS_REVIEW items include:
+- Ambiguous descriptions that could be either category
+- Items that might be FM-related but unclear from description
+- Border-line cases requiring expert human judgment
+
+VALIDATION LOGIC:
+1. Check for clear FM material indicators (technical specs, industry terms)
+2. Verify alignment with service line/type context
+3. Identify any red flags or inappropriate content
+4. Assess overall legitimacy and business appropriateness
+
+Respond with JSON:
+{{
+  "verdict": "APPROVED|REJECTED|NEEDS_REVIEW",
+  "score": 0.0-1.0,
+  "reasons": ["specific reasons for decision"],
+  "category": "plumbing|electrical|hvac|construction|tools|safety|maintenance|general",
+  "confidence": 0.0-1.0
+}}
+
+Be conservative - when in doubt, use NEEDS_REVIEW rather than APPROVED."""
         }
         
         template = prompts.get(prompt_name, f"Prompt '{prompt_name}' not found")
@@ -504,6 +551,11 @@ Respond with JSON:
                 "labels": ["system_prompt", "validation", "content_filtering", "user_input"]
             },
             {
+                "name": "validator_v2",
+                "prompt": self._get_fallback_prompt("validator_v2"),
+                "labels": ["system_prompt", "validation", "pre_validation", "v2", "advanced"]
+            },
+            {
                 "name": "price_judge_system",
                 "prompt": self._get_fallback_prompt("price_judge_system"),
                 "labels": ["system_prompt", "judge", "pricing", "evaluation"]
@@ -553,25 +605,71 @@ def setup_langfuse_prompts():
     """Setup default prompts - call this once to initialize Langfuse"""
     return prompt_manager.setup_default_prompts()
 
+def handle_classify_request():
+    """Handle classification request from TypeScript via stdin"""
+    import sys
+    
+    try:
+        # Read input from stdin
+        input_data = sys.stdin.read().strip()
+        if not input_data:
+            return {"error": "No input data provided"}
+            
+        request = json.loads(input_data)
+        
+        # Extract request parameters
+        action = request.get("action")
+        if action != "classify_with_prompt":
+            return {"error": f"Unknown action: {action}"}
+            
+        prompt_name = request.get("prompt_name", "validator_v2")
+        variables = request.get("variables", {})
+        task_type = request.get("task_type", "validation")
+        trace_name = request.get("trace_name", "llm_classify")
+        metadata = request.get("metadata", {})
+        
+        # Get the prompt with variables
+        prompt_text = get_prompt(prompt_name, **variables)
+        
+        # Make LLM call with tracing
+        response = call_llm(
+            prompt=prompt_text,
+            task_type=task_type,
+            trace_name=trace_name,
+            metadata=metadata
+        )
+        
+        return {"response": response}
+        
+    except Exception as e:
+        return {"error": str(e)}
+
 if __name__ == "__main__":
-    # Test the integration
-    print("🧪 Testing Langfuse integration...")
-    
-    # Test prompt retrieval
-    backstory = get_prompt("item_validator_system", 
-                          item_name="PVC Pipe", 
-                          item_description="1/2 inch PVC pipe", 
-                          context="Testing")
-    print("Prompt retrieved:", len(backstory), "characters")
-    
-    # Test LLM call if available
-    if prompt_manager.openai_client:
-        response = call_llm("Say 'Hello from LLM integration test' and nothing else.", 
-                           trace_name="integration_test")
-        print("LLM response:", response)
-    
-    # Setup prompts if Langfuse available
-    if prompt_manager.langfuse:
-        setup_langfuse_prompts()
-    
-    print("✅ Integration test complete")
+    # Check if this is being called from the API
+    import sys
+    if len(sys.argv) == 1 and not sys.stdin.isatty():
+        # Being called via API - handle classification request
+        result = handle_classify_request()
+        print(json.dumps(result))
+    else:
+        # Test mode - run integration tests
+        print("🧪 Testing Langfuse integration...")
+        
+        # Test prompt retrieval
+        backstory = get_prompt("item_validator_system", 
+                              item_name="PVC Pipe", 
+                              item_description="1/2 inch PVC pipe", 
+                              context="Testing")
+        print("Prompt retrieved:", len(backstory), "characters")
+        
+        # Test LLM call if available
+        if prompt_manager.openai_client or (OPENROUTER_AVAILABLE and openrouter_client):
+            response = call_llm("Say 'Hello from LLM integration test' and nothing else.", 
+                               trace_name="integration_test")
+            print("LLM response:", response)
+        
+        # Setup prompts if Langfuse available
+        if prompt_manager.langfuse:
+            setup_langfuse_prompts()
+        
+        print("✅ Integration test complete")
