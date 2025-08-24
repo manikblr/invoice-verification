@@ -32,6 +32,9 @@ export interface IngestResult {
   raw: any;
   confidence: number;
   parseDurationMs: number;
+  // For API compatibility
+  sources?: IngestResult[];
+  canonicalLinks?: Array<{ canonicalItemId: string; confidence: number }>;
 }
 
 export class WebIngestQueue {

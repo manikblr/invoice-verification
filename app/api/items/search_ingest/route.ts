@@ -173,7 +173,7 @@ export async function GET(request: NextRequest) {
           error: job.error,
           result: job.result ? {
             // Match implementation.md format
-            ingested: job.result.sources?.length || 0,
+            ingested: job.result.sources?.length || (job.result.vendor ? 1 : 0),
             links: job.result.canonicalLinks?.length || 0,
           } : null,
         };
