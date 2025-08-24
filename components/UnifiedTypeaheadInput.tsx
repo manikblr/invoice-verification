@@ -111,7 +111,8 @@ export default function UnifiedTypeaheadInput({
   }
 
   const getKindIcon = (kind?: string) => {
-    switch (kind) {
+    const normalizedKind = kind?.toLowerCase()
+    switch (normalizedKind) {
       case 'material':
         return '🧱' // Material icon
       case 'equipment':
@@ -122,7 +123,8 @@ export default function UnifiedTypeaheadInput({
   }
 
   const getKindBadge = (kind?: string) => {
-    switch (kind) {
+    const normalizedKind = kind?.toLowerCase()
+    switch (normalizedKind) {
       case 'material':
         return (
           <span className="inline-block px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
@@ -208,8 +210,17 @@ export default function UnifiedTypeaheadInput({
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  {getKindBadge(suggestion.kind)}
-                  {getReasonBadge(suggestion.reason)}
+                  {/* Show primary badge (kind has priority, but show reason if no kind or if reason adds value) */}
+                  {suggestion.kind ? (
+                    getKindBadge(suggestion.kind)
+                  ) : (
+                    getReasonBadge(suggestion.reason)
+                  )}
+                  {/* Only show reason badge if it adds different information than kind */}
+                  {suggestion.kind && suggestion.reason && 
+                   !['equipment_boost'].includes(suggestion.reason) && (
+                    getReasonBadge(suggestion.reason)
+                  )}
                   <div className="text-xs text-gray-400">
                     {Math.round(suggestion.score * 100)}%
                   </div>

@@ -7,6 +7,7 @@ import { MetaResponse, ServiceType, ValidationResponse } from '../lib/types'
 import LineItemsTable from './LineItemsTable'
 import UnifiedTypeaheadInput from './UnifiedTypeaheadInput'
 import CurrencyInput from './CurrencyInput'
+import { InlineInfoRequest, InfoIcon } from './InlineInfoRequest'
 
 interface LineItem {
   name: string
@@ -14,6 +15,8 @@ interface LineItem {
   unit: string
   unit_price: number
   kind?: 'material' | 'equipment' // Auto-detected from search
+  needsInfo?: boolean // Whether this item needs additional information
+  infoExplanation?: string // User-provided explanation
 }
 
 interface UnifiedInvoiceFormData {
@@ -30,6 +33,13 @@ export default function UnifiedInvoiceForm() {
   const [result, setResult] = useState<ValidationResponse | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [saveEnabled, setSaveEnabled] = useState(false)
+  
+  // Inline info request state
+  const [infoRequest, setInfoRequest] = useState<{
+    isOpen: boolean
+    itemIndex: number | null
+    isSubmitting: boolean
+  }>({ isOpen: false, itemIndex: null, isSubmitting: false })
 
   const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<UnifiedInvoiceFormData>({
     defaultValues: {
@@ -37,7 +47,7 @@ export default function UnifiedInvoiceForm() {
       service_line_id: 0,
       service_type_id: 0,
       labor_hours: 0,
-      items: [{ name: '', quantity: 1, unit: 'pcs', unit_price: 0 }],
+      items: [{ name: '', quantity: 1, unit: 'pcs', unit_price: 0, needsInfo: false }],
     }
   })
 
@@ -75,12 +85,19 @@ export default function UnifiedInvoiceForm() {
   }, [])
 
   useEffect(() => {
-    if (meta && selectedServiceLineId) {
+    if (meta && selectedServiceLineId && selectedServiceLineId !== 0) {
       const serviceTypeGroup = meta.service_types.find(
         group => group.service_line_id === selectedServiceLineId
       )
-      setFilteredServiceTypes(serviceTypeGroup?.types || [])
+      const filteredTypes = serviceTypeGroup?.types || []
+      setFilteredServiceTypes(filteredTypes)
       setValue('service_type_id', 0)
+      
+      // Debug logging in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Service line changed:', selectedServiceLineId)
+        console.log('Available service types:', filteredTypes.map(t => t.name))
+      }
     } else {
       setFilteredServiceTypes([])
     }
@@ -107,31 +124,6 @@ export default function UnifiedInvoiceForm() {
     } catch (error) {
       console.error('Validation failed:', error)
       alert('Failed to validate invoice')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const runTest = async (testName: string, testData: UnifiedInvoiceFormData) => {
-    setIsSubmitting(true)
-    setResult(null)
-    try {
-      const validItems = testData.items.filter(item => (item.name || '').trim() !== '')
-      
-      // Send unified items directly to the new API
-      const payload = {
-        scope_of_work: testData.scope_of_work,
-        service_line_id: testData.service_line_id,
-        service_type_id: testData.service_type_id,
-        labor_hours: testData.labor_hours,
-        items: validItems
-      }
-      
-      const response = await validateUnifiedInvoice(payload, saveEnabled)
-      setResult({ ...response, testName })
-    } catch (error) {
-      console.error('Test failed:', error)
-      alert(`${testName} failed`)
     } finally {
       setIsSubmitting(false)
     }
@@ -167,7 +159,57 @@ export default function UnifiedInvoiceForm() {
     )
   }
 
-  const showSamples = process.env.NEXT_PUBLIC_SHOW_SAMPLES !== 'false'
+  // Handler for opening info request modal
+  const handleInfoRequest = (itemIndex: number) => {
+    setInfoRequest({
+      isOpen: true,
+      itemIndex,
+      isSubmitting: false
+    })
+  }
+
+  // Handler for closing info request modal
+  const handleCloseInfoRequest = () => {
+    setInfoRequest({
+      isOpen: false,
+      itemIndex: null,
+      isSubmitting: false
+    })
+  }
+
+  // Handler for submitting additional info
+  const handleSubmitInfo = async (explanation: string) => {
+    if (infoRequest.itemIndex === null) return
+
+    setInfoRequest(prev => ({ ...prev, isSubmitting: true }))
+
+    try {
+      // Update the item with the provided explanation
+      setValue(`items.${infoRequest.itemIndex}.infoExplanation`, explanation)
+      setValue(`items.${infoRequest.itemIndex}.needsInfo`, false)
+      
+      // Here you could also make an API call to submit the explanation
+      // await submitItemExplanation(infoRequest.itemIndex, explanation)
+      
+      handleCloseInfoRequest()
+    } catch (error) {
+      console.error('Failed to submit explanation:', error)
+      // You could show an error toast here
+    } finally {
+      setInfoRequest(prev => ({ ...prev, isSubmitting: false }))
+    }
+  }
+
+  // Simulate agent decision that requires info (for demo purposes)
+  const simulateNeedsInfo = (itemIndex: number) => {
+    const currentItem = watch(`items.${itemIndex}`)
+    // Simulate some logic that determines an item needs more info
+    // For demo: if item name contains "industrial" or price > $1000
+    return currentItem?.name && (
+      currentItem.name.toLowerCase().includes('industrial') || 
+      (currentItem.unit_price && currentItem.unit_price > 1000)
+    )
+  }
 
   if (!meta) {
     return <div className="text-center">Loading...</div>
@@ -252,7 +294,7 @@ export default function UnifiedInvoiceForm() {
             </div>
             <button
               type="button"
-              onClick={() => appendItem({ name: '', quantity: 1, unit: 'pcs', unit_price: 0 })}
+              onClick={() => appendItem({ name: '', quantity: 1, unit: 'pcs', unit_price: 0, needsInfo: false })}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Add Item
@@ -268,7 +310,13 @@ export default function UnifiedInvoiceForm() {
                     {/* Item Name Search */}
                     <div className="lg:col-span-2">
                       <label className="block text-xs font-medium text-gray-600 mb-1">
-                        Item Name
+                        <div className="flex items-center space-x-1">
+                          <span>Item Name</span>
+                          <InfoIcon
+                            needsInfo={simulateNeedsInfo(index)}
+                            onClick={() => handleInfoRequest(index)}
+                          />
+                        </div>
                       </label>
                       <UnifiedTypeaheadInput
                         value={watch(`items.${index}.name`) || ''}
@@ -278,12 +326,21 @@ export default function UnifiedInvoiceForm() {
                         serviceTypeId={watch('service_type_id') || undefined}
                         placeholder="Search materials or equipment..."
                       />
-                      {currentItem?.kind && (
-                        <div className="mt-1 flex items-center space-x-2">
-                          <span className="text-sm">{getItemKindIcon(currentItem.kind)}</span>
-                          {getItemKindBadge(currentItem.kind)}
+                      <div className="mt-1 flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          {currentItem?.kind && (
+                            <>
+                              <span className="text-sm">{getItemKindIcon(currentItem.kind)}</span>
+                              {getItemKindBadge(currentItem.kind)}
+                            </>
+                          )}
                         </div>
-                      )}
+                        {currentItem?.infoExplanation && (
+                          <div className="text-xs text-green-600">
+                            ✓ Additional info provided
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Quantity */}
@@ -362,67 +419,6 @@ export default function UnifiedInvoiceForm() {
           </div>
         </div>
 
-        {/* Sample Invoices */}
-        {showSamples && (
-          <div className="border-t pt-6">
-            <div className="text-center mb-4">
-              <h3 className="text-lg font-medium mb-2">Sample Invoices (demo)</h3>
-              <p className="text-sm text-gray-500">These fill the form with example data and run validation to illustrate outcomes.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <button
-                type="button"
-                onClick={() => runTest('Sample A — ALLOW', {
-                  scope_of_work: 'Water heater replacement',
-                  service_line_id: 14,
-                  service_type_id: 2,
-                  labor_hours: 2.5,
-                  items: [
-                    { name: 'Anode Rod', quantity: 1, unit: 'pcs', unit_price: 1200, kind: 'material' },
-                    { name: 'Pipe Wrench', quantity: 1, unit: 'day', unit_price: 400, kind: 'equipment' }
-                  ]
-                })}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-              >
-                Sample A — ALLOW<br /><small>(Anode Rod + Pipe Wrench)</small>
-              </button>
-              <button
-                type="button"
-                onClick={() => runTest('Sample B — PRICE_HIGH', {
-                  scope_of_work: 'Water heater replacement',
-                  service_line_id: 14,
-                  service_type_id: 2,
-                  labor_hours: 2.5,
-                  items: [
-                    { name: 'Anode Rod', quantity: 1, unit: 'pcs', unit_price: 20000, kind: 'material' }
-                  ]
-                })}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50"
-              >
-                Sample B — PRICE_HIGH<br /><small>(Anode Rod@20000)</small>
-              </button>
-              <button
-                type="button"
-                onClick={() => runTest('Sample C — MUTEX', {
-                  scope_of_work: 'Equipment conflict',
-                  service_line_id: 14,
-                  service_type_id: 2,
-                  labor_hours: 0,
-                  items: [
-                    { name: 'Pipe Wrench', quantity: 1, unit: 'day', unit_price: 400, kind: 'equipment' },
-                    { name: 'Drain Snake', quantity: 1, unit: 'day', unit_price: 800, kind: 'equipment' }
-                  ]
-                })}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-              >
-                Sample C — MUTEX<br /><small>(Pipe Wrench + Drain Snake)</small>
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Save Toggle */}
         <div className="flex items-center justify-center gap-2 pb-4">
@@ -451,6 +447,18 @@ export default function UnifiedInvoiceForm() {
       </form>
 
       {result && <LineItemsTable result={result} />}
+
+      {/* Inline Info Request Modal */}
+      {infoRequest.itemIndex !== null && (
+        <InlineInfoRequest
+          isOpen={infoRequest.isOpen}
+          onClose={handleCloseInfoRequest}
+          onSubmit={handleSubmitInfo}
+          itemName={watch(`items.${infoRequest.itemIndex}.name`) || 'Unnamed Item'}
+          itemDescription={`${watch(`items.${infoRequest.itemIndex}.quantity`) || 0} ${watch(`items.${infoRequest.itemIndex}.unit`) || 'pcs'} × $${watch(`items.${infoRequest.itemIndex}.unit_price`) || 0}`}
+          isSubmitting={infoRequest.isSubmitting}
+        />
+      )}
     </div>
   )
 }

@@ -13,12 +13,6 @@ export default function Home() {
         </p>
         <div className="flex space-x-4">
           <Link 
-            href="/verify" 
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Go to Verification
-          </Link>
-          <Link 
             href="/pipeline" 
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
           >

@@ -87,12 +87,19 @@ export default function InvoiceForm() {
   }, [])
 
   useEffect(() => {
-    if (meta && selectedServiceLineId) {
+    if (meta && selectedServiceLineId && selectedServiceLineId !== 0) {
       const serviceTypeGroup = meta.service_types.find(
         group => group.service_line_id === selectedServiceLineId
       )
-      setFilteredServiceTypes(serviceTypeGroup?.types || [])
+      const filteredTypes = serviceTypeGroup?.types || []
+      setFilteredServiceTypes(filteredTypes)
       setValue('service_type_id', 0)
+      
+      // Debug logging in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Service line changed:', selectedServiceLineId)
+        console.log('Available service types:', filteredTypes.map(t => t.name))
+      }
     } else {
       setFilteredServiceTypes([])
     }
@@ -122,31 +129,6 @@ export default function InvoiceForm() {
     }
   }
 
-  const runTest = async (testName: string, testData: InvoiceFormData) => {
-    setIsSubmitting(true)
-    setResult(null)
-    try {
-      // Filter out blank item names before sending
-      const materials = testData.materials.filter(m => (m.name || '').trim() !== '')
-      const equipment = testData.equipment.filter(e => (e.name || '').trim() !== '')
-      
-      const payload = {
-        ...testData,
-        materials,
-        equipment
-      }
-      
-      const response = await validateInvoice(payload, saveEnabled)
-      setResult({ ...response, testName })
-    } catch (error) {
-      console.error('Test failed:', error)
-      alert(`${testName} failed`)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const showSamples = process.env.NEXT_PUBLIC_SHOW_SAMPLES !== 'false'
 
   if (!meta) {
     return <div className="text-center">Loading...</div>
@@ -348,65 +330,6 @@ export default function InvoiceForm() {
           </div>
         </div>
 
-        {/* Sample Invoices */}
-        {showSamples && (
-          <div className="border-t pt-6">
-            <div className="text-center mb-4">
-              <h3 className="text-lg font-medium mb-2">Sample Invoices (demo)</h3>
-              <p className="text-sm text-gray-500">These fill the form with example data and run validation to illustrate outcomes.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <button
-                type="button"
-                onClick={() => runTest('Sample A — ALLOW', {
-                  scope_of_work: 'Water heater replacement',
-                  service_line_id: 14,
-                  service_type_id: 2,
-                  labor_hours: 2.5,
-                  materials: [{ name: 'Anode Rod', quantity: 1, unit: 'pcs', unit_price: 1200 }],
-                  equipment: [{ name: 'Pipe Wrench', quantity: 1, unit: 'day', unit_price: 400 }]
-                })}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-              >
-                Sample A — ALLOW<br /><small>(Anode Rod@1200 + Pipe Wrench@400)</small>
-              </button>
-              <button
-                type="button"
-                onClick={() => runTest('Sample B — PRICE_HIGH', {
-                  scope_of_work: 'Water heater replacement',
-                  service_line_id: 14,
-                  service_type_id: 2,
-                  labor_hours: 2.5,
-                  materials: [{ name: 'Anode Rod', quantity: 1, unit: 'pcs', unit_price: 20000 }],
-                  equipment: []
-                })}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50"
-              >
-                Sample B — PRICE_HIGH<br /><small>(Anode Rod@20000)</small>
-              </button>
-              <button
-                type="button"
-                onClick={() => runTest('Sample C — MUTEX', {
-                  scope_of_work: 'Equipment conflict',
-                  service_line_id: 14,
-                  service_type_id: 2,
-                  labor_hours: 0,
-                  materials: [],
-                  equipment: [
-                    { name: 'Pipe Wrench', quantity: 1, unit: 'day', unit_price: 400 },
-                    { name: 'Drain Snake', quantity: 1, unit: 'day', unit_price: 800 }
-                  ]
-                })}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-              >
-                Sample C — MUTEX<br /><small>(Pipe Wrench + Drain Snake)</small>
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Save Toggle */}
         <div className="flex items-center justify-center gap-2 pb-4">

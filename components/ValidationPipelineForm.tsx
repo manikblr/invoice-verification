@@ -157,12 +157,19 @@ export default function ValidationPipelineForm() {
 
   // Filter service types based on selected service line
   useEffect(() => {
-    if (meta && selectedServiceLineId) {
+    if (meta && selectedServiceLineId && selectedServiceLineId !== 0) {
       const serviceTypeGroup = meta.service_types.find(
         (group: any) => group.service_line_id === selectedServiceLineId
       )
-      setFilteredServiceTypes(serviceTypeGroup?.types || [])
+      const filteredTypes = serviceTypeGroup?.types || []
+      setFilteredServiceTypes(filteredTypes)
       setValue('service_type_id', 0)
+      
+      // Debug logging in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Service line changed:', selectedServiceLineId)
+        console.log('Available service types:', filteredTypes.map((t: any) => t.name))
+      }
     } else {
       setFilteredServiceTypes([])
     }
@@ -352,6 +359,37 @@ export default function ValidationPipelineForm() {
               {...register('labor_hours', { valueAsNumber: true })}
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Service Line
+            </label>
+            <select
+              {...register('service_line_id', { valueAsNumber: true })}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value={0}>Select Service Line</option>
+              {(meta?.service_lines || []).map((line: any) => (
+                <option key={line.id} value={line.id}>{line.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Service Type
+            </label>
+            <select
+              {...register('service_type_id', { valueAsNumber: true })}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={!selectedServiceLineId}
+            >
+              <option value={0}>Select Service Type</option>
+              {(filteredServiceTypes || []).map((type: any) => (
+                <option key={type.id} value={type.id}>{type.name}</option>
+              ))}
+            </select>
           </div>
         </div>
 
