@@ -8,9 +8,7 @@ export default function Navigation() {
   
   const navItems = [
     { href: '/', label: 'Home', description: 'Main invoice form' },
-    { href: '/pipeline', label: '🚀 Pipeline Demo', description: 'Validation-first workflow' },
-    { href: '/verify', label: 'Verification', description: 'Agent-based validation' },
-    { href: '/runs', label: 'Runs', description: 'View validation history' },
+    { href: '/admin', label: 'Admin', description: 'Admin dashboard and monitoring' },
   ]
   
   return (

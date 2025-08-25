@@ -1,0 +1,425 @@
+SERVICE_LINE,SERVICE_TYPE
+Appliances,Air Compressor Installation
+Appliances,Air Compressor Repair
+Appliances,"Auto Lift Install, Repair, Replace"
+Appliances,Cold Case
+Appliances,Cold Case Installation
+Appliances,Cold Case Repair
+Appliances,"Diagnostic - Auto, Tire"
+Appliances,Diagnostic - Food Appliances - Cold
+Appliances,Diagnostic - Food appliances - Hot
+Appliances,Dish Washer Installation
+Appliances,Dish Washer Repair
+Appliances,Double Rack Oven Installation
+Appliances,Fryer Installation
+Appliances,Fryer Repair
+Appliances,General Fixtures
+Appliances,General Fixtures Installation
+Appliances,General Fixtures Repair or Replace
+Appliances,Hot Case Installation
+Appliances,Hot Case Repair
+Appliances,Ice Machine Installation
+Appliances,Ice Machine Repair or Replace
+Appliances,Large Appliance Installation
+Appliances,Oil Pump Installation
+Appliances,Oil Pump Repair
+Appliances,Pan Washer Installation
+Appliances,Pan Washer Repair
+Appliances,Rotisserie/Pizza Oven Installation
+Appliances,Single & Mini Rack Oven Installation
+Appliances,Small Appliance Installation
+Appliances,"Small Appliance Repair - Food, Cold"
+Appliances,"Small Appliance Repair - Food, Hot"
+Appliances,Soda Dispenser/Soda Bibs Installation
+Appliances,Soda Dispenser/Soda Bibs Repair or Replace
+Appliances,Washer Installation
+Construction,Awning Repair or Replace
+Construction,Bollard Repair and Replacement
+Construction,Concrete Floor Installation
+Construction,Concrete Floor Installation and Repair
+Construction,Concrete Floor Removal
+Construction,Concrete Floor Repair
+Construction,Concrete Wall Installation and Removal
+Construction,Conveyance Repair
+Construction,Curb Repair
+Construction,Demo/Tear Down - Large
+Construction,Disaster Relief
+Construction,Dock Leveler Repair or Replace
+Construction,Drop Box Removal
+Construction,Drop Box Repair
+Construction,Dumpster/Dumpster Enclosure Repair
+Construction,Elevator Repair
+Construction,Flooring Installation
+Construction,Foundation Repair
+Construction,Foundation Water Proofing
+Construction,Fuel Island Repair
+Construction,Glass Panel Installation and Repair
+Construction,Insulation Installation and Repair
+Construction,Loading Dock Repairs
+Construction,Mold Mitigation
+Construction,Parking Lot Repair and Replacement
+Construction,Scissor Lift Repair
+Construction,Sidewalk Repair and Replacement
+Construction,Stone and Masonry
+Construction,Wall Installation
+Construction,Wall Repair and Replacement
+Construction,Wall Replacement and Installation
+Construction,Water Damage Repair
+Construction,Window Installation and Replacement
+Construction,Window Installation and Replacement - Large
+Electrical,Appliances
+Electrical,Ballast
+Electrical,Breaker Repair
+Electrical,Communication Systems
+Electrical,Construction
+Electrical,Data Systems
+Electrical,Disconnects
+Electrical,Electrical - Alarm
+Electrical,Emergency Lighting
+Electrical,Exterior Building Lighting
+Electrical,Exterior Lighting
+Electrical,Exterior Repair/Replacement
+Electrical,Fire Specialist
+Electrical,Fixtures
+Electrical,Generator Hookup
+Electrical,High Voltage
+Electrical,Interior Lighting
+Electrical,Lamp/Bulb Replacement
+Electrical,Landscape Lighting
+Electrical,Lighting PMI
+Electrical,Low Voltage
+Electrical,Outlet Repair and Replacement
+Electrical,Parking Lot Lighting
+Electrical,Power Drops
+Electrical,Safety Repairs
+Electrical,Security Systems
+Electrical,Signage
+Electrical,WiFi Setup
+Electrical,Wiring Installation
+Electrical,Wiring Repair
+Fire Life Safety,CO2 Suppression System Inspection
+Fire Life Safety,CO2 Suppression System Repair
+Fire Life Safety,Emergency Signs and Lighting PMI
+Fire Life Safety,Emergency Signs and Lighting Repair
+Fire Life Safety,Fire Alarm PMI
+Fire Life Safety,Fire Alarm Repair
+Fire Life Safety,Fire Extinguishers PMI
+Fire Life Safety,Fire Extinguishers Repair
+Fire Life Safety,Fire Hydrants PMI
+Fire Life Safety,Fire Hydrants Repair
+Fire Life Safety,Fire Line Backflow PMI
+Fire Life Safety,Fire Line Backflow Repair
+Fire Life Safety,Fire Pump PMI
+Fire Life Safety,Fire Pump Repair
+Fire Life Safety,Hood Vent Cleaning
+Fire Life Safety,Kitchen Vent Cleaning
+Fire Life Safety,Kitchen Vent Inspection
+Fire Life Safety,Sprinklers PMI
+Fire Life Safety,Sprinklers Repair
+Fire Life Safety,Water Storage Tank Inspection
+HVAC,A/C Unit Repair and Replacement
+HVAC,A/C Window Unit Repair and Replacement
+HVAC,Air Vent Repair and Replacement
+HVAC,Annual A/C Unit PM Services
+HVAC,Annual Heater PM Services
+HVAC,Baseboard Heater Repair or Replace
+HVAC,Boiler Installation
+HVAC,Boiler Repair and Replacement
+HVAC,Central Heat Inspection/Survey
+HVAC,Central Heat Repair or Replace
+HVAC,Chilled Water Pumps Repair or Replace
+HVAC,Chiller Inspection/Survey
+HVAC,Chiller Repair and Replacement
+HVAC,Cooling Tower Inspection/Survey
+HVAC,Cooling Tower Repair or Replace
+HVAC,Duct Work Installation
+HVAC,Duct Work Insulation
+HVAC,Ductwork Inspection/Survey
+HVAC,Ductwork Repair or Replace
+HVAC,EMS/BAS Repair or Replace
+HVAC,Electric Heater Repair and Replacement
+HVAC,Electric Heating System Repair and Replacement
+HVAC,Evaporative Cooler Inspection/Survey
+HVAC,Evaporative Cooler Repair or Replace
+HVAC,Exhaust Fan Repair and Replacement
+HVAC,Furnace Repair and Maintenance
+HVAC,Gas Heater Repair and Replacement
+HVAC,Gas Line Installation and Repair
+HVAC,HVAC Preventative Maintenance
+HVAC,Humidifier Repair and Replacement
+HVAC,Make-Up Air (MAU) Inspection/Survey
+HVAC,Make-Up Air (MAU) Repair or Replace
+HVAC,Mini-split A/C Unit Repair and Replacement
+HVAC,Overhead Heater Installation
+HVAC,Portable Air Conditioner Installation and Replacement
+HVAC,Portable Heater Installation and Replacement
+HVAC,Radiator Repair and Replacement
+HVAC,Refrigeration Repair and Replacement
+HVAC,Split A/C Unit Repair and Replacement
+HVAC,"Unit Heater, Overhead Repair or Replace"
+HVAC,VFD Repair or Replace
+Handyman,Assembly - Fixtures/Goods
+Handyman,Bathroom Exhaust Fan Repair and Replacement
+Handyman,Building Access
+Handyman,Building Preventative Maintenance
+Handyman,Cabinet Installation
+Handyman,Carpet Repair and Replacement
+Handyman,Ceiling Tiles
+Handyman,Countertop Repairs
+Handyman,Decorating - Holiday
+Handyman,Demo / Tear Down - Small
+Handyman,Door Replacement and Installation
+Handyman,Drinking Fountain Replacement
+Handyman,Drop Box Removal
+Handyman,Exterior Painting
+Handyman,Fence Installation and Repair
+Handyman,Fixture Repair and Replacement
+Handyman,Floor Repair and Replacement
+Handyman,Floor Repair and Replacement - Minor
+Handyman,Floor Repair and Replacement - Specialist
+Handyman,Gate Maintenance and Repair
+Handyman,Gate Maintenance and Repair - Specialist
+Handyman,General Carpentry
+Handyman,General Equipment Repair
+Handyman,Glass Repair or Replacement
+Handyman,"Glass Repair, Replacement, Tinting"
+Handyman,Glass Tinting
+Handyman,Guardrail Repair and Installation
+Handyman,Gutter Maintenance and Repair
+Handyman,Interior Painting
+Handyman,Loading Dock Repair and Replacement
+Handyman,Mechanical Repair
+Handyman,Overhead Door Repair - major
+Handyman,Overhead Door Repair - minor
+Handyman,Overhead Doors
+Handyman,Paint Machine Repair
+Handyman,"Painting, extra large"
+Handyman,"Painting, large"
+Handyman,"Painting, medium"
+Handyman,"Painting, small"
+Handyman,Pest Control
+Handyman,Pest Exclusion
+Handyman,Roof Repair and Maintenance
+Handyman,Securing Entry
+Handyman,Shelf Installation
+Handyman,Shopping Cart Repair
+Handyman,Sign Repair and Installation
+Handyman,Tile Repair and Replacement
+Handyman,Toilet Seat Replacement
+Handyman,Tree Removal
+Handyman,Trilogy Lock Installation
+Handyman,Wall Repair
+Handyman,Wall Replacement and Installation
+Inspections,Backflow Inspection
+Inspections,Building Preventative Maintenance
+Inspections,CAM Inspection
+Inspections,Dark Store Inspection
+Inspections,Electrical/Wiring Inspection
+Inspections,FLS Inspection
+Inspections,General Inspection
+Inspections,HVAC Inspection
+Inspections,Interior Inspection
+Inspections,Landscaping Inspection
+Inspections,Parking Lot Inspection
+Inspections,Roofing Inspection
+Irrigation,Backflow Maintenance
+Irrigation,Backflow Replacement
+Irrigation,Backflow Testing
+Irrigation,Controller Maintenance and Repair
+Irrigation,Directional Boring
+Irrigation,Drip Line Repairs
+Irrigation,Hand Watering
+Irrigation,Irrigation Installation
+Irrigation,Irrigation Line Repair and Replacement
+Irrigation,Irrigation Shutdown
+Irrigation,Irrigation Startup
+Irrigation,Irrigation Winterization
+Irrigation,Irrigation Wire Inspection and Repair
+Irrigation,Irrigation with Recycled Water System
+Irrigation,Lateral Line Repairs
+Irrigation,Leak Detection
+Irrigation,Main Line Repairs
+Irrigation,Smart Irrigation Controller Installation
+Irrigation,Smart Irrigation Controller Maintenance
+Irrigation,Sprinkler Head Replacement
+Irrigation,Tree Pruning
+Irrigation,Valve Repair and Replacement
+Irrigation,Valve Troubleshooting
+Irrigation,Wet Check
+Janitorial,Auto Scrub (Burnish)
+Janitorial,Auto Scrubs
+Janitorial,Bio-Hazard Cleaning
+Janitorial,Carpet Cleaning
+Janitorial,Carpet Cleaning - Large
+Janitorial,Carpet Cleaning - Small Area
+Janitorial,Ceiling Cleaning
+Janitorial,Concrete Floor Cleaning
+Janitorial,Cooler/Freezer Cleaning
+Janitorial,Deep Scrub
+Janitorial,Duct Cleaning
+Janitorial,Fixture Cleaning
+Janitorial,Janitorial Preventative Maintenance
+Janitorial,Laminate Floor Cleaning
+Janitorial,Mold Removal
+Janitorial,Restroom Cleaning
+Janitorial,Rodent Cleans
+Janitorial,Store Cleanup/Refresh
+Janitorial,Strip and Wax
+Janitorial,Tile Floor Cleaning
+Janitorial,Vent Cleaning
+Janitorial,Wall Cleaning
+Landscaping,Aeration
+Landscaping,Arborist Tree Maintenance
+Landscaping,Chemical Application - Weeds
+Landscaping,Chemical Applications - Disease/insects
+Landscaping,Fall Cleanup
+Landscaping,Fertilization
+Landscaping,Flower Installation
+Landscaping,Fountain Maintenance and Repair
+Landscaping,High Palm Tree Pruning
+Landscaping,High Tree Pruning
+Landscaping,Homeless Encampment Clean Up
+Landscaping,Irrigation Inspection
+Landscaping,Irrigation Startup
+Landscaping,Landscaping
+Landscaping,Leaf Cleanup
+Landscaping,Mowing
+Landscaping,Mulch Turning
+Landscaping,Mulching
+Landscaping,Native Mowing
+Landscaping,Overseeding
+Landscaping,Palm Tree Pruning
+Landscaping,Pest Control
+Landscaping,Pine Straw Installation
+Landscaping,Plant Material
+Landscaping,Retaining Wall Installation
+Landscaping,Retention Pond Maintenance
+Landscaping,River Rock Install
+Landscaping,Routine Landscaping Service
+Landscaping,Rust Treatment
+Landscaping,Shrub Fertilization
+Landscaping,Shrub Installation
+Landscaping,Shrub Pruning
+Landscaping,Shrub Removal
+Landscaping,Sod
+Landscaping,Spring Cleanup
+Landscaping,Storm Cleanup
+Landscaping,Top Dress Mulch
+Landscaping,Tree Fertilization
+Landscaping,Tree Installation
+Landscaping,Tree Limb Removal
+Landscaping,Tree Pruning
+Landscaping,Tree Removal
+Locksmith,Automatic Door Lock Repair and Replacement
+Locksmith,Display Case Lock Repair and Replacement
+Locksmith,Door Alarm Repair and Replacement
+Locksmith,Door Lock Installation and Replacement
+Locksmith,Door Replacement and Installation
+Locksmith,Emergency Exit Door Lock Repair and Replacement
+Locksmith,Gate Lock Removal and Replacement
+Locksmith,Lockbox Installation and Repair
+Locksmith,Mailbox Lock Repair and Replacement
+Locksmith,Propane Tank Lock Removal and Replace
+Locksmith,Re-Key
+Locksmith,Roof Hatch Lock Replacement
+Locksmith,Safe Installation and Repair
+Locksmith,Security Gate Lock Removal and Replacement
+Locksmith,Stuck Key
+Locksmith,Waste Corral Gate Lock Removal and Replacement
+Lot Sweeping,Parking Lot Sweeping - Manual
+Lot Sweeping,Parking Lot Sweeping - Truck
+Lot Sweeping,Recapturing / Recirculating
+Lot Sweeping,Routine Lot Sweeping Service
+Lot Sweeping,Routine Lotsweeping Service
+Lot Sweeping,Trash Removal - Beds
+Parking Lot Repair,Asphalt Milling
+Parking Lot Repair,Asphalt Paving
+Parking Lot Repair,Bollard Repair
+Parking Lot Repair,Bollard Replacement
+Parking Lot Repair,Cold Patch
+Parking Lot Repair,Concrete Construction
+Parking Lot Repair,Cracksealing
+Parking Lot Repair,Hot Patch
+Parking Lot Repair,Hot Patch - Large
+Parking Lot Repair,Hot Patch - Small
+Parking Lot Repair,Mill & Overlay
+Parking Lot Repair,Sealcoating
+Parking Lot Repair,Stabilization Services
+Parking Lot Repair,Striping
+Plumbing,Basic Clog
+Plumbing,Camera Inspection
+Plumbing,Domestic Backflow Inspection and Repair
+Plumbing,Drain Maintenance and Repair
+Plumbing,Extensive Clog
+Plumbing,Faucet/Sink Repair and Replacement
+Plumbing,Fire and Sprinkler Safety Backflow Repair
+Plumbing,Flush Valve Repair and Replacement
+Plumbing,Gas Leak (Urgent)
+Plumbing,Gas Piping
+Plumbing,General Plumbing
+Plumbing,Grease Trap
+Plumbing,Jetting
+Plumbing,Jetting with Trailer Jetter
+Plumbing,Leak Detection and Repair
+Plumbing,Leak Detection and Repair - Major
+Plumbing,Lift Station Maintenance
+Plumbing,Main Line Repair and Replacement
+Plumbing,Plumbing Preventative Maintenance
+Plumbing,Porta Potty/Hand Washing Rental
+Plumbing,Roof Drains
+Plumbing,Septic Pump Out
+Plumbing,Sewer Backup
+Plumbing,Sewer Backup - Major
+Plumbing,Sewer Maintenance
+Plumbing,Sewer Maintenance and Repair
+Plumbing,Sewer Repair
+Plumbing,Storm Drain Cleaning
+Plumbing,Sump Pump Preventative Maintenance
+Plumbing,Toilet/Urinal Repair and Replacement
+Plumbing,Water Heater Repair
+Plumbing,Water Heater Replacement
+Plumbing,Water Line Repair or Replace
+Pool Maintenance,Chemical Treatment
+Pool Maintenance,General Maintenance
+Pool Maintenance,Leak Detection and Repair
+Pool Maintenance,Pool Equipment Repair
+Portering,Cart Retrieval
+Portering,Cob Web Cleaning
+Portering,Eco Waste Clean Up
+Portering,Eco Waste Clean Up - Exterior
+Portering,Eco Waste Clean Up - Interior
+Portering,Graffiti Removal
+Portering,Large Debris Removal (Bulk Trash)
+Portering,Routine Portering Service
+Portering,Spot Cleaning
+Portering,Trash Can Cleaning
+Portering,Trash Can Liner Replacement
+Portering,Trash Removal
+Portering,Vacancy Cleaning
+Pressure Washing,Building Exterior Power Washing
+Pressure Washing,General Pressure Washing
+Pressure Washing,Pressure Wash Awning
+Pressure Washing,Pressure Wash Buses
+Pressure Washing,Pressure Wash Dumpster/Compactor Areas
+Pressure Washing,Pressure Wash Garden Center
+Pressure Washing,Pressure Wash Vehicles
+Pressure Washing,Pressure Wash Vestibule
+Pressure Washing,Pressure Wash and Degrease
+Pressure Washing,Pressure Wash with Algae Removal
+Pressure Washing,Pressure Washing with Water Reclamation
+Pressure Washing,Roof Pressure Washing
+Pressure Washing,Sidewalk Pressure Washing w/o Gum Removal
+Security,Alarm Installation and Repair
+Security,Automatic Security Gate Repair and Replacemenet
+Security,Fire watch
+Security,On Site Security Services
+Security,Security Camera Installation and Maintenance
+Security,Security Door Repair and Replacement
+Security,Security Gate Repair and Replacement
+Security,Security System Assessment
+Showroom Repair,Building Preventative Maintenance
+Showroom Repair,Showroom Preventative Maintenance
+Window Cleaning,Exterior Window Cleaning
+Window Cleaning,High Rise Window Cleaning
+Window Cleaning,Interior & Exterior Cleaning
+Window Cleaning,Interior Window Cleaning

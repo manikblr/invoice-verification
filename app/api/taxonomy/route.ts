@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export async function GET() {
   try {
@@ -61,6 +62,10 @@ export async function GET() {
       .from('service_types')
       .select('id, name, service_line_id')
       .order('name')
+
+    // Debug logging
+    console.log('[taxonomy] Fetched service lines:', serviceLines?.length || 0)
+    console.log('[taxonomy] Fetched service types:', serviceTypes?.length || 0)
 
     if (linesError || typesError) {
       console.warn('[taxonomy] DB error:', linesError || typesError)
