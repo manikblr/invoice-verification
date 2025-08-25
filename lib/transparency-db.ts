@@ -15,17 +15,18 @@ export class TransparencyDB {
   private supabase
 
   constructor() {
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const supabaseUrl = process.env.SUPABASE_URL
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.Supabase_Service_Key
+    
+    if (!supabaseUrl || !serviceKey) {
       console.warn('Supabase configuration missing for transparency features - using mock implementation')
+      console.warn('Required env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (or Supabase_Service_Key)')
       // Create a dummy client that won't be used during build
       this.supabase = null as any
       return
     }
     
-    this.supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
+    this.supabase = createClient(supabaseUrl, serviceKey)
   }
 
   private checkSupabaseConnection() {
