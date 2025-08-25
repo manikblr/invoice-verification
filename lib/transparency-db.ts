@@ -15,30 +15,43 @@ export class TransparencyDB {
   private supabase
 
   constructor() {
-    const supabaseUrl = process.env.SUPABASE_URL
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.Supabase_Service_Key
+    // Support multiple possible environment variable names used in the codebase
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 
+                      process.env.Supabase_Service_Key || 
+                      process.env.SUPABASE_ANON_KEY ||
+                      process.env.Supabase_Anon_Key
+    
+    console.log('TransparencyDB init - URL present:', !!supabaseUrl, 'Key present:', !!serviceKey)
+    console.log('Available env vars:', Object.keys(process.env).filter(k => k.includes('SUPABASE') || k.includes('Supabase')))
     
     if (!supabaseUrl || !serviceKey) {
       console.warn('Supabase configuration missing for transparency features - using mock implementation')
-      console.warn('Required env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (or Supabase_Service_Key)')
+      console.warn('Checked env vars: SUPABASE_URL, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, Supabase_Service_Key, SUPABASE_ANON_KEY, Supabase_Anon_Key')
       // Create a dummy client that won't be used during build
       this.supabase = null as any
       return
     }
     
     this.supabase = createClient(supabaseUrl, serviceKey)
+    console.log('TransparencyDB initialized successfully')
   }
 
-  private checkSupabaseConnection() {
+  private checkSupabaseConnection(): boolean {
     if (!this.supabase) {
-      throw new Error('Transparency features not available - Supabase configuration missing')
+      console.warn('Transparency features not available - Supabase configuration missing')
+      return false
     }
+    return true
   }
 
   // ========== Validation Sessions ==========
   
   async createValidationSession(session: Omit<ValidationSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    this.checkSupabaseConnection()
+    if (!this.checkSupabaseConnection()) {
+      // Return a mock ID when not connected
+      return `mock-session-${Date.now()}`
+    }
     const { data, error } = await this.supabase
       .from('validation_sessions')
       .insert([{
@@ -80,6 +93,10 @@ export class TransparencyDB {
   }
 
   async updateValidationSession(sessionId: string, updates: Partial<ValidationSession>): Promise<void> {
+    if (!this.checkSupabaseConnection()) {
+      console.log(`Mock: Update session ${sessionId}`)
+      return
+    }
     const { error } = await this.supabase
       .from('validation_sessions')
       .update({
