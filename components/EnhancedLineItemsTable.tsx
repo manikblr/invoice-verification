@@ -14,6 +14,7 @@ export default function EnhancedLineItemsTable({
   result, 
   className = '' 
 }: EnhancedLineItemsTableProps) {
+  console.log('🔍 EnhancedLineItemsTable rendered with result:', result)
   const [showAgentPipeline, setShowAgentPipeline] = useState(true) // Show by default
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
   const [filterStatus, setFilterStatus] = useState<'all' | 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT'>('all')
@@ -197,10 +198,10 @@ export default function EnhancedLineItemsTable({
         </div>
       </div>
 
-      {/* AI Agent Pipeline - Always Visible */}
+      {/* AI Agent Pipeline - Always Visible - UPDATED VERSION */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-lg font-semibold text-gray-900">🤖 AI Agent Pipeline</h4>
+          <h4 className="text-lg font-semibold text-gray-900">🤖 AI Agent Pipeline (v2.0 - Updated)</h4>
           <div className="text-sm text-gray-600">
             {result.executionSummary.totalAgents} agents • {result.totalExecutionTime}ms total
           </div>
