@@ -108,7 +108,6 @@ export default function UnifiedInvoiceForm() {
   }, [selectedServiceLineId, meta, setValue])
 
   const onSubmit = async (data: UnifiedInvoiceFormData) => {
-    console.log('🚀 Form submitted with useEnhancedValidation:', useEnhancedValidation)
     setIsSubmitting(true)
     setResult(null)
     setEnhancedResult(null)
@@ -136,9 +135,7 @@ export default function UnifiedInvoiceForm() {
           explanationLevel: 2 as const
         }
         
-        console.log('📤 Sending enhanced validation request:', enhancedPayload)
         const enhancedResponse = await validateInvoiceEnhanced(enhancedPayload)
-        console.log('📥 Enhanced validation response received:', enhancedResponse)
         setEnhancedResult(enhancedResponse)
       } else {
         // Fall back to standard validation
@@ -154,7 +151,7 @@ export default function UnifiedInvoiceForm() {
         setResult(response)
       }
     } catch (error) {
-      console.error('❌ Validation failed:', error)
+      console.error('Validation failed:', error)
       alert(`Failed to validate invoice: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsSubmitting(false)
@@ -511,10 +508,7 @@ export default function UnifiedInvoiceForm() {
 
       {/* Results Display */}
       {enhancedResult && (
-        <>
-          {console.log('✅ Rendering EnhancedLineItemsTable with result:', enhancedResult)}
-          <EnhancedLineItemsTable result={enhancedResult} />
-        </>
+        <EnhancedLineItemsTable result={enhancedResult} />
       )}
       
       {result && !enhancedResult && (

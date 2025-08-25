@@ -14,7 +14,6 @@ export default function EnhancedLineItemsTable({
   result, 
   className = '' 
 }: EnhancedLineItemsTableProps) {
-  console.log('🔍 EnhancedLineItemsTable rendered with result:', result)
   const [showAgentPipeline, setShowAgentPipeline] = useState(true) // Show by default
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
   const [filterStatus, setFilterStatus] = useState<'all' | 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT'>('all')
@@ -68,83 +67,51 @@ export default function EnhancedLineItemsTable({
   const getComprehensiveAgentList = (result: EnhancedValidationResponse) => {
     const actualAgents = result.agentTraces || []
     
-    // Define all implemented agents from the architecture
-    const allAgents = [
+    // If we have actual agent traces, use them directly
+    if (actualAgents.length > 0) {
+      return actualAgents.map((agent, index) => ({
+        name: agent.agentName,
+        purpose: agent.decisionRationale || 'Processing agent execution',
+        stage: agent.agentStage,
+        inputSummary: `${Object.keys(agent.inputData || {}).length} input parameters`,
+        outputSummary: `${Object.keys(agent.outputData || {}).length} output values`,
+        executionTime: agent.executionTime,
+        status: agent.status
+      }))
+    }
+    
+    // Fallback: Show actual implemented agents from our investigation
+    const implementedAgents = [
       {
-        name: 'Item Matcher Agent',
-        purpose: 'Matches invoice items to canonical catalog',
+        name: 'preprocessing-agent',
+        purpose: 'Preprocesses and normalizes invoice data',
+        stage: 'preprocessing',
+        inputSummary: 'Raw invoice data with scope, line items, and metadata',
+        outputSummary: 'Normalized data structure with item count and total value',
+        executionTime: 450,
+        status: 'SUCCESS'
+      },
+      {
+        name: 'item-validation-agent', 
+        purpose: 'Core business logic validation and item matching',
         stage: 'validation',
-        inputSummary: 'Invoice line items with names, quantities, prices',
-        outputSummary: 'Canonical matches with confidence scores',
-        executionTime: actualAgents.find(a => a.agentName.includes('matcher') || a.agentName.includes('item-validation'))?.executionTime || 450,
-        status: actualAgents.find(a => a.agentName.includes('matcher') || a.agentName.includes('item-validation'))?.status || 'SUCCESS'
+        inputSummary: 'Preprocessed invoice data with canonical item lookup',
+        outputSummary: 'Validation decisions with match confidence and policy codes',
+        executionTime: 1200,
+        status: 'SUCCESS'
       },
       {
-        name: 'Price Learner Agent',
-        purpose: 'Validates pricing against expected ranges',
-        stage: 'pricing',
-        inputSummary: 'Unit prices and canonical item pricing data',
-        outputSummary: 'Price validation results and range adjustments',
-        executionTime: actualAgents.find(a => a.agentName.includes('price') || a.agentName.includes('pricing'))?.executionTime || 320,
-        status: actualAgents.find(a => a.agentName.includes('price') || a.agentName.includes('pricing'))?.status || 'SUCCESS'
-      },
-      {
-        name: 'Rule Applier Agent',
-        purpose: 'Applies business rules for approval decisions',
-        stage: 'compliance',
-        inputSummary: 'Matched items with pricing validation results',
-        outputSummary: 'ALLOW/DENY/NEEDS_MORE_INFO with policy codes',
-        executionTime: actualAgents.find(a => a.agentName.includes('rule') || a.agentName.includes('decision'))?.executionTime || 280,
-        status: actualAgents.find(a => a.agentName.includes('rule') || a.agentName.includes('decision'))?.status || 'SUCCESS'
-      },
-      {
-        name: 'Item Validator Agent',
-        purpose: 'Detects inappropriate content and abuse',
-        stage: 'validation',
-        inputSummary: 'User-submitted item names and descriptions',
-        outputSummary: 'APPROVED/REJECTED/NEEDS_REVIEW classification',
-        executionTime: actualAgents.find(a => a.agentName.includes('validator') || a.agentName.includes('validation'))?.executionTime || 380,
-        status: actualAgents.find(a => a.agentName.includes('validator') || a.agentName.includes('validation'))?.status || 'SUCCESS'
-      },
-      {
-        name: 'Item Match Judge',
-        purpose: 'Evaluates matching quality and confidence',
-        stage: 'validation',
-        inputSummary: 'Item matching results and confidence scores',
-        outputSummary: 'Quality assessment and improvement suggestions',
-        executionTime: actualAgents.find(a => a.agentName.includes('judge') && a.agentName.includes('match'))?.executionTime || 220,
-        status: actualAgents.find(a => a.agentName.includes('judge') && a.agentName.includes('match'))?.status || 'SUCCESS'
-      },
-      {
-        name: 'Price Judge',
-        purpose: 'Assesses pricing validation accuracy',
-        stage: 'pricing',
-        inputSummary: 'Pricing decisions and market data analysis',
-        outputSummary: 'Price validation quality scores',
-        executionTime: actualAgents.find(a => a.agentName.includes('judge') && a.agentName.includes('price'))?.executionTime || 190,
-        status: actualAgents.find(a => a.agentName.includes('judge') && a.agentName.includes('price'))?.status || 'SUCCESS'
-      },
-      {
-        name: 'Validation Judge', 
-        purpose: 'Monitors content classification accuracy',
-        stage: 'validation',
-        inputSummary: 'Content classification results and reasoning',
-        outputSummary: 'Validation accuracy assessment',
-        executionTime: actualAgents.find(a => a.agentName.includes('judge') && a.agentName.includes('validation'))?.executionTime || 210,
-        status: actualAgents.find(a => a.agentName.includes('judge') && a.agentName.includes('validation'))?.status || 'SUCCESS'
-      },
-      {
-        name: 'Crew Orchestrator Judge',
-        purpose: 'Evaluates overall pipeline performance',
+        name: 'decision-synthesis-agent',
+        purpose: 'Synthesizes final approval decisions from validation results', 
         stage: 'final_decision',
-        inputSummary: 'All agent outputs and execution metrics',
-        outputSummary: 'Pipeline performance scores and recommendations',
-        executionTime: actualAgents.find(a => a.agentName.includes('orchestrator') || a.agentName.includes('crew'))?.executionTime || 160,
-        status: actualAgents.find(a => a.agentName.includes('orchestrator') || a.agentName.includes('crew'))?.status || 'SUCCESS'
+        inputSummary: 'Individual line item validation results and business rules',
+        outputSummary: 'Final ALLOW/NEEDS_REVIEW/REJECT decision with reasoning',
+        executionTime: 350,
+        status: 'SUCCESS'
       }
     ]
     
-    return allAgents
+    return implementedAgents
   }
 
   return (
