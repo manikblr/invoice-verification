@@ -8,6 +8,7 @@ export default function Navigation() {
   
   const navItems = [
     { href: '/', label: 'Home', description: 'Main invoice form' },
+    { href: '/history', label: 'History', description: 'Validation history and transparency' },
     { href: '/admin', label: 'Admin', description: 'Admin dashboard and monitoring' },
   ]
   
