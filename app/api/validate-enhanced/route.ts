@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
 
     // Update session with final results
     await transparencyDB.updateValidationSession(sessionId, {
-      validationResults: validationResult,
+      validationResults: validationResult as any, // Type assertion for enhanced result structure
       overallStatus: validationResult.overallDecision,
       totalExecutionTime: Date.now() - startTime
     })

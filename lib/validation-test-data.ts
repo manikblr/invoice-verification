@@ -2,19 +2,17 @@
 import { EnhancedValidationRequest } from './types/transparency'
 
 export const sampleEnhancedRequest: EnhancedValidationRequest = {
-  invoiceData: {
-    scopeOfWork: "Office renovation project - electrical and plumbing upgrades",
-    serviceLineId: 1,
-    serviceTypeId: 1,
-    laborHours: 24,
-    items: [
+  scopeOfWork: "Office renovation project - electrical and plumbing upgrades",
+  serviceLineId: 1,
+  serviceTypeId: 1,
+  laborHours: 24,
+  items: [
       {
         name: "Industrial LED light fixtures",
         quantity: 12,
         unitPrice: 85.50,
         unit: "pcs",
-        type: "equipment",
-        additionalContext: "High-efficiency LED fixtures for conference rooms"
+        type: "equipment"
       },
       {
         name: "Electrical conduit piping",
@@ -30,13 +28,10 @@ export const sampleEnhancedRequest: EnhancedValidationRequest = {
         unit: "pcs",
         type: "material"
       }
-    ]
-  },
-  options: {
-    includeExplanations: true,
-    includeAgentTrace: true,
-    detailLevel: "detailed"
-  }
+    ],
+  includeAgentTraces: true,
+  includeDetailedExplanations: true,
+  explanationLevel: 2
 }
 
 export const sampleMockResponse = {
