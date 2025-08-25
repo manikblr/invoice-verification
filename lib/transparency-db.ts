@@ -16,7 +16,10 @@ export class TransparencyDB {
 
   constructor() {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      throw new Error('Supabase configuration missing for transparency features')
+      console.warn('Supabase configuration missing for transparency features - using mock implementation')
+      // Create a dummy client that won't be used during build
+      this.supabase = null as any
+      return
     }
     
     this.supabase = createClient(
@@ -25,9 +28,16 @@ export class TransparencyDB {
     )
   }
 
+  private checkSupabaseConnection() {
+    if (!this.supabase) {
+      throw new Error('Transparency features not available - Supabase configuration missing')
+    }
+  }
+
   // ========== Validation Sessions ==========
   
   async createValidationSession(session: Omit<ValidationSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    this.checkSupabaseConnection()
     const { data, error } = await this.supabase
       .from('validation_sessions')
       .insert([{
@@ -595,5 +605,20 @@ export class TransparencyDB {
   }
 }
 
-// Export singleton instance
-export const transparencyDB = new TransparencyDB()
+// Export lazy singleton instance
+let _transparencyDB: TransparencyDB | null = null
+
+function getTransparencyDB(): TransparencyDB {
+  if (!_transparencyDB) {
+    _transparencyDB = new TransparencyDB()
+  }
+  return _transparencyDB
+}
+
+export const transparencyDB = new Proxy({} as TransparencyDB, {
+  get(target, prop) {
+    const db = getTransparencyDB()
+    const value = (db as any)[prop]
+    return typeof value === 'function' ? value.bind(db) : value
+  }
+})
