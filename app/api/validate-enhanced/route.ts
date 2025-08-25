@@ -12,6 +12,8 @@ import {
 } from '@/lib/types/transparency'
 import { validateUnifiedInvoice } from '@/lib/api'
 import { generateExplanationForItem, generateMockDecisionFactors } from '@/lib/explanation-templates'
+import { enhancedRuleAgent, RuleContext } from '@/lib/rule-engine/rule-agent'
+import { explanationAgent } from '@/lib/explanation/explanation-agent'
 
 export const dynamic = 'force-dynamic'
 
@@ -172,10 +174,6 @@ async function executeValidationWithTracing(
   const pipelineStart = new Date()
   
   try {
-    // Import the agent implementations
-    const { enhancedRuleAgent, RuleContext } = await import('@/lib/rule-engine/rule-agent')
-    const { explanationAgent } = await import('@/lib/explanation/explanation-agent')
-    
     // Process each item through the agent pipeline
     const processedItems = []
     
@@ -192,7 +190,7 @@ async function executeValidationWithTracing(
       
       await tracker.recordExecution(
         'Pre-Validation Agent',
-        'pre_validation',
+        'preprocessing',
         { itemName: item.name, itemType: item.type },
         preValidationResult,
         preValidationStart,
@@ -258,7 +256,7 @@ async function executeValidationWithTracing(
       
       await tracker.recordExecution(
         'Item Matcher Agent',
-        'validation',
+        'item_matching',
         { itemName: item.name, searchQuery: item.name },
         itemMatcherResult,
         itemMatcherStart,
@@ -280,7 +278,7 @@ async function executeValidationWithTracing(
         
         await tracker.recordExecution(
           'Web Search & Ingest Agent',
-          'ingestion',
+          'preprocessing',
           { itemName: item.name, matchConfidence: itemMatcherResult.confidence },
           webSearchResult,
           webSearchStart,
@@ -362,7 +360,7 @@ async function executeValidationWithTracing(
         
         await tracker.recordExecution(
           'Explanation Agent',
-          'explanation',
+          'final_decision',
           { itemName: item.name, prompt: ruleResult.explanationPrompt },
           explanationResult,
           explanationStart,
@@ -401,7 +399,7 @@ async function executeValidationWithTracing(
     // Record the full pipeline execution
     await tracker.recordExecution(
       'Full Agent Pipeline',
-      'orchestration',
+      'final_decision',
       {
         scopeOfWork: request.scopeOfWork,
         itemCount: request.items.length,
