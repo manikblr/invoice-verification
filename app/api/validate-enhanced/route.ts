@@ -172,11 +172,16 @@ async function executeValidationWithTracing(
   const crewAIStart = new Date()
   
   try {
-    // Call the actual CrewAI agent pipeline
+    // Call the actual CrewAI agent pipeline with timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
     const crewAIResponse = await fetch('/api/agent_run_crew', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-User': 'enhanced-validation-api',
+        'X-Invoice-ID': invoiceId,
       },
       body: JSON.stringify({
         invoiceId: invoiceId,
@@ -189,8 +194,11 @@ async function executeValidationWithTracing(
           quantity: item.quantity,
           unit_price: item.unitPrice
         }))
-      })
+      }),
+      signal: controller.signal
     })
+
+    clearTimeout(timeoutId)
 
     if (!crewAIResponse.ok) {
       throw new Error(`CrewAI pipeline failed: ${crewAIResponse.status} ${crewAIResponse.statusText}`)
@@ -312,7 +320,7 @@ async function executeValidationWithTracing(
     }
 
   } catch (error) {
-    console.error('CrewAI pipeline failed, falling back to standard validation:', error)
+    console.error('CrewAI pipeline failed - no fallback available:', error)
     
     // Record the failure
     await tracker.recordExecution(
@@ -324,15 +332,23 @@ async function executeValidationWithTracing(
       new Date(),
       'FAILED',
       {
-        conclusion: 'CrewAI pipeline failed, using fallback',
+        conclusion: 'CrewAI pipeline failed - validation terminated',
         confidence: 0.0,
         toolsUsed: [],
         dataSources: []
       }
     )
 
-    // Fallback to standard validation
-    return await executeFallbackValidation(request, tracker)
+    // No fallback - provide detailed error messages based on error type
+    if (error.name === 'AbortError') {
+      throw new Error('CrewAI pipeline timeout: The agent pipeline took longer than 30 seconds to complete. Please try again or contact support if this persists.')
+    }
+    
+    if (error.message?.includes('fetch')) {
+      throw new Error('CrewAI pipeline unavailable: The agent pipeline service is currently unavailable. Enhanced validation requires all agents to be operational.')
+    }
+    
+    throw new Error(`CrewAI pipeline validation failed: ${error.message}. Enhanced validation requires the full agent pipeline to be operational.`)
   }
 }
 
@@ -634,71 +650,3 @@ function mapPolicyToValidationStatus(policy: string): ValidationStatus {
   }
 }
 
-// Fallback validation when CrewAI pipeline fails
-async function executeFallbackValidation(request: EnhancedValidationRequest, tracker: AgentExecutionTracker) {
-  console.log('Executing fallback validation...')
-  
-  const fallbackStart = new Date()
-  
-  // Use the standard validation as fallback
-  const standardResult = await validateUnifiedInvoice(
-    {
-      scope_of_work: request.scopeOfWork,
-      service_line_id: request.serviceLineId,
-      service_type_id: request.serviceTypeId,
-      labor_hours: request.laborHours,
-      items: request.items
-    },
-    true // always save
-  )
-  
-  const fallbackEnd = new Date()
-
-  await tracker.recordExecution(
-    'Fallback Validation',
-    'validation',
-    request,
-    standardResult,
-    fallbackStart,
-    fallbackEnd,
-    'SUCCESS',
-    {
-      conclusion: 'Used standard validation as fallback',
-      confidence: 0.7,
-      toolsUsed: ['standard-validator'],
-      dataSources: ['policy-rules']
-    }
-  )
-
-  // Transform to enhanced format
-  const lines = standardResult.lines.map(line => ({
-    type: line.type,
-    input: line.input,
-    status: mapStatusToValidationStatus(line.status),
-    reasonCodes: line.reason_codes,
-    confidenceScore: 0.7,
-    explanation: {
-      summary: `${line.status} - Fallback validation`,
-      detailed: 'Used standard validation due to CrewAI pipeline unavailability',
-      technical: `Status: ${line.status}, Codes: ${line.reason_codes.join(', ')}`,
-      reasoning: line.reason_codes,
-      confidence: 0.7,
-      primaryFactors: line.reason_codes,
-      riskFactors: []
-    },
-    decisionFactors: [],
-    agentContributions: []
-  }))
-
-  return {
-    overallDecision: mapStatusToValidationStatus(standardResult.invoice_status),
-    summary: {
-      totalLines: standardResult.summary.total_lines,
-      allow: standardResult.summary.allow,
-      needsReview: standardResult.summary.needs_review,
-      reject: standardResult.summary.reject
-    },
-    lines,
-    executionTime: fallbackEnd.getTime() - fallbackStart.getTime()
-  }
-}

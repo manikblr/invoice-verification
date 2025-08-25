@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { getMeta, validateUnifiedInvoice } from '../lib/api'
 import { validateInvoiceEnhanced } from '../lib/transparency-api'
@@ -240,6 +240,32 @@ export default function UnifiedInvoiceForm() {
     )
   }
 
+  // Handle keyboard shortcuts for adding items
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl/Cmd + Enter to add new item
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault()
+        appendItem({ name: '', quantity: 1, unit: 'pcs', unit_price: 0, needsInfo: false })
+        // Smooth scroll and focus logic
+        setTimeout(() => {
+          const newIndex = itemFields.length
+          const newItemElement = document.querySelector(`[data-item-index="${newIndex}"]`)
+          if (newItemElement) {
+            newItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            const nameInput = newItemElement.querySelector('input[placeholder*="Search materials"]')
+            if (nameInput) {
+              (nameInput as HTMLInputElement).focus()
+            }
+          }
+        }, 100)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [itemFields.length, appendItem])
+
   if (!meta) {
     return <div className="text-center">Loading...</div>
   }
@@ -314,28 +340,43 @@ export default function UnifiedInvoiceForm() {
 
         {/* Unified Items Section */}
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             <div>
               <h3 className="text-lg font-medium text-gray-900">Materials & Equipment</h3>
               <p className="text-sm text-gray-500 mt-1">
                 Search for any materials or equipment - the system will automatically categorize them
+                <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded border">
+                  💡 Tip: Press <kbd className="font-mono text-xs">Ctrl+Enter</kbd> to add new item
+                </span>
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => appendItem({ name: '', quantity: 1, unit: 'pcs', unit_price: 0, needsInfo: false })}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              Add Item
-            </button>
           </div>
           
           <div className="space-y-3">
             {itemFields.map((field, index) => {
               const currentItem = watch(`items.${index}`)
               return (
-                <div key={field.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-                  <div className="grid grid-cols-1 lg:grid-cols-6 gap-3 items-end">
+                <div key={field.id} className="p-4 border border-gray-200 rounded-lg bg-gray-50" data-item-index={index}>
+                  {/* Item Number Header */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+                        {index + 1}
+                      </span>
+                      <span className="text-sm font-medium text-gray-700">Item #{index + 1}</span>
+                    </div>
+                    {itemFields.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeItem(index)}
+                        className="text-xs text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                      >
+                        × Remove
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 items-end">
                     {/* Item Name Search */}
                     <div className="lg:col-span-2">
                       <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -411,17 +452,6 @@ export default function UnifiedInvoiceForm() {
                       />
                     </div>
 
-                    {/* Remove Button */}
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(index)}
-                        className="w-full px-3 py-2 bg-red-500 text-white rounded text-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-                        disabled={itemFields.length === 1}
-                      >
-                        Remove
-                      </button>
-                    </div>
                   </div>
 
                   {/* Item Summary */}
@@ -445,6 +475,35 @@ export default function UnifiedInvoiceForm() {
                 </div>
               )
             })}
+          </div>
+          
+          {/* Add Item Button - Moved to bottom */}
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={() => {
+                appendItem({ name: '', quantity: 1, unit: 'pcs', unit_price: 0, needsInfo: false })
+                // Smooth scroll to new item and focus on name input
+                setTimeout(() => {
+                  const newIndex = itemFields.length
+                  const newItemElement = document.querySelector(`[data-item-index="${newIndex}"]`)
+                  if (newItemElement) {
+                    newItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    // Focus on the name input field
+                    const nameInput = newItemElement.querySelector('input[placeholder*="Search materials"]')
+                    if (nameInput) {
+                      (nameInput as HTMLInputElement).focus()
+                    }
+                  }
+                }, 100)
+              }}
+              className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg transition-all duration-200 hover:scale-110"
+              title="Add new item"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </button>
           </div>
         </div>
 

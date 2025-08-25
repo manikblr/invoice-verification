@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { AgentExecution, ExecutionSummary } from '@/lib/types/transparency'
+import AgentTooltip from './AgentTooltip'
+import TextExpandOnHover from './TextExpandOnHover'
 
 interface AgentPipelineVisualizationProps {
   agentExecutions: AgentExecution[]
@@ -151,7 +153,11 @@ export default function AgentPipelineVisualization({
                         <span className="text-sm">{getStatusIcon(agent.status)}</span>
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900">{agent.agentName}</div>
+                        <AgentTooltip agentName={agent.agentName} agentExecution={agent}>
+                          <div className="font-medium text-blue-600 hover:text-blue-800 cursor-help border-b border-dotted border-blue-300">
+                            {agent.agentName}
+                          </div>
+                        </AgentTooltip>
                         <div className="text-xs text-gray-600">{agent.agentVersion}</div>
                       </div>
                       <span className={`px-2 py-1 text-xs rounded border ${getStageColor(agent.agentStage)}`}>
@@ -188,7 +194,12 @@ export default function AgentPipelineVisualization({
                       {agent.decisionRationale && (
                         <div className="mt-3">
                           <h5 className="font-medium text-gray-900 mb-1">Decision Rationale</h5>
-                          <p className="text-gray-700">{agent.decisionRationale}</p>
+                          <TextExpandOnHover 
+                            text={agent.decisionRationale}
+                            maxLength={150}
+                            className="text-gray-700"
+                            showCopyButton={true}
+                          />
                         </div>
                       )}
                       
@@ -230,7 +241,11 @@ export default function AgentPipelineVisualization({
                     <div key={agent.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                       <div className="flex items-center space-x-2">
                         <span>{getStatusIcon(agent.status)}</span>
-                        <span className="font-medium">{agent.agentName}</span>
+                        <AgentTooltip agentName={agent.agentName} agentExecution={agent}>
+                          <span className="font-medium text-blue-600 hover:text-blue-800 cursor-help border-b border-dotted border-blue-300">
+                            {agent.agentName}
+                          </span>
+                        </AgentTooltip>
                       </div>
                       <div className="flex items-center space-x-3 text-xs text-gray-500">
                         <span>{formatDuration(agent.executionTime)}</span>

@@ -14,7 +14,6 @@ export default function EnhancedLineItemsTable({
   result, 
   className = '' 
 }: EnhancedLineItemsTableProps) {
-  const [showAgentPipeline, setShowAgentPipeline] = useState(true) // Show by default
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
   const [filterStatus, setFilterStatus] = useState<'all' | 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT'>('all')
 
@@ -63,65 +62,6 @@ export default function EnhancedLineItemsTable({
     }
   }
 
-  // Generate comprehensive agent list based on actual implementation
-  const getComprehensiveAgentList = (result: EnhancedValidationResponse) => {
-    const actualAgents = result.agentTraces || []
-    
-    // If we have actual agent traces, use them directly
-    if (actualAgents.length > 0) {
-      return actualAgents.map((agent, index) => ({
-        name: agent.agentName,
-        purpose: agent.decisionRationale || 'Processing agent execution',
-        stage: agent.agentStage,
-        inputSummary: `${Object.keys(agent.inputData || {}).length} input parameters`,
-        outputSummary: `${Object.keys(agent.outputData || {}).length} output values`,
-        executionTime: agent.executionTime,
-        status: agent.status
-      }))
-    }
-    
-    // Show the actual CrewAI agents that should be running (full pipeline)
-    const fullCrewAIAgents = [
-      {
-        name: 'Item Matcher Agent',
-        purpose: 'Matches invoice line items to canonical catalog items using hybrid search',
-        stage: 'validation',
-        inputSummary: 'Invoice line item descriptions, quantities, and metadata',
-        outputSummary: 'Canonical item matches with confidence scores and match types',
-        executionTime: 850,
-        status: 'SUCCESS'
-      },
-      {
-        name: 'Price Learner Agent', 
-        purpose: 'Validates unit prices against expected ranges and learns pricing patterns',
-        stage: 'pricing',
-        inputSummary: 'Canonical item IDs, unit prices, and historical pricing data',
-        outputSummary: 'Price validation results and range adjustment proposals',
-        executionTime: 620,
-        status: 'SUCCESS'
-      },
-      {
-        name: 'Rule Applier Agent',
-        purpose: 'Applies 7+ deterministic business rules to determine approval status',
-        stage: 'compliance',
-        inputSummary: 'Match results, price validation, and business policy data',
-        outputSummary: 'ALLOW/DENY/NEEDS_MORE_INFO decisions with policy codes',
-        executionTime: 480,
-        status: 'SUCCESS'
-      },
-      {
-        name: 'Item Validator Agent',
-        purpose: 'Validates user submissions for inappropriate content and abuse detection',
-        stage: 'validation',
-        inputSummary: 'User-submitted item names and descriptions for content analysis',
-        outputSummary: 'APPROVED/REJECTED/NEEDS_REVIEW content classification',
-        executionTime: 390,
-        status: 'SUCCESS'
-      }
-    ]
-    
-    return fullCrewAIAgents
-  }
 
   return (
     <div className={`mt-8 space-y-6 ${className}`}>
@@ -174,103 +114,6 @@ export default function EnhancedLineItemsTable({
         </div>
       </div>
 
-      {/* AI Agent Pipeline - Always Visible - UPDATED VERSION */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="text-lg font-semibold text-gray-900">🤖 AI Agent Pipeline (v2.0 - Updated)</h4>
-          <div className="text-sm text-gray-600">
-            {result.executionSummary.totalAgents} agents • {result.totalExecutionTime}ms total
-          </div>
-        </div>
-        
-        {/* Comprehensive Agent Details Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-2 font-medium text-gray-900">#</th>
-                <th className="text-left py-3 px-2 font-medium text-gray-900">Agent Name</th>
-                <th className="text-left py-3 px-2 font-medium text-gray-900">Stage</th>
-                <th className="text-left py-3 px-2 font-medium text-gray-900">Input Summary</th>
-                <th className="text-left py-3 px-2 font-medium text-gray-900">Output Summary</th>
-                <th className="text-left py-3 px-2 font-medium text-gray-900">Speed</th>
-                <th className="text-left py-3 px-2 font-medium text-gray-900">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {getComprehensiveAgentList(result).map((agent, index) => (
-                <tr key={agent.name} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-3 px-2 text-gray-600 font-mono">{index + 1}</td>
-                  <td className="py-3 px-2">
-                    <div className="font-medium text-gray-900">{agent.name}</div>
-                    <div className="text-xs text-gray-500">{agent.purpose}</div>
-                  </td>
-                  <td className="py-3 px-2">
-                    <span className={`px-2 py-1 text-xs rounded border ${
-                      agent.stage === 'preprocessing' ? 'bg-blue-100 border-blue-300 text-blue-800' :
-                      agent.stage === 'validation' ? 'bg-green-100 border-green-300 text-green-800' :
-                      agent.stage === 'pricing' ? 'bg-purple-100 border-purple-300 text-purple-800' :
-                      agent.stage === 'compliance' ? 'bg-orange-100 border-orange-300 text-orange-800' :
-                      agent.stage === 'final_decision' ? 'bg-red-100 border-red-300 text-red-800' :
-                      'bg-gray-100 border-gray-300 text-gray-800'
-                    }`}>
-                      {agent.stage.replace(/_/g, ' ')}
-                    </span>
-                  </td>
-                  <td className="py-3 px-2">
-                    <div className="text-xs text-gray-600 max-w-48 truncate">{agent.inputSummary}</div>
-                  </td>
-                  <td className="py-3 px-2">
-                    <div className="text-xs text-gray-600 max-w-48 truncate">{agent.outputSummary}</div>
-                  </td>
-                  <td className="py-3 px-2 font-mono text-xs">
-                    <div className={`inline-flex items-center ${
-                      agent.executionTime > 1000 ? 'text-red-600' :
-                      agent.executionTime > 500 ? 'text-amber-600' :
-                      'text-green-600'
-                    }`}>
-                      {agent.executionTime < 1000 ? `${agent.executionTime}ms` : `${(agent.executionTime/1000).toFixed(1)}s`}
-                    </div>
-                  </td>
-                  <td className="py-3 px-2">
-                    <span className={`inline-flex items-center ${
-                      agent.status === 'SUCCESS' ? 'text-green-600' :
-                      agent.status === 'FAILED' ? 'text-red-600' :
-                      'text-gray-600'
-                    }`}>
-                      {agent.status === 'SUCCESS' ? '✅' :
-                       agent.status === 'FAILED' ? '❌' :
-                       agent.status === 'TIMEOUT' ? '⏱️' : '❓'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Pipeline Performance Summary */}
-        <div className="mt-4 p-3 bg-gray-50 rounded border">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="text-center">
-              <div className="font-medium text-gray-900">{result.executionSummary.totalAgents}</div>
-              <div className="text-gray-600">Total Agents</div>
-            </div>
-            <div className="text-center">
-              <div className="font-medium text-gray-900">{Math.round(result.executionSummary.averageConfidence * 100)}%</div>
-              <div className="text-gray-600">Avg Confidence</div>
-            </div>
-            <div className="text-center">
-              <div className="font-medium text-gray-900">{result.executionSummary.errorCount}</div>
-              <div className="text-gray-600">Errors</div>
-            </div>
-            <div className="text-center">
-              <div className="font-medium text-gray-900">{result.totalExecutionTime}ms</div>
-              <div className="text-gray-600">Total Time</div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Detailed Agent Pipeline Visualization */}
       {result.agentTraces && (

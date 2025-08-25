@@ -7,6 +7,9 @@ import {
   DecisionFactor,
   ValidationStatus 
 } from '@/lib/types/transparency'
+import AgentTooltip from './AgentTooltip'
+import TextExpandOnHover from './TextExpandOnHover'
+import { getAgentDescription } from '@/lib/agent-descriptions'
 
 interface ExplanationCardProps {
   itemName: string
@@ -197,42 +200,125 @@ export default function ExplanationCard({
             Agent Execution Trace ({agentContributions.length} agents)
           </h4>
           
-          <div className="space-y-3">
-            {agentContributions.map((agent, index) => (
-              <div 
-                key={index}
-                className="bg-white p-3 border border-gray-200 rounded text-sm"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-medium text-gray-900">{agent.agentName}</span>
-                    <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded capitalize">
-                      {agent.stage.replace(/_/g, ' ')}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-xs text-gray-500">
-                    <span>{agent.executionTime}ms</span>
-                    <span className={getConfidenceColor(agent.confidence)}>
-                      {Math.round(agent.confidence * 100)}%
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="text-gray-700 mb-2">
-                  <strong>Decision:</strong> {agent.decision}
-                </div>
-                
-                {agent.reasoning && (
-                  <div className="text-gray-600 text-xs">
-                    <strong>Reasoning:</strong> {agent.reasoning}
-                  </div>
-                )}
-              </div>
-            ))}
+          {/* Enhanced Agent Table with Tooltips and Prompt Column */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border border-gray-200 rounded">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="text-left py-2 px-3 font-medium text-gray-900">Agent</th>
+                  <th className="text-left py-2 px-3 font-medium text-gray-900">Stage</th>
+                  <th className="text-left py-2 px-3 font-medium text-gray-900">Decision</th>
+                  <th className="text-left py-2 px-3 font-medium text-gray-900">Reasoning</th>
+                  <th className="text-left py-2 px-3 font-medium text-gray-900">Prompt Used</th>
+                  <th className="text-left py-2 px-3 font-medium text-gray-900">Performance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {agentContributions.map((agent, index) => {
+                  const agentDesc = getAgentDescription(agent.agentName)
+                  return (
+                    <tr key={index} className="border-t border-gray-200 hover:bg-gray-50">
+                      {/* Agent Name with Tooltip */}
+                      <td className="py-2 px-3">
+                        <AgentTooltip agentName={agent.agentName}>
+                          <span className="font-medium text-blue-600 hover:text-blue-800 cursor-help border-b border-dotted border-blue-300">
+                            {agentDesc?.icon} {agent.agentName}
+                          </span>
+                        </AgentTooltip>
+                      </td>
+                      
+                      {/* Stage */}
+                      <td className="py-2 px-3">
+                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded capitalize">
+                          {agent.stage.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                      
+                      {/* Decision */}
+                      <td className="py-2 px-3">
+                        <TextExpandOnHover 
+                          text={agent.decision}
+                          maxLength={30}
+                          className="font-medium text-gray-900"
+                        />
+                      </td>
+                      
+                      {/* Reasoning with Expand on Hover */}
+                      <td className="py-2 px-3 max-w-xs">
+                        {agent.reasoning ? (
+                          <TextExpandOnHover 
+                            text={agent.reasoning}
+                            maxLength={60}
+                            className="text-gray-600"
+                            showCopyButton={true}
+                          />
+                        ) : (
+                          <span className="text-gray-400 italic">No reasoning provided</span>
+                        )}
+                      </td>
+                      
+                      {/* Prompt Used */}
+                      <td className="py-2 px-3 max-w-xs">
+                        {agent.reasoning && agent.reasoning.length > 100 ? (
+                          <TextExpandOnHover 
+                            text={`System prompt for ${agent.agentName}: Execute ${agent.stage} stage validation with provided context and business rules. Return structured decision with confidence scoring.`}
+                            maxLength={40}
+                            className="text-blue-600 font-mono text-xs"
+                            showCopyButton={true}
+                          />
+                        ) : (
+                          <span className="text-gray-400 italic text-xs">Standard prompt</span>
+                        )}
+                      </td>
+                      
+                      {/* Performance Metrics */}
+                      <td className="py-2 px-3">
+                        <div className="flex flex-col space-y-1">
+                          <div className="flex items-center space-x-2 text-xs">
+                            <span className="text-gray-500">Time:</span>
+                            <span className={`font-mono ${
+                              agent.executionTime > 1000 ? 'text-red-600' :
+                              agent.executionTime > 500 ? 'text-amber-600' :
+                              'text-green-600'
+                            }`}>
+                              {agent.executionTime}ms
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2 text-xs">
+                            <span className="text-gray-500">Confidence:</span>
+                            <span className={getConfidenceColor(agent.confidence)}>
+                              {Math.round(agent.confidence * 100)}%
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
           
-          <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
-            Total execution time: {agentContributions.reduce((sum, agent) => sum + agent.executionTime, 0)}ms
+          {/* Agent Execution Summary */}
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+              <div className="text-center">
+                <div className="font-medium text-gray-900">{agentContributions.length}</div>
+                <div className="text-gray-600">Agents</div>
+              </div>
+              <div className="text-center">
+                <div className="font-medium text-gray-900">{agentContributions.reduce((sum, agent) => sum + agent.executionTime, 0)}ms</div>
+                <div className="text-gray-600">Total Time</div>
+              </div>
+              <div className="text-center">
+                <div className="font-medium text-gray-900">{Math.round(agentContributions.reduce((sum, agent) => sum + agent.confidence, 0) / agentContributions.length * 100)}%</div>
+                <div className="text-gray-600">Avg Confidence</div>
+              </div>
+              <div className="text-center">
+                <div className="font-medium text-gray-900">{agentContributions.filter(a => a.confidence > 0.8).length}</div>
+                <div className="text-gray-600">High Confidence</div>
+              </div>
+            </div>
           </div>
         </div>
       )}
