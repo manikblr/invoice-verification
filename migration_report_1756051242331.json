@@ -1,0 +1,207 @@
+{
+  "timestamp": "2025-08-24T16:00:42.331Z",
+  "summary": {
+    "current_service_types": 1000,
+    "target_service_types": 410,
+    "to_delete": 110,
+    "to_add": 15,
+    "to_keep_referenced": 1,
+    "final_expected": 411
+  },
+  "service_types_to_delete": [
+    852,
+    855,
+    864,
+    879,
+    886,
+    893,
+    896,
+    897,
+    901,
+    902,
+    904,
+    905,
+    910,
+    911,
+    915,
+    917,
+    920,
+    921,
+    925,
+    930,
+    932,
+    933,
+    941,
+    944,
+    961,
+    965,
+    966,
+    967,
+    968,
+    974,
+    975,
+    976,
+    977,
+    980,
+    981,
+    983,
+    985,
+    986,
+    988,
+    990,
+    995,
+    996,
+    1001,
+    1002,
+    1006,
+    1008,
+    1009,
+    1011,
+    1012,
+    1013,
+    1016,
+    1017,
+    1020,
+    1024,
+    1035,
+    1039,
+    1040,
+    1047,
+    1048,
+    1053,
+    1058,
+    1059,
+    1060,
+    1061,
+    1071,
+    1080,
+    1083,
+    1090,
+    1104,
+    1105,
+    1106,
+    1107,
+    1109,
+    1111,
+    1112,
+    1113,
+    1115,
+    1116,
+    1117,
+    1119,
+    1122,
+    1123,
+    1130,
+    1133,
+    1136,
+    1137,
+    1138,
+    1139,
+    1140,
+    1144,
+    1145,
+    1146,
+    1149,
+    1150,
+    1151,
+    1152,
+    1153,
+    1154,
+    1155,
+    1156,
+    1157,
+    1163,
+    1169,
+    1170,
+    1171,
+    1172,
+    1173,
+    1174,
+    1175,
+    1176
+  ],
+  "service_types_to_add": [
+    {
+      "name": "Main Line Repair and Replacement",
+      "service_line_id": 14,
+      "service_line_name": "Plumbing"
+    },
+    {
+      "name": "Sewer Maintenance and Repair",
+      "service_line_id": 14,
+      "service_line_name": "Plumbing"
+    },
+    {
+      "name": "Toilet/Urinal Repair and Replacement",
+      "service_line_id": 14,
+      "service_line_name": "Plumbing"
+    },
+    {
+      "name": "Water Line Repair or Replace",
+      "service_line_id": 14,
+      "service_line_name": "Plumbing"
+    },
+    {
+      "name": "Pressure Wash Buses",
+      "service_line_id": 17,
+      "service_line_name": "Pressure Washing"
+    },
+    {
+      "name": "Pressure Wash and Degrease",
+      "service_line_id": 17,
+      "service_line_name": "Pressure Washing"
+    },
+    {
+      "name": "Pressure Wash with Algae Removal",
+      "service_line_id": 17,
+      "service_line_name": "Pressure Washing"
+    },
+    {
+      "name": "Pressure Washing with Water Reclamation",
+      "service_line_id": 17,
+      "service_line_name": "Pressure Washing"
+    },
+    {
+      "name": "Sidewalk Pressure Washing w/o Gum Removal",
+      "service_line_id": 17,
+      "service_line_name": "Pressure Washing"
+    },
+    {
+      "name": "Alarm Installation and Repair",
+      "service_line_id": 18,
+      "service_line_name": "Security"
+    },
+    {
+      "name": "Automatic Security Gate Repair and Replacemenet",
+      "service_line_id": 18,
+      "service_line_name": "Security"
+    },
+    {
+      "name": "Fire watch",
+      "service_line_id": 18,
+      "service_line_name": "Security"
+    },
+    {
+      "name": "Security Camera Installation and Maintenance",
+      "service_line_id": 18,
+      "service_line_name": "Security"
+    },
+    {
+      "name": "Security Door Repair and Replacement",
+      "service_line_id": 18,
+      "service_line_name": "Security"
+    },
+    {
+      "name": "Security Gate Repair and Replacement",
+      "service_line_id": 18,
+      "service_line_name": "Security"
+    }
+  ],
+  "referenced_types_to_keep": [
+    {
+      "id": 1168,
+      "name": "Repair",
+      "service_line_id": 14
+    }
+  ]
+}

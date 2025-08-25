@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     const body: EnhancedValidationRequest = await req.json()
     
     // Validate request
-    if (!body.invoiceData || !body.invoiceData.items || body.invoiceData.items.length === 0) {
+    if (!body.items || body.items.length === 0) {
       return NextResponse.json(
         { error: 'No items provided for validation' },
         { status: 400 }
@@ -67,8 +67,7 @@ export async function POST(req: NextRequest) {
     await transparencyDB.updateValidationSession(sessionId, {
       validationResults: validationResult,
       overallStatus: validationResult.overallDecision,
-      totalExecutionTime: Date.now() - startTime,
-      agentCount: agentTracker.getExecutions().length
+      totalExecutionTime: Date.now() - startTime
     })
 
     // Build enhanced response
@@ -195,11 +194,11 @@ async function executeValidationWithTracing(
   const validationStart = new Date()
   const standardResult = await validateUnifiedInvoice(
     {
-      scope_of_work: request.invoiceData.scopeOfWork,
-      service_line_id: request.invoiceData.serviceLineId,
-      service_type_id: request.invoiceData.serviceTypeId,
-      labor_hours: request.invoiceData.laborHours,
-      items: request.invoiceData.items
+      scope_of_work: request.scopeOfWork,
+      service_line_id: request.serviceLineId,
+      service_type_id: request.serviceTypeId,
+      labor_hours: request.laborHours,
+      items: request.items
     },
     true // always save
   )
@@ -284,17 +283,16 @@ async function createValidationSession(
     invoiceId,
     userSession: 'web-session', // TODO: Get from request context
     invoiceData: {
-      scopeOfWork: request.invoiceData.scopeOfWork,
-      serviceLineId: request.invoiceData.serviceLineId,
+      scopeOfWork: request.scopeOfWork,
+      serviceLineId: request.serviceLineId,
       serviceTypeName: 'Unknown', // TODO: Resolve from serviceTypeId
-      laborHours: request.invoiceData.laborHours,
-      items: request.invoiceData.items
+      laborHours: request.laborHours,
+      items: request.items
     },
     validationResults: {} as any, // Will be updated later
     overallStatus: 'NEEDS_REVIEW', // Initial status
     langfuseTraceId: traceId,
-    serviceLineName: 'Unknown', // TODO: Resolve from serviceLineId
-    itemCount: request.invoiceData.items.length
+    serviceLineName: 'Unknown' // TODO: Resolve from serviceLineId
   })
 }
 
@@ -303,8 +301,8 @@ async function preprocessInvoiceData(request: EnhancedValidationRequest, tracker
   return {
     ...request,
     normalized: true,
-    itemCount: request.invoiceData.items.length,
-    totalValue: request.invoiceData.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)
+    itemCount: request.items.length,
+    totalValue: request.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)
   }
 }
 
@@ -500,6 +498,8 @@ function buildEnhancedLineItems(lines: any[], explanations: any[], agentExecutio
     if (line.quantity > 50) riskFactors.push('LARGE_QUANTITY')
 
     return {
+      // Standard fields
+      type: line.type || 'material',
       input: {
         name: line.name,
         quantity: line.quantity || 1,
@@ -508,11 +508,16 @@ function buildEnhancedLineItems(lines: any[], explanations: any[], agentExecutio
         type: (line.type || 'material') as 'material' | 'equipment' | 'labor'
       },
       status,
+      reasonCodes: line.reasonCodes || ['validated'],
+      
+      // Enhanced fields
       confidenceScore: line.confidence || 0.8,
       explanation: {
         summary: explanation?.summaryExplanation || `${status} - Standard validation result`,
         detailed: explanation?.detailedExplanation,
         technical: explanation?.technicalExplanation,
+        reasoning: line.reasonCodes || ['Standard validation completed'],
+        confidence: line.confidence || 0.8,
         primaryFactors: decisionFactors.slice(0, 3).map(f => f.factorName),
         riskFactors
       },

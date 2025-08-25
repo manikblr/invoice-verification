@@ -41,7 +41,7 @@ export interface LineItemInput {
 
 export interface ValidationResults {
   summary: ValidationSummary
-  lines: LineItemValidationResult[]
+  lines: LineItemValidation[]
   overallDecision: ValidationStatus
   executionTime: number
 }

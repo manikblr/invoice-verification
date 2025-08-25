@@ -530,6 +530,7 @@ export class TransparencyDB {
       decisionRationale: data.decision_rationale,
       confidenceScore: data.confidence_score,
       toolsUsed: data.tools_used || [],
+      dataSourcesAccessed: data.data_sources_accessed || [],
       createdAt: data.created_at
     }
   }

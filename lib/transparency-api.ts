@@ -224,7 +224,11 @@ export async function revalidateInvoice(
   
   // Merge with new parameters
   const request: EnhancedValidationRequest = {
-    ...originalValidation.session.invoiceData,
+    scopeOfWork: originalValidation.session.invoiceData.scopeOfWork,
+    serviceLineId: originalValidation.session.invoiceData.serviceLineId,
+    serviceTypeId: 1, // Default value since it's not in the original data
+    laborHours: originalValidation.session.invoiceData.laborHours,
+    items: originalValidation.session.invoiceData.items,
     ...newParameters
   }
 

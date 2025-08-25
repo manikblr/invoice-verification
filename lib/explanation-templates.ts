@@ -117,19 +117,22 @@ export class ExplanationGenerator {
     context: ExplanationContext,
     decisionFactors: DecisionFactor[]
   ): LineItemExplanation {
-    const { lineItem, validationDecision, confidence, riskFactors } = context
+    const { lineItem } = context
+    const validationDecision = lineItem.validationDecision
+    const confidence = lineItem.confidenceScore || 0.5
+    const riskFactors = lineItem.riskFactors || []
     
     // Determine the best template based on decision and factors
     const template = this.selectTemplate(validationDecision, decisionFactors, riskFactors)
     
     // Generate explanations at all three levels
     const summary = this.generateSummary(template, context, decisionFactors)
-    const detailed = this.generateDetailed(template, context, decisionFactors)
-    const technical = this.generateTechnical(template, context, decisionFactors)
+    const detailed = this.generateDetailed(template, context, decisionFactors, riskFactors)
+    const technical = this.generateTechnical(template, context, decisionFactors, confidence, validationDecision)
     
     // Extract primary factors
     const primaryFactors = decisionFactors
-      .sort((a, b) => (b.weight || 0) - (a.weight || 0))
+      .sort((a, b) => (b.factorWeight || 0) - (a.factorWeight || 0))
       .slice(0, 3)
       .map(factor => factor.factorName)
     
@@ -137,6 +140,8 @@ export class ExplanationGenerator {
       summary,
       detailed,
       technical,
+      reasoning: [`Decision: ${validationDecision}`, `Confidence: ${Math.round(confidence * 100)}%`],
+      confidence,
       primaryFactors,
       riskFactors: riskFactors || []
     }
@@ -194,7 +199,8 @@ export class ExplanationGenerator {
   private static generateDetailed(
     template: ExplanationTemplate,
     context: ExplanationContext,
-    factors: DecisionFactor[]
+    factors: DecisionFactor[],
+    riskFactors: string[]
   ): string {
     const summary = this.generateSummary(template, context, factors)
     
@@ -208,9 +214,9 @@ export class ExplanationGenerator {
     })
     
     // Add risk factor explanations
-    if (context.riskFactors && context.riskFactors.length > 0) {
+    if (riskFactors && riskFactors.length > 0) {
       detailed += '\n**Risk Considerations:**\n'
-      context.riskFactors.forEach(risk => {
+      riskFactors.forEach(risk => {
         const explanation = RISK_FACTOR_EXPLANATIONS[risk] || risk
         detailed += `• ${explanation}\n`
       })
@@ -225,22 +231,24 @@ export class ExplanationGenerator {
   private static generateTechnical(
     template: ExplanationTemplate,
     context: ExplanationContext,
-    factors: DecisionFactor[]
+    factors: DecisionFactor[],
+    confidence: number,
+    validationDecision: ValidationStatus
   ): string {
-    const detailed = this.generateDetailed(template, context, factors)
+    const detailed = this.generateDetailed(template, context, factors, context.lineItem.riskFactors || [])
     
     let technical = detailed + '\n\n**Technical Analysis:**\n'
     
     // Add confidence scoring details
-    technical += `• Validation confidence: ${Math.round(context.confidence * 100)}%\n`
-    technical += `• Decision threshold: ${this.getDecisionThreshold(context.validationDecision)}\n`
+    technical += `• Validation confidence: ${Math.round(confidence * 100)}%\n`
+    technical += `• Decision threshold: ${this.getDecisionThreshold(validationDecision)}\n`
     
     // Add factor weights and impact scores
     technical += '\n**Decision Factor Analysis:**\n'
     factors.forEach(factor => {
       technical += `• ${factor.factorName}:\n`
-      technical += `  - Weight: ${(factor.weight || 0) * 100}%\n`
-      technical += `  - Impact: ${(factor.impactScore || 0) * 100}%\n`
+      technical += `  - Weight: ${(factor.factorWeight || 0) * 100}%\n`
+      technical += `  - Impact: ${0}%\n`
       technical += `  - Value: ${factor.factorValue}\n`
     })
     
@@ -268,7 +276,7 @@ export class ExplanationGenerator {
       unitPrice: `$${(item.unitPrice || 0).toFixed(2)}`,
       quantity: (item.quantity || 1).toString(),
       unit: 'units', // Would come from line item data
-      matchConfidence: Math.round(context.confidence * 100).toString(),
+      matchConfidence: Math.round((item.confidenceScore || 0.5) * 100).toString(),
       vendorName: 'Unknown Vendor', // Would come from validation data
       vendorRating: '4.2', // Would come from vendor database
       contractStatus: 'active', // Would come from vendor database
@@ -349,10 +357,15 @@ export function generateExplanationForItem(
   riskFactors?: string[]
 ): LineItemExplanation {
   const context: ExplanationContext = {
-    lineItem,
-    validationDecision: decision,
-    confidence,
-    riskFactors
+    lineItem: {
+      ...lineItem,
+      validationDecision: decision,
+      confidenceScore: confidence,
+      riskFactors: riskFactors || []
+    } as any,
+    agentExecutions: [],
+    decisionFactors: factors,
+    validationRules: []
   }
   
   return ExplanationGenerator.generateExplanation(context, factors)
@@ -366,21 +379,21 @@ export function generateMockDecisionFactors(decision: ValidationStatus): Decisio
         {
           id: '1',
           lineItemValidationId: 'test',
-          factorType: 'CATALOG_MATCH',
+          factorType: 'catalog_match',
           factorName: 'canonical_catalog_match',
-          factorValue: '95% match confidence',
-          weight: 0.8,
-          impactScore: 0.9,
+          factorValue: { confidence: '95%', match: 'canonical' },
+          factorWeight: 0.8,
+          factorResult: 'pass',
           createdAt: new Date().toISOString()
         },
         {
           id: '2',
           lineItemValidationId: 'test',
-          factorType: 'PRICE_ANALYSIS',
+          factorType: 'price_check',
           factorName: 'market_price_validation',
-          factorValue: 'Within 10% of market average',
-          weight: 0.6,
-          impactScore: 0.7,
+          factorValue: { variance: '10%', status: 'within_range' },
+          factorWeight: 0.6,
+          factorResult: 'pass',
           createdAt: new Date().toISOString()
         }
       ]
@@ -390,11 +403,11 @@ export function generateMockDecisionFactors(decision: ValidationStatus): Decisio
         {
           id: '3',
           lineItemValidationId: 'test',
-          factorType: 'PRICE_ANALYSIS',
+          factorType: 'price_check',
           factorName: 'price_variance_detected',
-          factorValue: '25% above expected range',
-          weight: 0.9,
-          impactScore: 0.8,
+          factorValue: { variance: '25%', status: 'above_range' },
+          factorWeight: 0.9,
+          factorResult: 'warning',
           createdAt: new Date().toISOString()
         }
       ]
@@ -404,11 +417,11 @@ export function generateMockDecisionFactors(decision: ValidationStatus): Decisio
         {
           id: '4',
           lineItemValidationId: 'test',
-          factorType: 'POLICY_VIOLATION',
+          factorType: 'compliance_check',
           factorName: 'exceeds_spending_limit',
-          factorValue: 'Exceeds $100 limit by 50%',
-          weight: 1.0,
-          impactScore: 1.0,
+          factorValue: { limit: '$100', excess: '50%' },
+          factorWeight: 1.0,
+          factorResult: 'fail',
           createdAt: new Date().toISOString()
         }
       ]

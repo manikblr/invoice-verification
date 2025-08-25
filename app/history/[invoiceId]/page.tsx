@@ -92,6 +92,8 @@ export default function ValidationDetailPage() {
       reject: validation.lineItems.filter(item => item.validationDecision === 'REJECT').length
     },
     lines: validation.lineItems.map(item => ({
+      // Standard fields
+      type: item.itemType || 'material',
       input: {
         name: item.itemName,
         quantity: item.quantity || 1,
@@ -100,18 +102,23 @@ export default function ValidationDetailPage() {
         type: (item.itemType as 'material' | 'equipment' | 'labor') || 'material'
       },
       status: item.validationDecision,
+      reasonCodes: ['historical_validation'],
+      
+      // Enhanced fields
       confidenceScore: item.confidenceScore || 0.5,
       explanation: {
         summary: `${item.validationDecision} - Historical validation result`,
         detailed: `This item was previously validated with decision: ${item.validationDecision}`,
         technical: `Validation performed at ${validation.session.createdAt}`,
+        reasoning: ['Historical validation data'],
+        confidence: item.confidenceScore || 0.5,
         primaryFactors: ['historical_validation'],
         riskFactors: item.riskFactors || []
       },
       agentContributions: [],
       decisionFactors: []
     })),
-    executionSummary: validation.session.validationResults?.executionSummary || {
+    executionSummary: {
       totalAgents: validation.agentExecutions.length,
       totalExecutionTime: validation.session.totalExecutionTime || 0,
       averageConfidence: 0.8,

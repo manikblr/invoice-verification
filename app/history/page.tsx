@@ -41,7 +41,7 @@ export default function ValidationHistoryPage() {
 
       const response = await getValidationHistory(query)
       setHistory(response.sessions)
-      setTotalPages(Math.ceil(response.totalCount / itemsPerPage))
+      setTotalPages(Math.ceil(response.total / itemsPerPage))
       
     } catch (err) {
       console.error('Failed to load validation history:', err)
@@ -67,7 +67,7 @@ export default function ValidationHistoryPage() {
       })
 
       setHistory(response.sessions)
-      setTotalPages(Math.ceil(response.totalCount / itemsPerPage))
+      setTotalPages(Math.ceil(response.total / itemsPerPage))
       setCurrentPage(1)
       
     } catch (err) {
@@ -307,7 +307,7 @@ export default function ValidationHistoryPage() {
                             🕒 {session.totalExecutionTime ? formatExecutionTime(session.totalExecutionTime) : 'N/A'}
                           </div>
                           <div className="text-xs">
-                            🤖 {session.validationResults?.executionSummary?.totalAgents || 0} agents
+                            🤖 {0} agents
                           </div>
                         </div>
                       </td>

@@ -1,0 +1,1086 @@
+{
+  "timestamp": "2025-08-24T16:10:11.427Z",
+  "operation": "service_line_mapping_correction",
+  "success": true,
+  "results": {
+    "corrections_applied": 124,
+    "total_corrections_needed": 124,
+    "remaining_mismatches": 0,
+    "final_service_type_count": 411
+  },
+  "service_types_by_line": {
+    "Electrical": [
+      "Appliances",
+      "Fixtures",
+      "Interior Lighting",
+      "Wiring Installation",
+      "Breaker Repair",
+      "Construction",
+      "Electrical - Alarm",
+      "Exterior Lighting",
+      "Generator Hookup",
+      "Low Voltage",
+      "Ballast",
+      "Communication Systems",
+      "Data Systems",
+      "Disconnects",
+      "Emergency Lighting",
+      "Exterior Building Lighting",
+      "Exterior Repair/Replacement",
+      "Fire Specialist",
+      "High Voltage",
+      "Lamp/Bulb Replacement",
+      "Landscape Lighting",
+      "Parking Lot Lighting",
+      "Power Drops",
+      "Safety Repairs",
+      "Security Systems",
+      "Signage",
+      "Wiring Repair",
+      "Lighting PMI",
+      "Outlet Repair and Replacement",
+      "WiFi Setup"
+    ],
+    "Appliances": [
+      "Air Compressor Installation",
+      "Air Compressor Repair",
+      "Cold Case",
+      "Cold Case Installation",
+      "Cold Case Repair",
+      "Diagnostic - Food Appliances - Cold",
+      "Dish Washer Installation",
+      "Dish Washer Repair",
+      "Double Rack Oven Installation",
+      "Fryer Installation",
+      "Fryer Repair",
+      "General Fixtures",
+      "General Fixtures Installation",
+      "Hot Case Installation",
+      "Hot Case Repair",
+      "Ice Machine Installation",
+      "Large Appliance Installation",
+      "Oil Pump Installation",
+      "Oil Pump Repair",
+      "Pan Washer Installation",
+      "Pan Washer Repair",
+      "Rotisserie/Pizza Oven Installation",
+      "Single & Mini Rack Oven Installation",
+      "Small Appliance Installation",
+      "Soda Dispenser/Soda Bibs Installation",
+      "Washer Installation",
+      "Auto Lift Install",
+      "Diagnostic - Auto",
+      "Diagnostic - Food appliances - Hot",
+      "General Fixtures Repair or Replace",
+      "Ice Machine Repair or Replace",
+      "Small Appliance Repair - Food",
+      "Soda Dispenser/Soda Bibs Repair or Replace"
+    ],
+    "Handyman": [
+      "Assembly - Fixtures/Goods",
+      "General Equipment Repair",
+      "Mechanical Repair",
+      "Cabinet Installation",
+      "Ceiling Tiles",
+      "Demo / Tear Down - Small",
+      "Drop Box Removal",
+      "Exterior Painting",
+      "General Carpentry",
+      "Interior Painting",
+      "Overhead Doors",
+      "Wall Repair",
+      "Building Access",
+      "Countertop Repairs",
+      "Shelf Installation",
+      "Decorating - Holiday",
+      "Drinking Fountain Replacement",
+      "Glass Tinting",
+      "Paint Machine Repair",
+      "Pest Exclusion",
+      "Securing Entry",
+      "Shopping Cart Repair",
+      "Toilet Seat Replacement",
+      "Trilogy Lock Installation",
+      "Wall Replacement and Installation",
+      "Bathroom Exhaust Fan Repair and Replacement",
+      "Carpet Repair and Replacement",
+      "Fence Installation and Repair",
+      "Fixture Repair and Replacement",
+      "Floor Repair and Replacement",
+      "Floor Repair and Replacement - Minor",
+      "Floor Repair and Replacement - Specialist",
+      "Gate Maintenance and Repair",
+      "Gate Maintenance and Repair - Specialist",
+      "Glass Repair or Replacement",
+      "Glass Repair",
+      "Guardrail Repair and Installation",
+      "Gutter Maintenance and Repair",
+      "Loading Dock Repair and Replacement",
+      "Overhead Door Repair - major",
+      "Overhead Door Repair - minor",
+      "Painting",
+      "Roof Repair and Maintenance",
+      "Sign Repair and Installation",
+      "Tile Repair and Replacement"
+    ],
+    "Plumbing": [
+      "Basic Clog",
+      "Extensive Clog",
+      "General Plumbing",
+      "Gas Piping",
+      "Porta Potty/Hand Washing Rental",
+      "Lift Station Maintenance",
+      "Water Heater Repair",
+      "Water Heater Replacement",
+      "Camera Inspection",
+      "Plumbing Preventative Maintenance",
+      "Roof Drains",
+      "Septic Pump Out",
+      "Storm Drain Cleaning",
+      "Jetting",
+      "Gas Leak (Urgent)",
+      "Grease Trap",
+      "Sewer Backup",
+      "Sewer Backup - Major",
+      "Sewer Maintenance",
+      "Sewer Repair",
+      "Sump Pump Preventative Maintenance",
+      "Repair",
+      "Domestic Backflow Inspection and Repair",
+      "Drain Maintenance and Repair",
+      "Faucet/Sink Repair and Replacement",
+      "Fire and Sprinkler Safety Backflow Repair",
+      "Flush Valve Repair and Replacement",
+      "Jetting with Trailer Jetter",
+      "Leak Detection and Repair - Major",
+      "Main Line Repair and Replacement",
+      "Sewer Maintenance and Repair",
+      "Toilet/Urinal Repair and Replacement",
+      "Water Line Repair or Replace"
+    ],
+    "Parking Lot Repair": [
+      "Concrete Construction",
+      "Cracksealing",
+      "Striping",
+      "Bollard Repair",
+      "Stabilization Services",
+      "Asphalt Milling",
+      "Asphalt Paving",
+      "Bollard Replacement",
+      "Cold Patch",
+      "Hot Patch",
+      "Mill & Overlay",
+      "Sealcoating",
+      "Hot Patch - Large",
+      "Hot Patch - Small"
+    ],
+    "Landscaping": [
+      "High Tree Pruning",
+      "Routine Landscaping Service",
+      "Irrigation Startup",
+      "Pest Control",
+      "Arborist Tree Maintenance",
+      "Chemical Application - Weeds",
+      "Fall Cleanup",
+      "Flower Installation",
+      "Homeless Encampment Clean Up",
+      "Mowing",
+      "Mulching",
+      "Palm Tree Pruning",
+      "Plant Material",
+      "Retention Pond Maintenance",
+      "River Rock Install",
+      "Tree Removal",
+      "Irrigation Inspection",
+      "Shrub Pruning",
+      "Shrub Removal",
+      "Sod",
+      "Landscaping",
+      "Spring Cleanup",
+      "Tree Pruning",
+      "Storm Cleanup",
+      "Tree Installation",
+      "Tree Limb Removal",
+      "Aeration",
+      "Fertilization",
+      "High Palm Tree Pruning",
+      "Leaf Cleanup",
+      "Mulch Turning",
+      "Native Mowing",
+      "Overseeding",
+      "Pine Straw Installation",
+      "Retaining Wall Installation",
+      "Rust Treatment",
+      "Shrub Fertilization",
+      "Shrub Installation",
+      "Top Dress Mulch",
+      "Tree Fertilization",
+      "Chemical Applications - Disease/insects",
+      "Fountain Maintenance and Repair"
+    ],
+    "Pressure Washing": [
+      "Building Exterior Power Washing",
+      "General Pressure Washing",
+      "Pressure Wash Awning",
+      "Pressure Wash Dumpster/Compactor Areas",
+      "Roof Pressure Washing",
+      "Pressure Wash Garden Center",
+      "Pressure Wash Vehicles",
+      "Pressure Wash Vestibule",
+      "Pressure Wash Buses",
+      "Pressure Wash and Degrease",
+      "Pressure Wash with Algae Removal",
+      "Pressure Washing with Water Reclamation",
+      "Sidewalk Pressure Washing w/o Gum Removal"
+    ],
+    "Showroom Repair": [
+      "Building Preventative Maintenance",
+      "Showroom Preventative Maintenance"
+    ],
+    "HVAC": [
+      "Duct Work Installation",
+      "Boiler Installation",
+      "Central Heat Inspection/Survey",
+      "Chiller Inspection/Survey",
+      "Cooling Tower Inspection/Survey",
+      "Duct Work Insulation",
+      "Ductwork Inspection/Survey",
+      "Overhead Heater Installation",
+      "A/C Unit Repair and Replacement",
+      "A/C Window Unit Repair and Replacement",
+      "Air Vent Repair and Replacement",
+      "Annual A/C Unit PM Services",
+      "Annual Heater PM Services",
+      "Baseboard Heater Repair or Replace",
+      "Boiler Repair and Replacement",
+      "Central Heat Repair or Replace",
+      "Chilled Water Pumps Repair or Replace",
+      "Chiller Repair and Replacement",
+      "Cooling Tower Repair or Replace",
+      "Ductwork Repair or Replace",
+      "EMS/BAS Repair or Replace",
+      "Electric Heater Repair and Replacement",
+      "Electric Heating System Repair and Replacement",
+      "Evaporative Cooler Inspection/Survey",
+      "Evaporative Cooler Repair or Replace",
+      "Exhaust Fan Repair and Replacement",
+      "Furnace Repair and Maintenance",
+      "Gas Heater Repair and Replacement",
+      "Gas Line Installation and Repair",
+      "HVAC Preventative Maintenance",
+      "Humidifier Repair and Replacement",
+      "Make-Up Air (MAU) Inspection/Survey",
+      "Make-Up Air (MAU) Repair or Replace",
+      "Mini-split A/C Unit Repair and Replacement",
+      "Portable Air Conditioner Installation and Replacement",
+      "Portable Heater Installation and Replacement",
+      "Radiator Repair and Replacement",
+      "Refrigeration Repair and Replacement",
+      "Split A/C Unit Repair and Replacement",
+      "Unit Heater",
+      "VFD Repair or Replace"
+    ],
+    "Construction": [
+      "Concrete Floor Installation",
+      "Concrete Floor Repair",
+      "Conveyance Repair",
+      "Curb Repair",
+      "Demo/Tear Down - Large",
+      "Disaster Relief",
+      "Drop Box Repair",
+      "Dumpster/Dumpster Enclosure Repair",
+      "Elevator Repair",
+      "Flooring Installation",
+      "Foundation Repair",
+      "Foundation Water Proofing",
+      "Fuel Island Repair",
+      "Loading Dock Repairs",
+      "Mold Mitigation",
+      "Scissor Lift Repair",
+      "Wall Installation",
+      "Water Damage Repair",
+      "Awning Repair or Replace",
+      "Bollard Repair and Replacement",
+      "Concrete Floor Installation and Repair",
+      "Concrete Floor Removal",
+      "Concrete Wall Installation and Removal",
+      "Dock Leveler Repair or Replace",
+      "Glass Panel Installation and Repair",
+      "Insulation Installation and Repair",
+      "Parking Lot Repair and Replacement",
+      "Sidewalk Repair and Replacement",
+      "Stone and Masonry",
+      "Wall Repair and Replacement",
+      "Window Installation and Replacement",
+      "Window Installation and Replacement - Large"
+    ],
+    "Fire Life Safety": [
+      "Fire Hydrants Repair",
+      "Sprinklers Repair",
+      "Fire Alarm Repair",
+      "Fire Extinguishers Repair",
+      "Fire Line Backflow Repair",
+      "Fire Pump Repair",
+      "Hood Vent Cleaning",
+      "Kitchen Vent Cleaning",
+      "Water Storage Tank Inspection",
+      "CO2 Suppression System Inspection",
+      "CO2 Suppression System Repair",
+      "Emergency Signs and Lighting PMI",
+      "Emergency Signs and Lighting Repair",
+      "Fire Alarm PMI",
+      "Fire Extinguishers PMI",
+      "Fire Hydrants PMI",
+      "Fire Line Backflow PMI",
+      "Fire Pump PMI",
+      "Kitchen Vent Inspection",
+      "Sprinklers PMI"
+    ],
+    "Janitorial": [
+      "Janitorial Preventative Maintenance",
+      "Restroom Cleaning",
+      "Bio-Hazard Cleaning",
+      "Carpet Cleaning",
+      "Concrete Floor Cleaning",
+      "Deep Scrub",
+      "Fixture Cleaning",
+      "Wall Cleaning",
+      "Store Cleanup/Refresh",
+      "Tile Floor Cleaning",
+      "Auto Scrub (Burnish)",
+      "Auto Scrubs",
+      "Carpet Cleaning - Large",
+      "Carpet Cleaning - Small Area",
+      "Ceiling Cleaning",
+      "Cooler/Freezer Cleaning",
+      "Duct Cleaning",
+      "Laminate Floor Cleaning",
+      "Mold Removal",
+      "Rodent Cleans",
+      "Vent Cleaning",
+      "Strip and Wax"
+    ],
+    "Portering": [
+      "Routine Portering Service",
+      "Cart Retrieval",
+      "Cob Web Cleaning",
+      "Eco Waste Clean Up",
+      "Graffiti Removal",
+      "Large Debris Removal (Bulk Trash)",
+      "Spot Cleaning",
+      "Eco Waste Clean Up - Interior",
+      "Trash Removal",
+      "Trash Can Cleaning",
+      "Eco Waste Clean Up - Exterior",
+      "Trash Can Liner Replacement",
+      "Vacancy Cleaning"
+    ],
+    "Inspections": [
+      "Electrical/Wiring Inspection",
+      "Interior Inspection",
+      "Backflow Inspection",
+      "Dark Store Inspection",
+      "General Inspection",
+      "Landscaping Inspection",
+      "Parking Lot Inspection",
+      "Roofing Inspection",
+      "CAM Inspection",
+      "FLS Inspection",
+      "HVAC Inspection"
+    ],
+    "Window Cleaning": [
+      "Interior & Exterior Cleaning",
+      "Exterior Window Cleaning",
+      "Interior Window Cleaning",
+      "High Rise Window Cleaning"
+    ],
+    "Locksmith": [
+      "Re-Key",
+      "Stuck Key",
+      "Roof Hatch Lock Replacement",
+      "Door Replacement and Installation",
+      "Automatic Door Lock Repair and Replacement",
+      "Display Case Lock Repair and Replacement",
+      "Door Alarm Repair and Replacement",
+      "Door Lock Installation and Replacement",
+      "Emergency Exit Door Lock Repair and Replacement",
+      "Gate Lock Removal and Replacement",
+      "Lockbox Installation and Repair",
+      "Mailbox Lock Repair and Replacement",
+      "Propane Tank Lock Removal and Replace",
+      "Safe Installation and Repair",
+      "Security Gate Lock Removal and Replacement",
+      "Waste Corral Gate Lock Removal and Replacement"
+    ],
+    "Irrigation": [
+      "Leak Detection",
+      "Sprinkler Head Replacement",
+      "Backflow Maintenance",
+      "Backflow Replacement",
+      "Backflow Testing",
+      "Directional Boring",
+      "Drip Line Repairs",
+      "Hand Watering",
+      "Irrigation Installation",
+      "Irrigation Shutdown",
+      "Irrigation Winterization",
+      "Lateral Line Repairs",
+      "Main Line Repairs",
+      "Smart Irrigation Controller Installation",
+      "Smart Irrigation Controller Maintenance",
+      "Valve Troubleshooting",
+      "Wet Check",
+      "Controller Maintenance and Repair",
+      "Irrigation Line Repair and Replacement",
+      "Irrigation Wire Inspection and Repair",
+      "Irrigation with Recycled Water System",
+      "Valve Repair and Replacement"
+    ],
+    "Lot Sweeping": [
+      "Parking Lot Sweeping - Manual",
+      "Parking Lot Sweeping - Truck",
+      "Trash Removal - Beds",
+      "Routine Lotsweeping Service",
+      "Recapturing / Recirculating",
+      "Routine Lot Sweeping Service"
+    ],
+    "Pool Maintenance": [
+      "Chemical Treatment",
+      "General Maintenance",
+      "Pool Equipment Repair",
+      "Leak Detection and Repair"
+    ],
+    "Security": [
+      "On Site Security Services",
+      "Security System Assessment",
+      "Alarm Installation and Repair",
+      "Automatic Security Gate Repair and Replacemenet",
+      "Fire watch",
+      "Security Camera Installation and Maintenance",
+      "Security Door Repair and Replacement",
+      "Security Gate Repair and Replacement"
+    ]
+  },
+  "correction_details": [
+    {
+      "service_type": "Appliances",
+      "from": "Appliances",
+      "to": "Electrical"
+    },
+    {
+      "service_type": "Assembly - Fixtures/Goods",
+      "from": "Appliances",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Basic Clog",
+      "from": "Appliances",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Concrete Construction",
+      "from": "Appliances",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Cracksealing",
+      "from": "Appliances",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Extensive Clog",
+      "from": "Appliances",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Fixtures",
+      "from": "Appliances",
+      "to": "Electrical"
+    },
+    {
+      "service_type": "General Equipment Repair",
+      "from": "Appliances",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "General Plumbing",
+      "from": "Appliances",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "High Tree Pruning",
+      "from": "Appliances",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Interior Lighting",
+      "from": "Appliances",
+      "to": "Electrical"
+    },
+    {
+      "service_type": "Mechanical Repair",
+      "from": "Appliances",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Routine Landscaping Service",
+      "from": "Appliances",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Wiring Installation",
+      "from": "Appliances",
+      "to": "Electrical"
+    },
+    {
+      "service_type": "Breaker Repair",
+      "from": "Construction",
+      "to": "Electrical"
+    },
+    {
+      "service_type": "Building Exterior Power Washing",
+      "from": "Construction",
+      "to": "Pressure Washing"
+    },
+    {
+      "service_type": "Building Preventative Maintenance",
+      "from": "Construction",
+      "to": "Showroom Repair"
+    },
+    {
+      "service_type": "Cabinet Installation",
+      "from": "Construction",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Ceiling Tiles",
+      "from": "Construction",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Construction",
+      "from": "Construction",
+      "to": "Electrical"
+    },
+    {
+      "service_type": "Demo / Tear Down - Small",
+      "from": "Construction",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Drop Box Removal",
+      "from": "Construction",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Duct Work Installation",
+      "from": "Construction",
+      "to": "HVAC"
+    },
+    {
+      "service_type": "Electrical - Alarm",
+      "from": "Construction",
+      "to": "Electrical"
+    },
+    {
+      "service_type": "Exterior Lighting",
+      "from": "Construction",
+      "to": "Electrical"
+    },
+    {
+      "service_type": "Exterior Painting",
+      "from": "Construction",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Fire Hydrants Repair",
+      "from": "Construction",
+      "to": "Fire Life Safety"
+    },
+    {
+      "service_type": "Gas Piping",
+      "from": "Construction",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "General Carpentry",
+      "from": "Construction",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Generator Hookup",
+      "from": "Construction",
+      "to": "Electrical"
+    },
+    {
+      "service_type": "Interior Painting",
+      "from": "Construction",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Irrigation Startup",
+      "from": "Construction",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Janitorial Preventative Maintenance",
+      "from": "Construction",
+      "to": "Janitorial"
+    },
+    {
+      "service_type": "Low Voltage",
+      "from": "Construction",
+      "to": "Electrical"
+    },
+    {
+      "service_type": "Overhead Doors",
+      "from": "Construction",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Pest Control",
+      "from": "Construction",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Porta Potty/Hand Washing Rental",
+      "from": "Construction",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Restroom Cleaning",
+      "from": "Construction",
+      "to": "Janitorial"
+    },
+    {
+      "service_type": "Routine Portering Service",
+      "from": "Construction",
+      "to": "Portering"
+    },
+    {
+      "service_type": "Sprinklers Repair",
+      "from": "Construction",
+      "to": "Fire Life Safety"
+    },
+    {
+      "service_type": "Striping",
+      "from": "Construction",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Wall Repair",
+      "from": "Construction",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Arborist Tree Maintenance",
+      "from": "Electrical",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Bollard Repair",
+      "from": "Electrical",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Building Access",
+      "from": "Electrical",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Countertop Repairs",
+      "from": "Electrical",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Electrical/Wiring Inspection",
+      "from": "Electrical",
+      "to": "Inspections"
+    },
+    {
+      "service_type": "Fire Alarm Repair",
+      "from": "Electrical",
+      "to": "Fire Life Safety"
+    },
+    {
+      "service_type": "Interior & Exterior Cleaning",
+      "from": "Electrical",
+      "to": "Window Cleaning"
+    },
+    {
+      "service_type": "Interior Inspection",
+      "from": "Electrical",
+      "to": "Inspections"
+    },
+    {
+      "service_type": "Lift Station Maintenance",
+      "from": "Electrical",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Re-Key",
+      "from": "Electrical",
+      "to": "Locksmith"
+    },
+    {
+      "service_type": "Shelf Installation",
+      "from": "Electrical",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Water Heater Repair",
+      "from": "Electrical",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Stabilization Services",
+      "from": "Fire Life Safety",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Bio-Hazard Cleaning",
+      "from": "HVAC",
+      "to": "Janitorial"
+    },
+    {
+      "service_type": "Water Heater Replacement",
+      "from": "HVAC",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Asphalt Milling",
+      "from": "Handyman",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Asphalt Paving",
+      "from": "Handyman",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Bollard Replacement",
+      "from": "Handyman",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Camera Inspection",
+      "from": "Handyman",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Carpet Cleaning",
+      "from": "Handyman",
+      "to": "Janitorial"
+    },
+    {
+      "service_type": "Cart Retrieval",
+      "from": "Handyman",
+      "to": "Portering"
+    },
+    {
+      "service_type": "Chemical Application - Weeds",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Cob Web Cleaning",
+      "from": "Handyman",
+      "to": "Portering"
+    },
+    {
+      "service_type": "Cold Patch",
+      "from": "Handyman",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Concrete Floor Cleaning",
+      "from": "Handyman",
+      "to": "Janitorial"
+    },
+    {
+      "service_type": "Deep Scrub",
+      "from": "Handyman",
+      "to": "Janitorial"
+    },
+    {
+      "service_type": "Eco Waste Clean Up",
+      "from": "Handyman",
+      "to": "Portering"
+    },
+    {
+      "service_type": "Exterior Window Cleaning",
+      "from": "Handyman",
+      "to": "Window Cleaning"
+    },
+    {
+      "service_type": "Fall Cleanup",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Fixture Cleaning",
+      "from": "Handyman",
+      "to": "Janitorial"
+    },
+    {
+      "service_type": "Flower Installation",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "General Pressure Washing",
+      "from": "Handyman",
+      "to": "Pressure Washing"
+    },
+    {
+      "service_type": "Graffiti Removal",
+      "from": "Handyman",
+      "to": "Portering"
+    },
+    {
+      "service_type": "Homeless Encampment Clean Up",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Hot Patch",
+      "from": "Handyman",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Interior Window Cleaning",
+      "from": "Handyman",
+      "to": "Window Cleaning"
+    },
+    {
+      "service_type": "Large Debris Removal (Bulk Trash)",
+      "from": "Handyman",
+      "to": "Portering"
+    },
+    {
+      "service_type": "Leak Detection",
+      "from": "Handyman",
+      "to": "Irrigation"
+    },
+    {
+      "service_type": "Mill & Overlay",
+      "from": "Handyman",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Mowing",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Mulching",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Palm Tree Pruning",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Parking Lot Sweeping - Manual",
+      "from": "Handyman",
+      "to": "Lot Sweeping"
+    },
+    {
+      "service_type": "Parking Lot Sweeping - Truck",
+      "from": "Handyman",
+      "to": "Lot Sweeping"
+    },
+    {
+      "service_type": "Plant Material",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Plumbing Preventative Maintenance",
+      "from": "Handyman",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Pressure Wash Awning",
+      "from": "Handyman",
+      "to": "Pressure Washing"
+    },
+    {
+      "service_type": "Pressure Wash Dumpster/Compactor Areas",
+      "from": "Handyman",
+      "to": "Pressure Washing"
+    },
+    {
+      "service_type": "Retention Pond Maintenance",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "River Rock Install",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Roof Drains",
+      "from": "Handyman",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Roof Pressure Washing",
+      "from": "Handyman",
+      "to": "Pressure Washing"
+    },
+    {
+      "service_type": "Sealcoating",
+      "from": "Handyman",
+      "to": "Parking Lot Repair"
+    },
+    {
+      "service_type": "Septic Pump Out",
+      "from": "Handyman",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Showroom Preventative Maintenance",
+      "from": "Handyman",
+      "to": "Showroom Repair"
+    },
+    {
+      "service_type": "Shrub Pruning",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Shrub Removal",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Sod",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Spot Cleaning",
+      "from": "Handyman",
+      "to": "Portering"
+    },
+    {
+      "service_type": "Spring Cleanup",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Sprinkler Head Replacement",
+      "from": "Handyman",
+      "to": "Irrigation"
+    },
+    {
+      "service_type": "Store Cleanup/Refresh",
+      "from": "Handyman",
+      "to": "Janitorial"
+    },
+    {
+      "service_type": "Storm Cleanup",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Storm Drain Cleaning",
+      "from": "Handyman",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Stuck Key",
+      "from": "Handyman",
+      "to": "Locksmith"
+    },
+    {
+      "service_type": "Tile Floor Cleaning",
+      "from": "Handyman",
+      "to": "Janitorial"
+    },
+    {
+      "service_type": "Trash Removal",
+      "from": "Handyman",
+      "to": "Portering"
+    },
+    {
+      "service_type": "Trash Removal - Beds",
+      "from": "Handyman",
+      "to": "Lot Sweeping"
+    },
+    {
+      "service_type": "Tree Installation",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Tree Limb Removal",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Tree Removal",
+      "from": "Handyman",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Wall Cleaning",
+      "from": "Handyman",
+      "to": "Janitorial"
+    },
+    {
+      "service_type": "Irrigation Inspection",
+      "from": "Irrigation",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Landscaping",
+      "from": "Irrigation",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Tree Pruning",
+      "from": "Irrigation",
+      "to": "Landscaping"
+    },
+    {
+      "service_type": "Eco Waste Clean Up - Interior",
+      "from": "Janitorial",
+      "to": "Portering"
+    },
+    {
+      "service_type": "Routine Lotsweeping Service",
+      "from": "Landscaping",
+      "to": "Lot Sweeping"
+    },
+    {
+      "service_type": "Trash Can Cleaning",
+      "from": "Landscaping",
+      "to": "Portering"
+    },
+    {
+      "service_type": "Jetting",
+      "from": "Parking Lot Repair",
+      "to": "Plumbing"
+    },
+    {
+      "service_type": "Wall Replacement and Installation",
+      "from": "Construction",
+      "to": "Handyman"
+    },
+    {
+      "service_type": "Door Replacement and Installation",
+      "from": "Handyman",
+      "to": "Locksmith"
+    },
+    {
+      "service_type": "Leak Detection and Repair",
+      "from": "Plumbing",
+      "to": "Pool Maintenance"
+    }
+  ]
+}

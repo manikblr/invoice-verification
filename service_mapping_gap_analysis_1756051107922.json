@@ -1,0 +1,625 @@
+{
+  "summary": {
+    "correctServiceTypes": 410,
+    "currentServiceTypes": 486,
+    "extraInDB": 80,
+    "referencedExtras": 1,
+    "safeToDeleteExtras": 110,
+    "missingInDB": 4
+  },
+  "extrasByServiceLine": {
+    "Plumbing": [
+      {
+        "id": 941,
+        "name": "A/C Unit Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 944,
+        "name": "Annual Heater Pm Services",
+        "isReferenced": false
+      },
+      {
+        "id": 961,
+        "name": "Concrete Floor Installation And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 965,
+        "name": "Domestic Backflow Inspection And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 966,
+        "name": "Door Lock Installation And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 967,
+        "name": "Door Replacement And Installation",
+        "isReferenced": false
+      },
+      {
+        "id": 968,
+        "name": "Drain Maintenance And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 974,
+        "name": "Faucet/Sink Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 975,
+        "name": "Fence Installation And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 976,
+        "name": "Fire Alarm Pmi",
+        "isReferenced": false
+      },
+      {
+        "id": 980,
+        "name": "Fire And Sprinkler Safety Backflow Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 977,
+        "name": "Fire Line Backflow Pmi",
+        "isReferenced": false
+      },
+      {
+        "id": 981,
+        "name": "Fixture Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 983,
+        "name": "Floor Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 985,
+        "name": "Flush Valve Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 986,
+        "name": "Gas Heater Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 988,
+        "name": "Gas Line Installation And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 990,
+        "name": "Gate Maintenance And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 995,
+        "name": "Gutter Maintenance And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 996,
+        "name": "Handyman",
+        "isReferenced": false
+      },
+      {
+        "id": 1170,
+        "name": "Inspection",
+        "isReferenced": false
+      },
+      {
+        "id": 1169,
+        "name": "Install",
+        "isReferenced": false
+      },
+      {
+        "id": 1001,
+        "name": "Irrigation",
+        "isReferenced": false
+      },
+      {
+        "id": 1002,
+        "name": "Irrigation Line Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1006,
+        "name": "Jetting With Trailer Jetter",
+        "isReferenced": false
+      },
+      {
+        "id": 1008,
+        "name": "Leak Detection And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 1009,
+        "name": "Leak Detection And Repair - Major",
+        "isReferenced": false
+      },
+      {
+        "id": 1011,
+        "name": "Loading Dock Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1012,
+        "name": "Lockbox Installation And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 1013,
+        "name": "Main Line Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1016,
+        "name": "Outlet Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1017,
+        "name": "Parking Lot Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1020,
+        "name": "Plumbing",
+        "isReferenced": false
+      },
+      {
+        "id": 1024,
+        "name": "Refrigeration Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1168,
+        "name": "Repair",
+        "isReferenced": true
+      },
+      {
+        "id": 1035,
+        "name": "Sewer Maintenance And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 1039,
+        "name": "Sidewalk Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1040,
+        "name": "Sign Repair And Installation",
+        "isReferenced": false
+      },
+      {
+        "id": 1047,
+        "name": "Tile Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1048,
+        "name": "Toilet/Urinal Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1053,
+        "name": "Water Line Repair Or Replace",
+        "isReferenced": false
+      }
+    ],
+    "Security": [
+      {
+        "id": 1111,
+        "name": "Alarm Installation And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 1112,
+        "name": "Automatic Security Gate Repair And Replacemenet",
+        "isReferenced": false
+      },
+      {
+        "id": 1113,
+        "name": "Fire Watch",
+        "isReferenced": false
+      },
+      {
+        "id": 1115,
+        "name": "Security Camera Installation And Maintenance",
+        "isReferenced": false
+      },
+      {
+        "id": 1116,
+        "name": "Security Door Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1117,
+        "name": "Security Gate Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1119,
+        "name": "Uniformed Officer - Security Services",
+        "isReferenced": false
+      }
+    ],
+    "Parking Lot Repair": [
+      {
+        "id": 879,
+        "name": "Annual Heater Pm Services",
+        "isReferenced": false
+      },
+      {
+        "id": 886,
+        "name": "Bollard Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 893,
+        "name": "Concrete Floor Installation And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 896,
+        "name": "Door Lock Installation And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 897,
+        "name": "Drain Maintenance And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 901,
+        "name": "Fence Installation And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 902,
+        "name": "Fixture Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 904,
+        "name": "Floor Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 905,
+        "name": "Gate Maintenance And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 910,
+        "name": "Guardrail Repair And Installation",
+        "isReferenced": false
+      },
+      {
+        "id": 911,
+        "name": "Gutter Maintenance And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 915,
+        "name": "Infrared Paving",
+        "isReferenced": false
+      },
+      {
+        "id": 917,
+        "name": "Irrigation Line Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 920,
+        "name": "Leak Detection And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 921,
+        "name": "Loading Dock Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 925,
+        "name": "Parking Lot Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 930,
+        "name": "Sewer Maintenance And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 932,
+        "name": "Sidewalk Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 933,
+        "name": "Sign Repair And Installation",
+        "isReferenced": false
+      }
+    ],
+    "Showroom Repair": [
+      {
+        "id": 1122,
+        "name": "Concrete Wall Installation And Removal",
+        "isReferenced": false
+      },
+      {
+        "id": 1123,
+        "name": "Fixture Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1130,
+        "name": "Outlet Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1133,
+        "name": "Wall Replacement And Installation",
+        "isReferenced": false
+      }
+    ],
+    "Snow Removal": [
+      {
+        "id": 1136,
+        "name": "Deicing",
+        "isReferenced": false
+      },
+      {
+        "id": 1137,
+        "name": "Deicing Full",
+        "isReferenced": false
+      },
+      {
+        "id": 1138,
+        "name": "Deicing Partial",
+        "isReferenced": false
+      },
+      {
+        "id": 1139,
+        "name": "Fence Installation And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 1140,
+        "name": "Fixture Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1144,
+        "name": "Post-Treatment",
+        "isReferenced": false
+      },
+      {
+        "id": 1145,
+        "name": "Pre-Treatment",
+        "isReferenced": false
+      },
+      {
+        "id": 1146,
+        "name": "Rooftop Snow Removal",
+        "isReferenced": false
+      },
+      {
+        "id": 1149,
+        "name": "Sidewalk Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1150,
+        "name": "Snow Hauling",
+        "isReferenced": false
+      },
+      {
+        "id": 1151,
+        "name": "Snow Inspection",
+        "isReferenced": false
+      },
+      {
+        "id": 1152,
+        "name": "Snow Melting",
+        "isReferenced": false
+      },
+      {
+        "id": 1153,
+        "name": "Snow Plowing",
+        "isReferenced": false
+      },
+      {
+        "id": 1154,
+        "name": "Snow Plowing Full",
+        "isReferenced": false
+      },
+      {
+        "id": 1155,
+        "name": "Snow Plowing Partial",
+        "isReferenced": false
+      },
+      {
+        "id": 1156,
+        "name": "Snow Removal",
+        "isReferenced": false
+      },
+      {
+        "id": 1157,
+        "name": "Snow Shoveling",
+        "isReferenced": false
+      }
+    ],
+    "Portering": [
+      {
+        "id": 1071,
+        "name": "Fence Installation And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 1080,
+        "name": "Portering",
+        "isReferenced": false
+      },
+      {
+        "id": 1083,
+        "name": "Sign Repair And Installation",
+        "isReferenced": false
+      },
+      {
+        "id": 1090,
+        "name": "Wall Replacement And Installation",
+        "isReferenced": false
+      }
+    ],
+    "Window Cleaning": [
+      {
+        "id": 1163,
+        "name": "Glass Repair Or Replacement",
+        "isReferenced": false
+      }
+    ],
+    "Electrical": [
+      {
+        "id": 1173,
+        "name": "Inspection",
+        "isReferenced": false
+      },
+      {
+        "id": 1172,
+        "name": "Install",
+        "isReferenced": false
+      },
+      {
+        "id": 1171,
+        "name": "Repair",
+        "isReferenced": false
+      }
+    ],
+    "HVAC": [
+      {
+        "id": 1175,
+        "name": "Install",
+        "isReferenced": false
+      },
+      {
+        "id": 1176,
+        "name": "Maintenance",
+        "isReferenced": false
+      },
+      {
+        "id": 1174,
+        "name": "Repair",
+        "isReferenced": false
+      }
+    ],
+    "Pool Maintenance": [
+      {
+        "id": 1058,
+        "name": "Leak Detection And Repair",
+        "isReferenced": false
+      },
+      {
+        "id": 1059,
+        "name": "Lighting Repairs",
+        "isReferenced": false
+      },
+      {
+        "id": 1060,
+        "name": "Liner Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 1061,
+        "name": "Pool Cleaning",
+        "isReferenced": false
+      }
+    ],
+    "Lot Sweeping": [
+      {
+        "id": 864,
+        "name": "Lot Sweeping",
+        "isReferenced": false
+      }
+    ],
+    "Pressure Washing": [
+      {
+        "id": 1104,
+        "name": "Pressure Wash And Degrease",
+        "isReferenced": false
+      },
+      {
+        "id": 1105,
+        "name": "Pressure Wash With Algae Removal",
+        "isReferenced": false
+      },
+      {
+        "id": 1106,
+        "name": "Pressure Washing",
+        "isReferenced": false
+      },
+      {
+        "id": 1107,
+        "name": "Pressure Washing With Water Reclamation",
+        "isReferenced": false
+      },
+      {
+        "id": 1109,
+        "name": "Sidewalk Pressure Washing W/O Gum Removal",
+        "isReferenced": false
+      }
+    ],
+    "Locksmith": [
+      {
+        "id": 852,
+        "name": "Tile Repair And Replacement",
+        "isReferenced": false
+      },
+      {
+        "id": 855,
+        "name": "Waste Corral Gate Lock Removal And Replacement",
+        "isReferenced": false
+      }
+    ]
+  },
+  "missingByServiceLine": {
+    "Construction": [
+      "Window Installation and Replacement",
+      "Window Installation and Replacement - Large"
+    ],
+    "Electrical": [
+      "Wiring Installation",
+      "Wiring Repair"
+    ]
+  },
+  "correctMapping": {
+    "Appliances": {},
+    "Construction": {},
+    "Electrical": {},
+    "Fire Life Safety": {},
+    "HVAC": {},
+    "Handyman": {},
+    "Inspections": {},
+    "Irrigation": {},
+    "Janitorial": {},
+    "Landscaping": {},
+    "Locksmith": {},
+    "Lot Sweeping": {},
+    "Parking Lot Repair": {},
+    "Plumbing": {},
+    "Pool Maintenance": {},
+    "Portering": {},
+    "Pressure Washing": {},
+    "Security": {},
+    "Showroom Repair": {},
+    "Window Cleaning": {}
+  }
+}

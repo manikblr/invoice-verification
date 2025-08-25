@@ -72,7 +72,7 @@ export default function EnhancedLineItemsTable({
             <h3 className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
               <span>🔍</span>
               <span>Enhanced Validation Results</span>
-            </div>
+            </h3>
             <p className="text-gray-600 mt-1">
               Complete transparency into your validation with AI agent explanations
             </p>

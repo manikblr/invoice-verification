@@ -118,26 +118,21 @@ export default function UnifiedInvoiceForm() {
       if (useEnhancedValidation) {
         // Use enhanced validation API with full transparency
         const enhancedPayload = {
-          invoiceData: {
-            scopeOfWork: data.scope_of_work,
-            serviceLineId: data.service_line_id,
-            serviceTypeId: data.service_type_id,
-            laborHours: data.labor_hours,
-            items: validItems.map(item => ({
-              name: item.name,
-              quantity: item.quantity,
-              unitPrice: item.unit_price,
-              unit: item.unit,
-              type: item.kind === 'material' ? 'material' : 
-                    item.kind === 'equipment' ? 'equipment' : 'labor',
-              additionalContext: item.infoExplanation
-            }))
-          },
-          options: {
-            includeExplanations: true,
-            includeAgentTrace: true,
-            detailLevel: 'detailed'
-          }
+          scopeOfWork: data.scope_of_work,
+          serviceLineId: data.service_line_id,
+          serviceTypeId: data.service_type_id,
+          laborHours: data.labor_hours,
+          items: validItems.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: item.unit_price,
+            unit: item.unit,
+            type: (item.kind === 'material' ? 'material' : 
+                  item.kind === 'equipment' ? 'equipment' : 'labor') as 'material' | 'equipment' | 'labor'
+          })),
+          includeAgentTraces: true,
+          includeDetailedExplanations: true,
+          explanationLevel: 2 as const
         }
         
         const enhancedResponse = await validateInvoiceEnhanced(enhancedPayload)
