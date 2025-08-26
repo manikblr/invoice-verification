@@ -326,7 +326,8 @@ async function executeValidationWithTracing(
         vendorId: 'vendor-001',
         serviceLine: `Service Line ${request.serviceLineId}`,
         serviceType: `Service Type ${request.serviceTypeId}`,
-        workScopeText: request.scopeOfWork
+        workScopeText: request.scopeOfWork,
+        additionalContext: item.additionalContext // Pass user's additional context
       }
       
       const ruleAgentStart = new Date()

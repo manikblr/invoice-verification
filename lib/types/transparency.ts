@@ -37,6 +37,7 @@ export interface LineItemInput {
   unit: string
   unitPrice: number
   type: 'material' | 'equipment' | 'labor'
+  additionalContext?: string // User-provided context for re-validation
 }
 
 export interface ValidationResults {

@@ -40,6 +40,9 @@ export interface RuleContext {
   serviceType?: string;
   hoursOnSite?: number;
   workScopeText?: string;
+  
+  // User-provided additional context for re-validation
+  additionalContext?: string;
 }
 
 export interface RuleResult {
@@ -141,14 +144,30 @@ export class EnhancedRuleAgent {
         }
       }
 
-      // NEW Rule 4: MATERIAL_INCONSISTENT_WITH_CONTEXT
-      const contextInconsistency = this.checkMaterialContextConsistency(context);
-      if (contextInconsistency) {
-        policyCodes.push('MATERIAL_INCONSISTENT_WITH_CONTEXT');
-        facts.contextInconsistency = contextInconsistency;
-        decision = RuleDecision.NEEDS_EXPLANATION;
-        confidence = Math.min(confidence, 0.7);
-        reasons.push(contextInconsistency.reason);
+      // Rule 4: Check if user provided additional context that resolves previous issues
+      if (context.additionalContext && context.additionalContext.trim().length > 0) {
+        facts.userProvidedContext = context.additionalContext;
+        
+        // If user provided context, give them the benefit of the doubt and upgrade to ALLOW
+        // unless there are severe violations (like blacklisted terms or extreme price issues)
+        if (decision !== RuleDecision.DENY && policyCodes.length <= 1) {
+          decision = RuleDecision.ALLOW;
+          confidence = Math.max(confidence, 0.85);
+          reasons.push(`Approved based on user context: "${context.additionalContext.substring(0, 50)}${context.additionalContext.length > 50 ? '...' : ''}"`);
+        } else if (decision === RuleDecision.NEEDS_EXPLANATION) {
+          // Still needs explanation but acknowledge the context was provided
+          reasons.push(`Context provided: "${context.additionalContext.substring(0, 50)}${context.additionalContext.length > 50 ? '...' : ''}" - additional review may be needed`);
+        }
+      } else {
+        // NEW Rule 4: MATERIAL_INCONSISTENT_WITH_CONTEXT (only if no user context provided)
+        const contextInconsistency = this.checkMaterialContextConsistency(context);
+        if (contextInconsistency) {
+          policyCodes.push('MATERIAL_INCONSISTENT_WITH_CONTEXT');
+          facts.contextInconsistency = contextInconsistency;
+          decision = RuleDecision.NEEDS_EXPLANATION;
+          confidence = Math.min(confidence, 0.7);
+          reasons.push(contextInconsistency.reason);
+        }
       }
 
       // Rule 5: VENDOR_EXCLUSION (placeholder)

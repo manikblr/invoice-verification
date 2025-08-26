@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
-import { getMeta, validateUnifiedInvoice } from '../lib/api'
 import { validateInvoiceEnhanced } from '../lib/transparency-api'
-import { MetaResponse, ServiceType, ValidationResponse } from '../lib/types'
+import { MetaResponse, ServiceType } from '../lib/types'
 import { EnhancedValidationResponse } from '../lib/types/transparency'
-import LineItemsTable from './LineItemsTable'
 import EnhancedLineItemsTable from './EnhancedLineItemsTable'
 import UnifiedTypeaheadInput from './UnifiedTypeaheadInput'
 import CurrencyInput from './CurrencyInput'
@@ -20,6 +18,9 @@ interface LineItem {
   kind?: 'material' | 'equipment' // Auto-detected from search
   needsInfo?: boolean // Whether this item needs additional information
   infoExplanation?: string // User-provided explanation
+  validationStatus?: 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT' // Inline validation status
+  validationReason?: string // Brief reason for the status
+  validationConfidence?: number // Confidence score 0-1
 }
 
 interface UnifiedInvoiceFormData {
@@ -33,9 +34,9 @@ interface UnifiedInvoiceFormData {
 export default function UnifiedInvoiceForm() {
   const [meta, setMeta] = useState<MetaResponse | null>(null)
   const [filteredServiceTypes, setFilteredServiceTypes] = useState<ServiceType[]>([])
-  const [result, setResult] = useState<ValidationResponse | null>(null)
+  // Standard validation removed - only enhanced validation is used
   const [enhancedResult, setEnhancedResult] = useState<EnhancedValidationResponse | null>(null)
-  const [useEnhancedValidation, setUseEnhancedValidation] = useState(true)
+  // Enhanced validation is now the default and only option
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   // Inline info request state
@@ -109,47 +110,46 @@ export default function UnifiedInvoiceForm() {
 
   const onSubmit = async (data: UnifiedInvoiceFormData) => {
     setIsSubmitting(true)
-    setResult(null)
     setEnhancedResult(null)
     try {
       // Filter out blank item names
       const validItems = data.items.filter(item => (item.name || '').trim() !== '')
       
-      if (useEnhancedValidation) {
-        // Use enhanced validation API with full transparency
-        const enhancedPayload = {
-          scopeOfWork: data.scope_of_work,
-          serviceLineId: data.service_line_id,
-          serviceTypeId: data.service_type_id,
-          laborHours: data.labor_hours,
-          items: validItems.map(item => ({
-            name: item.name,
-            quantity: item.quantity,
-            unitPrice: item.unit_price,
-            unit: item.unit,
-            type: (item.kind === 'material' ? 'material' : 
-                  item.kind === 'equipment' ? 'equipment' : 'labor') as 'material' | 'equipment' | 'labor'
-          })),
-          includeAgentTraces: true,
-          includeDetailedExplanations: true,
-          explanationLevel: 2 as const
-        }
-        
-        const enhancedResponse = await validateInvoiceEnhanced(enhancedPayload)
-        setEnhancedResult(enhancedResponse)
-      } else {
-        // Fall back to standard validation
-        const payload = {
-          scope_of_work: data.scope_of_work,
-          service_line_id: data.service_line_id,
-          service_type_id: data.service_type_id,
-          labor_hours: data.labor_hours,
-          items: validItems
-        }
-        
-        const response = await validateUnifiedInvoice(payload, true)
-        setResult(response)
+      // Always use enhanced validation (now the default and only option)
+      const enhancedPayload = {
+        scopeOfWork: data.scope_of_work,
+        serviceLineId: data.service_line_id,
+        serviceTypeId: data.service_type_id,
+        laborHours: data.labor_hours,
+        items: validItems.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.unit_price,
+          unit: item.unit,
+          type: (item.kind === 'material' ? 'material' : 
+                item.kind === 'equipment' ? 'equipment' : 'labor') as 'material' | 'equipment' | 'labor'
+        })),
+        includeAgentTraces: true,
+        includeDetailedExplanations: true,
+        explanationLevel: 2 as const
       }
+      
+      const enhancedResponse = await validateInvoiceEnhanced(enhancedPayload)
+      setEnhancedResult(enhancedResponse)
+      
+      // Update inline validation status for each item
+      enhancedResponse.lines.forEach((line, index) => {
+        if (index < validItems.length) {
+          setValue(`items.${index}.validationStatus`, line.status)
+          setValue(`items.${index}.validationReason`, line.explanation?.summary || 'Validated')
+          setValue(`items.${index}.validationConfidence`, line.confidenceScore)
+          
+          // Set needsInfo if the item needs review
+          if (line.status === 'NEEDS_REVIEW') {
+            setValue(`items.${index}.needsInfo`, true)
+          }
+        }
+      })
     } catch (error) {
       console.error('Validation failed:', error)
       alert(`Failed to validate invoice: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -185,6 +185,40 @@ export default function UnifiedInvoiceForm() {
       <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full ${styles[kind]}`}>
         {kind.charAt(0).toUpperCase() + kind.slice(1)}
       </span>
+    )
+  }
+
+  const getValidationStatusBadge = (status?: string, confidence?: number) => {
+    if (!status) return null
+    
+    const styles = {
+      'ALLOW': 'bg-green-100 text-green-800 border-green-200',
+      'NEEDS_REVIEW': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      'REJECT': 'bg-red-100 text-red-800 border-red-200'
+    }
+    
+    const icons = {
+      'ALLOW': '✅',
+      'NEEDS_REVIEW': '⚠️',
+      'REJECT': '❌'
+    }
+    
+    const labels = {
+      'ALLOW': 'Approved',
+      'NEEDS_REVIEW': 'Needs Review',
+      'REJECT': 'Rejected'
+    }
+    
+    return (
+      <div className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded border ${styles[status as keyof typeof styles]}`}>
+        <span className="mr-1">{icons[status as keyof typeof icons]}</span>
+        <span>{labels[status as keyof typeof labels]}</span>
+        {confidence && (
+          <span className="ml-1 text-xs opacity-75">
+            ({Math.round(confidence * 100)}%)
+          </span>
+        )}
+      </div>
     )
   }
 
@@ -226,6 +260,63 @@ export default function UnifiedInvoiceForm() {
       // You could show an error toast here
     } finally {
       setInfoRequest(prev => ({ ...prev, isSubmitting: false }))
+    }
+  }
+
+  // Handler for re-validating a single item with additional context
+  const revalidateItem = async (itemIndex: number) => {
+    const currentItem = watch(`items.${itemIndex}`)
+    const explanation = currentItem?.infoExplanation
+    
+    if (!currentItem || !explanation?.trim()) {
+      alert('Please provide additional context before re-validating.')
+      return
+    }
+
+    setIsSubmitting(true)
+    
+    try {
+      // Create payload for single item re-validation with context
+      const formData = watch()
+      const enhancedPayload = {
+        scopeOfWork: formData.scope_of_work,
+        serviceLineId: formData.service_line_id,
+        serviceTypeId: formData.service_type_id,
+        laborHours: formData.labor_hours,
+        items: [{
+          name: currentItem.name,
+          quantity: currentItem.quantity,
+          unitPrice: currentItem.unit_price,
+          unit: currentItem.unit,
+          type: (currentItem.kind === 'material' ? 'material' : 
+                currentItem.kind === 'equipment' ? 'equipment' : 'labor') as 'material' | 'equipment' | 'labor',
+          additionalContext: explanation // Pass the user's explanation as additional context
+        }],
+        includeAgentTraces: true,
+        includeDetailedExplanations: true,
+        explanationLevel: 2 as const
+      }
+      
+      const enhancedResponse = await validateInvoiceEnhanced(enhancedPayload)
+      
+      // Update the inline status for this specific item
+      if (enhancedResponse.lines.length > 0) {
+        const line = enhancedResponse.lines[0]
+        setValue(`items.${itemIndex}.validationStatus`, line.status)
+        setValue(`items.${itemIndex}.validationReason`, line.explanation?.summary || 'Re-validated with context')
+        setValue(`items.${itemIndex}.validationConfidence`, line.confidenceScore)
+        
+        // Clear needsInfo if the item is now approved
+        if (line.status === 'ALLOW') {
+          setValue(`items.${itemIndex}.needsInfo`, false)
+        }
+      }
+      
+    } catch (error) {
+      console.error('Re-validation failed:', error)
+      alert(`Failed to re-validate item: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -404,12 +495,20 @@ export default function UnifiedInvoiceForm() {
                               {getItemKindBadge(currentItem.kind)}
                             </>
                           )}
+                          {/* Inline Validation Status */}
+                          {currentItem?.validationStatus && (
+                            <div className="flex items-center space-x-2">
+                              {getValidationStatusBadge(currentItem.validationStatus, currentItem.validationConfidence)}
+                            </div>
+                          )}
                         </div>
-                        {currentItem?.infoExplanation && (
-                          <div className="text-xs text-green-600">
-                            ✓ Additional info provided
-                          </div>
-                        )}
+                        <div className="flex items-center space-x-2">
+                          {currentItem?.infoExplanation && (
+                            <div className="text-xs text-green-600">
+                              ✓ Additional info provided
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -470,6 +569,38 @@ export default function UnifiedInvoiceForm() {
                           </span>
                         </div>
                       </div>
+                      
+                      {/* Inline Validation Reason */}
+                      {currentItem?.validationReason && (
+                        <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                          {currentItem.validationReason}
+                        </div>
+                      )}
+                      
+                      {/* Contextual Re-validation for Items Needing Review */}
+                      {currentItem?.validationStatus === 'NEEDS_REVIEW' && (
+                        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                          <div className="text-sm font-medium text-yellow-800 mb-2">
+                            📝 Provide additional context for this item:
+                          </div>
+                          <div className="space-y-2">
+                            <textarea
+                              {...register(`items.${index}.infoExplanation`)}
+                              placeholder="Explain why this item is needed for this project..."
+                              className="w-full p-2 text-sm border border-yellow-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                              rows={2}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => revalidateItem(index)}
+                              disabled={isSubmitting}
+                              className="w-full px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 disabled:opacity-50 transition-colors"
+                            >
+                              🔄 Re-validate with context
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -509,49 +640,6 @@ export default function UnifiedInvoiceForm() {
 
 
 
-        {/* Validation Options */}
-        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-sm font-medium text-gray-900">Validation Mode</h3>
-              <p className="text-xs text-gray-600 mt-1">
-                Enhanced validation provides detailed explanations and agent transparency
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={useEnhancedValidation}
-                  onChange={(e) => setUseEnhancedValidation(e.target.checked)}
-                  className="sr-only"
-                />
-                <div className={`relative w-11 h-6 bg-gray-200 rounded-full transition-colors ${
-                  useEnhancedValidation ? 'bg-blue-600' : 'bg-gray-200'
-                }`}>
-                  <div className={`absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full transition-transform ${
-                    useEnhancedValidation ? 'translate-x-5' : 'translate-x-0'
-                  }`} />
-                </div>
-                <span className="ml-3 text-sm font-medium text-gray-700">
-                  {useEnhancedValidation ? '🔍 Enhanced Validation' : '⚡ Standard Validation'}
-                </span>
-              </label>
-            </div>
-          </div>
-          
-          {useEnhancedValidation && (
-            <div className="text-xs text-gray-600 bg-blue-50 border border-blue-200 rounded p-2">
-              <div className="font-medium text-blue-800 mb-1">Enhanced validation includes:</div>
-              <ul className="space-y-1 text-blue-700">
-                <li>• Step-by-step decision explanations</li>
-                <li>• Full agent execution tracing</li>
-                <li>• Confidence scores and risk factors</li>
-                <li>• Historical tracking and audit trail</li>
-              </ul>
-            </div>
-          )}
-        </div>
 
         {/* Submit Button */}
         <div className="text-center">
@@ -560,7 +648,7 @@ export default function UnifiedInvoiceForm() {
             disabled={isSubmitting}
             className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {isSubmitting ? 'Validating...' : useEnhancedValidation ? '🔍 Validate with Enhanced AI' : '⚡ Validate Invoice'}
+            {isSubmitting ? 'Validating...' : '🔍 Validate Invoice'}
           </button>
         </div>
       </form>
@@ -568,10 +656,6 @@ export default function UnifiedInvoiceForm() {
       {/* Results Display */}
       {enhancedResult && (
         <EnhancedLineItemsTable result={enhancedResult} />
-      )}
-      
-      {result && !enhancedResult && (
-        <LineItemsTable result={result} />
       )}
 
       {/* Inline Info Request Modal */}
