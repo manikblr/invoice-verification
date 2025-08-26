@@ -18,7 +18,7 @@ interface LineItem {
   kind?: 'material' | 'equipment' // Auto-detected from search
   needsInfo?: boolean // Whether this item needs additional information
   infoExplanation?: string // User-provided explanation
-  validationStatus?: 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT' // Inline validation status
+  validationStatus?: 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT' | 'ERROR' // Inline validation status
   validationReason?: string // Brief reason for the status
   validationConfidence?: number // Confidence score 0-1
 }
@@ -194,19 +194,22 @@ export default function UnifiedInvoiceForm() {
     const styles = {
       'ALLOW': 'bg-green-100 text-green-800 border-green-200',
       'NEEDS_REVIEW': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      'REJECT': 'bg-red-100 text-red-800 border-red-200'
+      'REJECT': 'bg-red-100 text-red-800 border-red-200',
+      'ERROR': 'bg-gray-100 text-gray-800 border-gray-200'
     }
     
     const icons = {
       'ALLOW': '✅',
       'NEEDS_REVIEW': '⚠️',
-      'REJECT': '❌'
+      'REJECT': '❌',
+      'ERROR': '❓'
     }
     
     const labels = {
       'ALLOW': 'Approved',
       'NEEDS_REVIEW': 'Needs Review',
-      'REJECT': 'Rejected'
+      'REJECT': 'Rejected',
+      'ERROR': 'Error'
     }
     
     return (
