@@ -303,22 +303,6 @@ export default function AgentTooltip({
                   📋 Copy Agent Info
                 </button>
               </div>
-              
-              {/* View in Pipeline Button */}
-              {agentExecution && (
-                <div className="pt-2">
-                  <button
-                    onClick={() => {
-                      // This would typically trigger a navigation or state change
-                      // to show this agent in the pipeline view
-                      console.log('View agent in pipeline:', agentExecution.id)
-                    }}
-                    className="text-xs bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded transition-colors w-full"
-                  >
-                    📊 View in Pipeline
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </>

@@ -98,42 +98,37 @@ export default function AgentPipelineVisualization({
       </div>
 
       {/* Execution Summary */}
-      <div className="mt-3 pt-3 border-t border-gray-200">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div className="text-center">
-                    <div className="font-medium text-gray-900 text-2xl">{executionSummary.totalAgents}</div>
-                    <div className="text-gray-600">Total Agents</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-medium text-gray-900 text-2xl">{Math.round(executionSummary.averageConfidence * 100)}%</div>
-                    <div className="text-gray-600">Avg Confidence</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-medium text-gray-900 text-2xl">{executionSummary.errorCount}</div>
-                    <div className="text-gray-600">Errors</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-medium text-gray-900 text-2xl">
-                      {Math.round(((executionSummary.totalAgents - executionSummary.errorCount) / executionSummary.totalAgents) * 100)}%
-                    </div>
-                    <div className="text-gray-600">Success Rate</div>
-                  </div>
-                </div>
-                
-                {executionSummary.bottlenecks.length > 0 && (
-                  <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded">
-                    <div className="flex items-center">
-                      <svg className="h-5 w-5 text-amber-500 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      <div className="text-sm font-medium text-amber-800">Performance Bottlenecks:</div>
-                    </div>
-                    <div className="text-sm text-amber-700 mt-1">
-                      {executionSummary.bottlenecks.join(', ')}
-                    </div>
-                  </div>
-                )}
-              </div>
+      <div className="p-4 bg-gray-50 border-b border-gray-200">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <div className="font-medium text-gray-900">{executionSummary.totalAgents}</div>
+            <div className="text-gray-600">Total Agents</div>
+          </div>
+          <div>
+            <div className="font-medium text-gray-900">{Math.round(executionSummary.averageConfidence * 100)}%</div>
+            <div className="text-gray-600">Avg Confidence</div>
+          </div>
+          <div>
+            <div className="font-medium text-gray-900">{executionSummary.errorCount}</div>
+            <div className="text-gray-600">Errors</div>
+          </div>
+          <div>
+            <div className="font-medium text-gray-900">
+              {Math.round(((executionSummary.totalAgents - executionSummary.errorCount) / executionSummary.totalAgents) * 100)}%
+            </div>
+            <div className="text-gray-600">Success Rate</div>
+          </div>
+        </div>
+        
+        {executionSummary.bottlenecks.length > 0 && (
+          <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded">
+            <div className="text-xs font-medium text-amber-800">Performance Bottlenecks:</div>
+            <div className="text-xs text-amber-700 mt-1">
+              {executionSummary.bottlenecks.join(', ')}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Main Content */}
       <div className="p-4">
@@ -220,28 +215,6 @@ export default function AgentPipelineVisualization({
                           </div>
                         </div>
                       )}
-                      
-                      {agent.dataSourcesAccessed.length > 0 && (
-                        <div className="mt-3">
-                          <h5 className="font-medium text-gray-900 mb-1">Data Sources Accessed</h5>
-                          <div className="flex flex-wrap gap-1">
-                            {agent.dataSourcesAccessed.map((source, idx) => (
-                              <span key={idx} className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
-                                {source}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="mt-3">
-                        <h5 className="font-medium text-gray-900 mb-1">Prompt Template</h5>
-                        <div className="bg-blue-50 p-2 rounded text-xs">
-                          <p>
-                            System prompt for {agent.agentName}: Execute {agent.agentStage.replace(/_/g, ' ')} stage validation with provided context and business rules. Return structured decision with confidence scoring.
-                          </p>
-                        </div>
-                      </div>
                     </div>
                   )}
                 </div>

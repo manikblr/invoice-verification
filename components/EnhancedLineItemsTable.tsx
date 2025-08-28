@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { EnhancedValidationResponse, EnhancedLineItemResult } from '@/lib/types/transparency'
 import ExplanationCard from './ExplanationCard'
 import AgentPipelineVisualization from './AgentPipelineVisualization'
-import AgentExecutionTimeline from './AgentExecutionTimeline'
 
 interface EnhancedLineItemsTableProps {
   result: EnhancedValidationResponse
@@ -17,7 +16,6 @@ export default function EnhancedLineItemsTable({
 }: EnhancedLineItemsTableProps) {
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
   const [filterStatus, setFilterStatus] = useState<'all' | 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT'>('all')
-  const [viewMode, setViewMode] = useState<'summary' | 'timeline' | 'pipeline'>('summary')
 
   const toggleItemExpansion = (index: number) => {
     const newExpanded = new Set(expandedItems)
@@ -63,6 +61,7 @@ export default function EnhancedLineItemsTable({
       console.error('Failed to copy: ', err)
     }
   }
+
 
   return (
     <div className={`mt-8 space-y-6 ${className}`}>
@@ -115,60 +114,12 @@ export default function EnhancedLineItemsTable({
         </div>
       </div>
 
-      {/* View Mode Selector */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-gray-700">View Mode:</span>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setViewMode('summary')}
-                className={`px-3 py-1 text-sm rounded-lg border ${
-                  viewMode === 'summary'
-                    ? 'bg-blue-50 border-blue-300 text-blue-700'
-                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                Summary
-              </button>
-              <button
-                onClick={() => setViewMode('timeline')}
-                className={`px-3 py-1 text-sm rounded-lg border ${
-                  viewMode === 'timeline'
-                    ? 'bg-blue-50 border-blue-300 text-blue-700'
-                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                Timeline
-              </button>
-              <button
-                onClick={() => setViewMode('pipeline')}
-                className={`px-3 py-1 text-sm rounded-lg border ${
-                  viewMode === 'pipeline'
-                    ? 'bg-blue-50 border-blue-300 text-blue-700'
-                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                Pipeline
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Agent Execution Visualization */}
-      {viewMode === 'timeline' && result.agentTraces && (
-        <AgentExecutionTimeline
-          agentExecutions={result.agentTraces}
-          className="mt-4"
-        />
-      )}
-
-      {viewMode === 'pipeline' && result.agentTraces && (
+      {/* Detailed Agent Pipeline Visualization */}
+      {result.agentTraces && (
         <AgentPipelineVisualization
           agentExecutions={result.agentTraces}
           executionSummary={result.executionSummary}
-          className="mt-4"
         />
       )}
 
@@ -228,7 +179,7 @@ export default function EnhancedLineItemsTable({
                     </h5>
                     <div className="text-sm text-gray-500 mt-1">
                       {line.type !== 'labor' && 
-                        `${line.input.quantity} × ${line.input.unitPrice} = ${(line.input.quantity * line.input.unitPrice).toFixed(2)}`
+                        `${line.input.quantity} × $${line.input.unitPrice} = $${(line.input.quantity * line.input.unitPrice).toFixed(2)}`
                       }
                       <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded capitalize">
                         {line.type}
@@ -271,18 +222,6 @@ export default function EnhancedLineItemsTable({
                   confidenceScore={line.confidenceScore}
                   className="border-0 rounded-none"
                 />
-                
-                {/* Agent Execution Timeline for this specific item */}
-                {viewMode === 'timeline' && line.agentContributions && line.agentContributions.length > 0 && (
-                  <div className="p-4 bg-gray-50">
-                    <h4 className="font-medium text-gray-900 mb-3">Agent Execution for "{line.input.name}"</h4>
-                    <AgentExecutionTimeline
-                      agentExecutions={result.agentTraces || []}
-                      lineItem={line}
-                      className="border-0 shadow-none bg-transparent"
-                    />
-                  </div>
-                )}
               </div>
             )}
           </div>
