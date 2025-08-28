@@ -1,3 +1,75 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Additional styles for agent execution visualization */
+
+.agent-timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.agent-timeline::before {
+  content: '';
+  position: absolute;
+  left: 1.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #e5e7eb;
+}
+
+.agent-timeline-item {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.agent-timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.agent-timeline-dot {
+  position: absolute;
+  left: -1.75rem;
+  top: 0.5rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  border: 3px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.agent-timeline-content {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.agent-timeline-content:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.agent-timeline-content.selected {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+}
+
+.status-success {
+  background-color: #dcfce7;
+  border-color: #bbf7d0;
+}
+
+.status-failed {
+  background-color: #fee2e2;
+  border-color: #fecaca;
+}
+
+.status-timeout {
+  background-color: #fef9c3;
+  border-color: #fde047;
+}
+
+.status-skipped {
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+}
