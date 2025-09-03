@@ -4,28 +4,6 @@
 
 The Invoice Verification AI Platform is a proof-of-concept (POC) solution that automates the validation of facilities management (FM) invoice line items using a sophisticated multi-agent AI pipeline. The system dramatically reduces manual review time while maintaining high accuracy in identifying legitimate materials and equipment versus invalid, irrelevant, or fraudulent items.
 
-**Key Metrics:**
-- **94% Performance Improvement**: Validation reduced from 8-10 seconds to ~5.4 seconds per item
-- **7-Agent Pipeline**: Comprehensive validation covering pre-screening through final explanation
-- **85% Automation Rate**: Most items processed without human intervention
-- **Real-time Processing**: Live validation with immediate feedback
-
----
-
-## Business Problem & Solution
-
-### Problem
-Facilities Management companies process thousands of invoice line items monthly, requiring manual review to verify:
-- Item legitimacy (is this a real FM material/equipment?)
-- Service relevance (does this item make sense for the specific job?)
-- Price reasonableness (is the cost within acceptable ranges?)
-- Procurement compliance (meets company standards and policies?)
-
-Manual review is time-consuming, inconsistent, and prone to human error.
-
-### Solution
-An AI-powered validation pipeline that automatically processes invoice line items through multiple specialized agents, providing instant decisions with detailed explanations for edge cases requiring human review.
-
 ---
 
 ## Technology Architecture
