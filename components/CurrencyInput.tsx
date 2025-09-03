@@ -12,7 +12,18 @@ export default function CurrencyInput({ value, onChange, placeholder = "0.00", c
       onChange(undefined)
     } else {
       const parsed = parseFloat(val)
-      onChange(isNaN(parsed) ? undefined : parsed)
+      if (isNaN(parsed)) {
+        onChange(undefined)
+      } else if (parsed <= 0) {
+        // Prevent zero or negative values - show warning briefly
+        e.target.style.borderColor = '#f87171'
+        setTimeout(() => {
+          e.target.style.borderColor = ''
+        }, 1500)
+        onChange(undefined)
+      } else {
+        onChange(parsed)
+      }
     }
   }
 
@@ -29,7 +40,7 @@ export default function CurrencyInput({ value, onChange, placeholder = "0.00", c
       <input
         type="number"
         step="0.01"
-        min="0"
+        min="0.01"
         value={value ?? ''}
         onChange={handleChange}
         onFocus={handleFocus}

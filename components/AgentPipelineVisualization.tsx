@@ -1,9 +1,6 @@
 'use client'
 
-import { useState } from 'react'
 import { AgentExecution, ExecutionSummary } from '@/lib/types/transparency'
-import AgentTooltip from './AgentTooltip'
-import TextExpandOnHover from './TextExpandOnHover'
 
 interface AgentPipelineVisualizationProps {
   agentExecutions: AgentExecution[]
@@ -16,9 +13,6 @@ export default function AgentPipelineVisualization({
   executionSummary,
   className = ''
 }: AgentPipelineVisualizationProps) {
-  const [selectedAgent, setSelectedAgent] = useState<AgentExecution | null>(null)
-  const [viewMode, setViewMode] = useState<'timeline' | 'stages' | 'performance'>('timeline')
-
   const getStageColor = (stage: string) => {
     const colors = {
       'preprocessing': 'bg-blue-100 border-blue-300 text-blue-800',
@@ -48,16 +42,128 @@ export default function AgentPipelineVisualization({
     return `${(ms / 60000).toFixed(1)}m`
   }
 
-  const groupByStage = () => {
-    return agentExecutions.reduce((acc, exec) => {
-      if (!acc[exec.agentStage]) acc[exec.agentStage] = []
-      acc[exec.agentStage].push(exec)
-      return acc
-    }, {} as Record<string, AgentExecution[]>)
+  const formatAgentInput = (agent: AgentExecution): string => {
+    const input = agent.inputData
+    if (!input) return 'No input data'
+    
+    if (input.itemName) {
+      return `Item: "${input.itemName}" (${input.itemType || 'material'})`
+    }
+    if (input.scopeOfWork) {
+      return `Scope: "${input.scopeOfWork}"`
+    }
+    if (input.line_item_id || input.lineItemId) {
+      return `Processing item #${input.line_item_id || input.lineItemId}`
+    }
+    
+    // Format common properties
+    const keys = Object.keys(input).slice(0, 3)
+    return keys.map(key => `${key}: ${JSON.stringify(input[key]).substring(0, 30)}${JSON.stringify(input[key]).length > 30 ? '...' : ''}`).join(', ')
   }
 
+  const formatAgentOutput = (agent: AgentExecution): string => {
+    const output = agent.outputData
+    if (!output) return 'No output data'
+    
+    if (output.status) {
+      return `Status: ${output.status}${output.message ? ` - ${output.message}` : ''}`
+    }
+    if (output.decision) {
+      return `Decision: ${output.decision}${output.confidence ? ` (${Math.round(output.confidence * 100)}% confidence)` : ''}`
+    }
+    if (output.canonicalItemId) {
+      return `Matched: ${output.canonicalItemId} (${Math.round((output.confidence || 0) * 100)}% confidence)`
+    }
+    if (output.processedItems !== undefined) {
+      return `Processed ${output.processedItems} items successfully`
+    }
+    
+    // Format common properties
+    const keys = Object.keys(output).slice(0, 2)
+    return keys.map(key => `${key}: ${JSON.stringify(output[key]).substring(0, 40)}${JSON.stringify(output[key]).length > 40 ? '...' : ''}`).join(', ')
+  }
+
+  const getAgentInfo = (agentName: string) => {
+    const agentDescriptions: Record<string, any> = {
+      'Pre-Validation Agent': {
+        description: 'Checks for blacklisted terms and validates item structure before main processing',
+        role: 'Content Safety & Structure Validation',
+        prompt: 'Validate item names against blacklist and check for proper formatting. Reject items with inappropriate terms or invalid structure.',
+        fullPrompt: 'You are a Pre-Validation Agent responsible for content safety and structure validation. Your task is to:\n\n1. Check if the item name contains any blacklisted terms (labor, fees, personal items, etc.)\n2. Validate that the item name has proper structure (minimum length, no placeholder text)\n3. Ensure the item appears to be a legitimate facility management item\n\nBlacklisted terms include: helper, labour, labor, technician, worker, employee, fees, fee, charges, charge, visit, trip, mileage, tax, gst, vat, misc, miscellaneous, food, beverage\n\nReturn APPROVED for valid items or REJECTED with reason for invalid items.',
+        model: 'Deterministic Rules Engine',
+        icon: '🛡️'
+      },
+      'Item Validator Agent': {
+        description: 'Uses AI to classify content and detect inappropriate facility management items',
+        role: 'Content Classification & Appropriateness',
+        prompt: 'Classify this item for appropriateness in facility management context. Detect spam, profanity, or non-facility items.',
+        fullPrompt: 'You are an Item Validator Agent using advanced NLP to classify invoice items. Your responsibilities:\n\n1. Content Classification: Determine if this is a legitimate facility management item\n2. Spam Detection: Identify spam, gibberish, or test entries\n3. Profanity Filter: Flag inappropriate language or content\n4. Context Validation: Ensure item makes sense for commercial/facility use\n\nAnalyze the item name and description. Consider:\n- Is this a real product/service?\n- Does it belong in facility management?\n- Is the language appropriate?\n- Could this be spam or abuse?\n\nReturn VALID with confidence score, or INVALID with detailed reasoning.',
+        model: 'OpenAI GPT-4o Mini',
+        icon: '✅'
+      },
+      'Item Matcher Agent': {
+        description: 'Matches invoice items to canonical catalog using hybrid search algorithms',
+        role: 'Catalog Matching & Item Identification',
+        prompt: 'Find the best matching canonical item using exact, synonym, and fuzzy matching. Provide confidence score.',
+        fullPrompt: 'You are an Item Matcher Agent using hybrid search algorithms to find canonical matches. Your process:\n\n1. Exact Match: Look for direct matches in canonical catalog\n2. Synonym Matching: Use domain-specific synonyms and variations\n3. Fuzzy Matching: Apply string similarity algorithms for partial matches\n4. Embedding Search: Use semantic similarity for conceptual matches\n\nFor the given item, search through our canonical catalog using:\n- Direct string matching\n- Industry terminology synonyms\n- Fuzzy string algorithms (Levenshtein, Jaro-Winkler)\n- Vector embeddings for semantic similarity\n\nReturn the best matching canonical_item_id with confidence score (0-1). If confidence < 0.7, recommend web search.',
+        model: 'Hybrid Algorithm + Embeddings',
+        icon: '🎯'
+      },
+      'Web Search & Ingest Agent': {
+        description: 'Searches vendor websites for items not found in canonical catalog',
+        role: 'External Data Discovery & Enrichment',
+        prompt: 'Search vendor sites for this item and create new canonical entries if legitimate matches found.',
+        fullPrompt: 'You are a Web Search & Ingest Agent that discovers new items from trusted vendor sites. Your workflow:\n\n1. Vendor Site Search: Query whitelisted vendor websites (Grainger, Home Depot, Amazon Business)\n2. Product Validation: Verify found items are legitimate facility management products\n3. Data Extraction: Extract key product details (name, price range, specifications)\n4. Canonical Creation: Generate new canonical items for discovered products\n\nWhen an item has low catalog confidence (<0.7):\n- Search trusted vendor APIs/sites\n- Validate product legitimacy and relevance\n- Extract standardized product information\n- Create canonical_item_id with market price ranges\n- Return match results with web-sourced data\n\nOnly create canonical items for legitimate, commercially available products.',
+        model: 'Web Search APIs + GPT-4o Mini',
+        icon: '🌐'
+      },
+      'Price Learner Agent': {
+        description: 'Validates unit prices against market ranges and historical data',
+        role: 'Price Validation & Market Analysis',
+        prompt: 'Analyze this price against market ranges and historical data. Flag significant variances for review.',
+        fullPrompt: 'You are a Price Learner Agent that validates unit prices against market data. Your analysis includes:\n\n1. Market Range Comparison: Compare price to established market ranges\n2. Historical Analysis: Check against historical pricing trends\n3. Variance Detection: Flag significant deviations from expected ranges\n4. Source Integration: Use both catalog and web-discovered price data\n\nFor each price validation:\n- Compare unit_price to canonical item price range (min/max)\n- Calculate variance percentage from expected range\n- Classify as: within-range, cheaper, or costlier\n- Use web-search data when available for more accurate ranges\n- Flag prices >150% of max range for rejection\n- Accept cheaper prices as beneficial to customer\n\nReturn validation result with detailed price comparison reasoning.',
+        model: 'Statistical Analysis + Business Rules',
+        icon: '💰'
+      },
+      'Rule Applier Agent': {
+        description: 'Applies deterministic business rules to determine final approval status',
+        role: 'Business Policy & Compliance Enforcement',
+        prompt: 'Apply all business rules including vendor policies, quantity limits, and compliance requirements to make final decision.',
+        fullPrompt: 'You are a Rule Applier Agent enforcing business policies through deterministic rules. Your rule engine evaluates:\n\n1. Price Rules:\n   - PRICE_EXCEEDS_MAX_150: Reject prices >150% of market max\n   - PRICE_COSTLIER_THAN_MARKET: Flag costlier items for explanation\n   - Accept cheaper prices as beneficial\n\n2. Catalog Rules:\n   - NO_CANONICAL_MATCH: Require explanation for unknown items\n   - NO_PRICE_BAND: Manual review when no price data available\n\n3. Business Rules:\n   - QUANTITY_OVER_LIMIT: Flag quantities >1000 units\n   - VENDOR_EXCLUDED_BY_RULE: Block blacklisted vendors\n   - BLACKLISTED_ITEM: Reject prohibited item categories\n\n4. Context Rules:\n   - MATERIAL_INCONSISTENT_WITH_CONTEXT: Flag mismatched items\n   - SERVICE_CONTEXT_INCONSISTENT: Check service type alignment\n\nReturn ALLOW, DENY, or NEEDS_EXPLANATION with policy codes and detailed reasoning.',
+        model: 'Deterministic Rules Engine v2.1',
+        icon: '📋'
+      },
+      'Explanation Agent': {
+        description: 'Generates human-readable explanations for validation decisions',
+        role: 'Decision Explanation & User Communication',
+        prompt: 'Generate clear explanation for why this item requires additional information or was rejected.',
+        fullPrompt: 'You are an Explanation Agent that creates clear, user-friendly explanations for validation decisions. Your task:\n\n1. Decision Synthesis: Combine all agent outputs into coherent explanation\n2. User Communication: Translate technical decisions into business language\n3. Action Guidance: Provide clear next steps for users\n4. Context Awareness: Consider user expertise level and business context\n\nFor each explanation:\n- Summarize why the item needs review or was rejected\n- Explain specific concerns in business terms\n- Provide actionable steps for resolution\n- Include relevant policy context when helpful\n- Maintain professional but friendly tone\n\nAvoid technical jargon. Focus on helping users understand and resolve issues efficiently.',
+        model: 'OpenAI GPT-4o',
+        icon: '💬'
+      },
+      'Full Agent Pipeline': {
+        description: 'Orchestrates the complete multi-agent validation workflow',
+        role: 'Workflow Coordination & Result Synthesis',
+        prompt: 'Coordinate all validation agents and synthesize results into final decision with complete audit trail.',
+        fullPrompt: 'You are the Full Agent Pipeline orchestrator managing the complete validation workflow. Your responsibilities:\n\n1. Agent Coordination: Execute agents in proper sequence with dependency management\n2. Data Flow: Ensure outputs from each agent feed correctly into subsequent agents\n3. Result Synthesis: Combine all agent decisions into final recommendation\n4. Audit Trail: Maintain complete execution logs and decision reasoning\n\nWorkflow stages:\n1. Pre-validation → Item Validation → Item Matching\n2. Web Search (if low confidence match)\n3. Price Learning → Rule Application → Explanation (if needed)\n\nEach stage builds on previous results. Ensure proper error handling, timeout management, and comprehensive logging for audit purposes.',
+        model: 'TypeScript Orchestration Engine',
+        icon: '🤖'
+      }
+    }
+    
+    return agentDescriptions[agentName] || {
+      description: 'Specialized processing agent for invoice validation',
+      role: 'Custom Processing & Analysis',
+      prompt: 'Perform specialized validation or processing tasks within the invoice verification pipeline.',
+      fullPrompt: 'You are a specialized agent within the invoice validation pipeline. Your specific role and configuration depend on your agent type and the validation requirements of the current context. You should follow the established patterns of input processing, decision making, and output generation that integrate seamlessly with the overall pipeline workflow.',
+      model: 'Custom Agent Configuration',
+      icon: '⚙️'
+    }
+  }
+
+
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg ${className}`}>
+    <div className={`bg-white border border-gray-200 rounded-lg overflow-visible ${className}`}>
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
@@ -69,30 +175,9 @@ export default function AgentPipelineVisualization({
           </div>
           
           <div className="flex space-x-2">
-            <button
-              onClick={() => setViewMode('timeline')}
-              className={`px-3 py-1 text-sm rounded ${
-                viewMode === 'timeline' ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              Timeline
-            </button>
-            <button
-              onClick={() => setViewMode('stages')}
-              className={`px-3 py-1 text-sm rounded ${
-                viewMode === 'stages' ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              Stages
-            </button>
-            <button
-              onClick={() => setViewMode('performance')}
-              className={`px-3 py-1 text-sm rounded ${
-                viewMode === 'performance' ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              Performance
-            </button>
+            <span className="px-3 py-1 text-sm rounded bg-blue-100 text-blue-800">
+              Agent Details
+            </span>
           </div>
         </div>
       </div>
@@ -131,210 +216,150 @@ export default function AgentPipelineVisualization({
       </div>
 
       {/* Main Content */}
-      <div className="p-4">
-        {viewMode === 'timeline' && (
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-gray-700">Execution Timeline</h4>
-            <div className="space-y-2">
-              {agentExecutions.map((agent, index) => (
-                <div
-                  key={agent.id}
-                  className={`p-3 border rounded cursor-pointer transition-colors ${
-                    selectedAgent?.id === agent.id 
-                      ? 'border-blue-300 bg-blue-50' 
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  onClick={() => setSelectedAgent(selectedAgent?.id === agent.id ? null : agent)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm font-mono text-gray-500">#{index + 1}</span>
-                        <span className="text-sm">{getStatusIcon(agent.status)}</span>
-                      </div>
-                      <div>
-                        <AgentTooltip agentName={agent.agentName} agentExecution={agent}>
-                          <div className="font-medium text-blue-600 hover:text-blue-800 cursor-help border-b border-dotted border-blue-300">
-                            {agent.agentName}
-                          </div>
-                        </AgentTooltip>
-                        <div className="text-xs text-gray-600">{agent.agentVersion}</div>
-                      </div>
-                      <span className={`px-2 py-1 text-xs rounded border ${getStageColor(agent.agentStage)}`}>
-                        {agent.agentStage.replace(/_/g, ' ')}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3 text-xs text-gray-500">
-                      <span>{formatDuration(agent.executionTime)}</span>
-                      {agent.confidenceScore && (
-                        <span>{Math.round(agent.confidenceScore * 100)}%</span>
-                      )}
-                      <span>{new Date(agent.startTime).toLocaleTimeString()}</span>
-                    </div>
-                  </div>
+      <div className="p-4 overflow-visible">
+        <div className="overflow-x-auto overflow-y-visible">
+          <h4 className="text-sm font-medium text-gray-700 mb-3">Agent Execution Details</h4>
+          <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-visible">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Agent
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role & Description
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Prompt/Configuration
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Input Data
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Output Data
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {agentExecutions.map((agent, index) => {
+                  const agentInfo = getAgentInfo(agent.agentName)
+                  const isLastRows = index >= agentExecutions.length - 2 // Last 2 rows
                   
-                  {selectedAgent?.id === agent.id && (
-                    <div className="mt-3 pt-3 border-t border-gray-200 text-sm">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <h5 className="font-medium text-gray-900 mb-2">Input Data</h5>
-                          <pre className="bg-gray-100 p-2 rounded text-xs overflow-auto max-h-32">
-                            {JSON.stringify(agent.inputData, null, 2)}
-                          </pre>
-                        </div>
-                        <div>
-                          <h5 className="font-medium text-gray-900 mb-2">Output Data</h5>
-                          <pre className="bg-gray-100 p-2 rounded text-xs overflow-auto max-h-32">
-                            {JSON.stringify(agent.outputData, null, 2)}
-                          </pre>
-                        </div>
-                      </div>
-                      
-                      {agent.decisionRationale && (
-                        <div className="mt-3">
-                          <h5 className="font-medium text-gray-900 mb-1">Decision Rationale</h5>
-                          <TextExpandOnHover 
-                            text={agent.decisionRationale}
-                            maxLength={150}
-                            className="text-gray-700"
-                            showCopyButton={true}
-                          />
-                        </div>
-                      )}
-                      
-                      {agent.toolsUsed.length > 0 && (
-                        <div className="mt-3">
-                          <h5 className="font-medium text-gray-900 mb-1">Tools Used</h5>
-                          <div className="flex flex-wrap gap-1">
-                            {agent.toolsUsed.map((tool, idx) => (
-                              <span key={idx} className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded">
-                                {tool}
+                  return (
+                    <tr key={agent.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-4">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-2xl">{agentInfo.icon}</span>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {agent.agentName}
+                            </div>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className="text-sm">{getStatusIcon(agent.status)}</span>
+                              <span className={`px-2 py-1 text-xs rounded border ${getStageColor(agent.agentStage)}`}>
+                                {agent.agentStage.replace(/_/g, ' ')}
                               </span>
-                            ))}
+                            </div>
                           </div>
                         </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {viewMode === 'stages' && (
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium text-gray-700">Execution by Stages</h4>
-            {Object.entries(groupByStage()).map(([stage, agents]) => (
-              <div key={stage} className="border border-gray-200 rounded">
-                <div className={`px-3 py-2 border-b border-gray-200 ${getStageColor(stage)}`}>
-                  <div className="flex items-center justify-between">
-                    <h5 className="font-medium capitalize">{stage.replace(/_/g, ' ')}</h5>
-                    <div className="text-xs">
-                      {agents.length} agents • {formatDuration(agents.reduce((sum, a) => sum + a.executionTime, 0))}
-                    </div>
-                  </div>
-                </div>
-                <div className="p-3 space-y-2">
-                  {agents.map(agent => (
-                    <div key={agent.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                      <div className="flex items-center space-x-2">
-                        <span>{getStatusIcon(agent.status)}</span>
-                        <AgentTooltip agentName={agent.agentName} agentExecution={agent}>
-                          <span className="font-medium text-blue-600 hover:text-blue-800 cursor-help border-b border-dotted border-blue-300">
-                            {agent.agentName}
-                          </span>
-                        </AgentTooltip>
-                      </div>
-                      <div className="flex items-center space-x-3 text-xs text-gray-500">
-                        <span>{formatDuration(agent.executionTime)}</span>
-                        {agent.confidenceScore && (
-                          <span>{Math.round(agent.confidenceScore * 100)}%</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {viewMode === 'performance' && (
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium text-gray-700">Performance Analysis</h4>
-            
-            {/* Critical Path */}
-            <div className="border border-gray-200 rounded p-3">
-              <h5 className="font-medium text-gray-900 mb-2">Critical Path (Slowest Agents)</h5>
-              <div className="space-y-2">
-                {executionSummary.criticalPath.map((agentName, index) => {
-                  const agent = agentExecutions.find(a => a.agentName === agentName)
-                  return agent ? (
-                    <div key={agentName} className="flex items-center justify-between py-1">
-                      <span className="text-sm">{index + 1}. {agentName}</span>
-                      <span className="text-xs text-gray-500">{formatDuration(agent.executionTime)}</span>
-                    </div>
-                  ) : null
-                })}
-              </div>
-            </div>
-            
-            {/* Execution Time Distribution */}
-            <div className="border border-gray-200 rounded p-3">
-              <h5 className="font-medium text-gray-900 mb-2">Execution Time Distribution</h5>
-              <div className="space-y-1">
-                {agentExecutions
-                  .sort((a, b) => b.executionTime - a.executionTime)
-                  .map(agent => {
-                    const percentage = (agent.executionTime / executionSummary.totalExecutionTime) * 100
-                    return (
-                      <div key={agent.id} className="flex items-center space-x-2">
-                        <div className="w-24 text-xs text-gray-600 truncate">{agent.agentName}</div>
-                        <div className="flex-1 bg-gray-200 rounded h-2">
-                          <div 
-                            className="bg-blue-500 h-2 rounded"
-                            style={{ width: `${Math.max(percentage, 2)}%` }}
-                          />
+                      </td>
+                      <td className="px-4 py-4">
+                        <div>
+                          <div className="text-sm font-medium text-blue-900 mb-1">
+                            {agentInfo.role}
+                          </div>
+                          <div className="text-xs text-gray-600 leading-relaxed">
+                            {agentInfo.description}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500 w-12 text-right">{percentage.toFixed(1)}%</div>
-                      </div>
-                    )
-                  })
-                }
-              </div>
-            </div>
-            
-            {/* Success/Failure Analysis */}
-            <div className="border border-gray-200 rounded p-3">
-              <h5 className="font-medium text-gray-900 mb-2">Execution Results</h5>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm text-green-600 font-medium">
-                    ✅ Successful: {agentExecutions.filter(a => a.status === 'SUCCESS').length}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Average confidence: {Math.round(
-                      agentExecutions
-                        .filter(a => a.status === 'SUCCESS' && a.confidenceScore)
-                        .reduce((sum, a) => sum + (a.confidenceScore || 0), 0) /
-                      agentExecutions.filter(a => a.status === 'SUCCESS' && a.confidenceScore).length * 100
-                    )}%
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-red-600 font-medium">
-                    ❌ Failed: {agentExecutions.filter(a => a.status === 'FAILED').length}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Timeout: {agentExecutions.filter(a => a.status === 'TIMEOUT').length}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="relative group cursor-help">
+                          <div className="text-xs text-gray-700 bg-gray-50 p-2 rounded border max-w-xs hover:bg-blue-50 transition-colors">
+                            <div className="flex items-center justify-between">
+                              <span className="truncate">{agentInfo.prompt}</span>
+                              <span className="ml-2 text-blue-500">👁️</span>
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              Model: {agentInfo.model}
+                            </div>
+                          </div>
+                          
+                          {/* Hover Tooltip - Smart positioning: above for last rows, below for others */}
+                          <div className={`absolute right-0 hidden group-hover:block z-[9999] w-96 max-w-screen-sm ${
+                            isLastRows ? 'bottom-full mb-2' : 'top-full mt-2'
+                          }`}>
+                            <div className="bg-white border border-gray-300 rounded-lg shadow-xl p-4">
+                              {/* Arrow - points down for tooltips above, up for tooltips below */}
+                              <div className={`absolute right-4 w-4 h-4 bg-white border-gray-300 transform rotate-45 ${
+                                isLastRows 
+                                  ? '-bottom-2 border-b border-r' // Arrow pointing down
+                                  : '-top-2 border-l border-t'    // Arrow pointing up
+                              }`}></div>
+                              
+                              <div className="mb-3">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <span className="text-lg">{agentInfo.icon}</span>
+                                  <h4 className="font-semibold text-gray-900">{agent.agentName}</h4>
+                                </div>
+                                <div className="text-sm text-blue-600 font-medium mb-2">{agentInfo.role}</div>
+                              </div>
+                              
+                              <div className="mb-3">
+                                <h5 className="font-medium text-gray-900 mb-1">Full Prompt:</h5>
+                                <div className="text-xs text-gray-700 bg-gray-50 p-3 rounded border max-h-48 overflow-y-auto whitespace-pre-wrap">
+                                  {agentInfo.fullPrompt}
+                                </div>
+                              </div>
+                              
+                              <div className="mb-3">
+                                <h5 className="font-medium text-gray-900 mb-1">LLM Model:</h5>
+                                <div className="text-sm text-green-700 bg-green-50 p-2 rounded border">
+                                  {agentInfo.model}
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <h5 className="font-medium text-gray-900 mb-1">Description:</h5>
+                                <div className="text-xs text-gray-600">
+                                  {agentInfo.description}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-xs">
+                          <div className="bg-blue-50 p-2 rounded border border-blue-200 max-w-xs">
+                            <div className="text-blue-900 font-medium mb-1">Input:</div>
+                            <div className="text-blue-800">{formatAgentInput(agent)}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-xs">
+                          <div className="bg-green-50 p-2 rounded border border-green-200 max-w-xs">
+                            <div className="text-green-900 font-medium mb-1">Output:</div>
+                            <div className="text-green-800">{formatAgentOutput(agent)}</div>
+                          </div>
+                          {agent.decisionRationale && (
+                            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded max-w-xs">
+                              <div className="text-yellow-900 font-medium mb-1">Decision:</div>
+                              <div className="text-yellow-800 text-xs">
+                                {agent.decisionRationale.length > 100 
+                                  ? agent.decisionRationale.substring(0, 100) + '...'
+                                  : agent.decisionRationale}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

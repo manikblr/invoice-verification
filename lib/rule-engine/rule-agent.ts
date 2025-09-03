@@ -31,6 +31,8 @@ export interface RuleContext {
   quantity: number;
   matchConfidence?: number;
   priceIsValid?: boolean;
+  priceComparison?: 'within-range' | 'cheaper' | 'costlier'; // Price comparison from Price Learner Agent
+  priceRange?: { min: number; max: number }; // Price range from Price Learner Agent
   vendorId?: string;
   projectContext?: string;
   invoiceMetadata?: Record<string, any>;
@@ -110,8 +112,10 @@ export class EnhancedRuleAgent {
       } else {
         facts.canonicalItemId = canonicalItemId;
 
-        // Get price band for validation
-        const priceRange = await this.getPriceRange(canonicalItemId);
+        // Use price range from Price Learner Agent or fallback to database lookup
+        let priceRange = context.priceRange ? 
+          { minPrice: context.priceRange.min, maxPrice: context.priceRange.max } :
+          await this.getPriceRange(canonicalItemId);
         
         if (!priceRange) {
           policyCodes.push('NO_PRICE_BAND');
@@ -122,7 +126,7 @@ export class EnhancedRuleAgent {
           facts.priceRangeMin = priceRange.minPrice;
           facts.priceRangeMax = priceRange.maxPrice;
 
-          // Rule 2: PRICE_EXCEEDS_MAX_150
+          // Rule 2: PRICE_EXCEEDS_MAX_150 - Updated to better handle costlier prices
           const maxAllowed = priceRange.maxPrice * 1.5;
           if (unitPrice > maxAllowed) {
             policyCodes.push('PRICE_EXCEEDS_MAX_150');
@@ -130,16 +134,33 @@ export class EnhancedRuleAgent {
             decision = RuleDecision.DENY;
             confidence = 0.95;
             reasons.push(`Price $${unitPrice} exceeds maximum allowed $${maxAllowed.toFixed(2)} (150% of range)`);
+          } else if (context.priceComparison === 'costlier' && unitPrice > priceRange.maxPrice) {
+            // Flag items that are costlier than typical market price but within limits
+            policyCodes.push('PRICE_COSTLIER_THAN_MARKET');
+            facts.marketMaxPrice = priceRange.maxPrice;
+            facts.pricePremium = unitPrice - priceRange.maxPrice;
+            decision = RuleDecision.NEEDS_EXPLANATION;
+            confidence = 0.8;
+            reasons.push(`Price $${unitPrice} is costlier than typical market rate ($${priceRange.maxPrice}) - explain premium`);
           }
 
-          // Rule 3: PRICE_BELOW_MIN_50
+          // Rule 3: PRICE_BELOW_MIN_50 - Updated to accept cheaper prices
           const minAllowed = priceRange.minPrice * 0.5;
           if (priceRange.minPrice > 0 && unitPrice < minAllowed) {
-            policyCodes.push('PRICE_BELOW_MIN_50');
-            facts.minAllowed50 = minAllowed;
-            decision = RuleDecision.DENY;
-            confidence = 0.95;
-            reasons.push(`Price $${unitPrice} below minimum allowed $${minAllowed.toFixed(2)} (50% of range)`);
+            // Check if this is just a cheaper price (from Price Learner Agent)
+            if (context.priceComparison === 'cheaper') {
+              // Accept cheaper prices - they're beneficial
+              reasons.push(`Price $${unitPrice} is cheaper than typical market rate - approved as beneficial`);
+              facts.cheaperThanMarket = true;
+              facts.priceSavings = minAllowed - unitPrice;
+            } else {
+              // Only flag if it's suspiciously low (not just cheaper)
+              policyCodes.push('PRICE_BELOW_MIN_50');
+              facts.minAllowed50 = minAllowed;
+              decision = RuleDecision.DENY;
+              confidence = 0.95;
+              reasons.push(`Price $${unitPrice} below minimum allowed $${minAllowed.toFixed(2)} (50% of range)`);
+            }
           }
         }
       }
@@ -664,6 +685,7 @@ export class EnhancedRuleAgent {
         'NO_CANONICAL_MATCH',
         'NO_PRICE_BAND', 
         'PRICE_EXCEEDS_MAX_150',
+        'PRICE_COSTLIER_THAN_MARKET',
         'PRICE_BELOW_MIN_50',
         'MATERIAL_INCONSISTENT_WITH_CONTEXT',
         'VENDOR_EXCLUDED_BY_RULE',

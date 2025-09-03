@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { EnhancedValidationResponse, EnhancedLineItemResult } from '@/lib/types/transparency'
 import ExplanationCard from './ExplanationCard'
 import AgentPipelineVisualization from './AgentPipelineVisualization'
+import ConfidenceExplainer from './ConfidenceExplainer'
 
 interface EnhancedLineItemsTableProps {
   result: EnhancedValidationResponse
@@ -64,7 +65,7 @@ export default function EnhancedLineItemsTable({
 
 
   return (
-    <div className={`mt-8 space-y-6 ${className}`}>
+    <div className={`mt-8 space-y-6 overflow-visible ${className}`}>
       {/* Enhanced Header */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
@@ -154,6 +155,7 @@ export default function EnhancedLineItemsTable({
         </div>
       </div>
 
+
       {/* Enhanced Line Items */}
       <div className="space-y-4">
         <h4 className="text-lg font-semibold text-gray-900">📋 Item-by-Item Analysis</h4>
@@ -197,8 +199,13 @@ export default function EnhancedLineItemsTable({
                         'Rejected'
                       }
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {Math.round(line.confidenceScore * 100)}% confidence
+                    <div className="mt-1">
+                      <ConfidenceExplainer 
+                        confidenceScore={line.confidenceScore}
+                        status={line.status}
+                        itemName={line.input.name}
+                        className="inline-block"
+                      />
                     </div>
                   </div>
                 </div>
