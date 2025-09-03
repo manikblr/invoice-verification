@@ -9,6 +9,8 @@ import EnhancedLineItemsTable from './EnhancedLineItemsTable'
 import UnifiedTypeaheadInput from './UnifiedTypeaheadInput'
 import CurrencyInput from './CurrencyInput'
 import { InlineInfoRequest, InfoIcon } from './InlineInfoRequest'
+import RevalidationProgress from './RevalidationProgress'
+import BeforeAfterComparison from './BeforeAfterComparison'
 
 interface LineItem {
   name: string
@@ -45,6 +47,23 @@ export default function UnifiedInvoiceForm() {
     itemIndex: number | null
     isSubmitting: boolean
   }>({ isOpen: false, itemIndex: null, isSubmitting: false })
+
+  // Re-validation progress tracking state
+  const [revalidationProgress, setRevalidationProgress] = useState<{
+    isRevalidating: boolean
+    itemIndex: number | null
+    itemName: string
+    additionalContext: string
+  }>({ isRevalidating: false, itemIndex: null, itemName: '', additionalContext: '' })
+
+  // Before/after comparison state
+  const [beforeAfterComparison, setBeforeAfterComparison] = useState<{
+    show: boolean
+    itemName: string
+    beforeResult: any
+    afterResult: any
+    userContext: string
+  } | null>(null)
 
   const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<UnifiedInvoiceFormData>({
     defaultValues: {
@@ -276,6 +295,24 @@ export default function UnifiedInvoiceForm() {
       return
     }
 
+    // Capture current state for before/after comparison
+    const beforeResult = {
+      status: currentItem.validationStatus || 'NEEDS_REVIEW',
+      confidenceScore: currentItem.validationConfidence || 0.8,
+      explanation: {
+        summary: currentItem.validationReason || 'Item needs review',
+        reasoning: ['Initial validation completed']
+      }
+    }
+
+    // Start showing re-validation progress
+    setRevalidationProgress({
+      isRevalidating: true,
+      itemIndex,
+      itemName: currentItem.name,
+      additionalContext: explanation
+    })
+    
     setIsSubmitting(true)
     
     try {
@@ -313,6 +350,29 @@ export default function UnifiedInvoiceForm() {
         if (line.status === 'ALLOW') {
           setValue(`items.${itemIndex}.needsInfo`, false)
         }
+
+        // Prepare after result for comparison
+        const afterResult = {
+          status: line.status,
+          confidenceScore: line.confidenceScore,
+          explanation: {
+            summary: line.explanation?.summary || 'Re-validation completed',
+            reasoning: line.explanation?.reasoning || ['Re-validated with context']
+          },
+          agentTraces: enhancedResponse.agentTraces,
+          executionTime: enhancedResponse.totalExecutionTime
+        }
+
+        // Show before/after comparison after a delay
+        setTimeout(() => {
+          setBeforeAfterComparison({
+            show: true,
+            itemName: currentItem.name,
+            beforeResult,
+            afterResult,
+            userContext: explanation
+          })
+        }, 2500) // Show after progress completes
       }
       
     } catch (error) {
@@ -320,6 +380,15 @@ export default function UnifiedInvoiceForm() {
       alert(`Failed to re-validate item: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsSubmitting(false)
+      // Hide re-validation progress after a short delay to show completion
+      setTimeout(() => {
+        setRevalidationProgress({
+          isRevalidating: false,
+          itemIndex: null,
+          itemName: '',
+          additionalContext: ''
+        })
+      }, 2000) // 2 second delay to show completion
     }
   }
 
@@ -655,6 +724,30 @@ export default function UnifiedInvoiceForm() {
           </button>
         </div>
       </form>
+
+      {/* Re-validation Progress */}
+      {revalidationProgress.isRevalidating && (
+        <RevalidationProgress
+          isRevalidating={revalidationProgress.isRevalidating}
+          itemName={revalidationProgress.itemName}
+          additionalContext={revalidationProgress.additionalContext}
+          onComplete={(result) => {
+            console.log('Re-validation completed:', result)
+          }}
+          className="mt-6"
+        />
+      )}
+
+      {/* Before/After Comparison */}
+      {beforeAfterComparison && (
+        <BeforeAfterComparison
+          itemName={beforeAfterComparison.itemName}
+          beforeResult={beforeAfterComparison.beforeResult}
+          afterResult={beforeAfterComparison.afterResult}
+          userContext={beforeAfterComparison.userContext}
+          className="mt-6"
+        />
+      )}
 
       {/* Results Display */}
       {enhancedResult && (
