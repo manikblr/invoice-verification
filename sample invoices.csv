@@ -1,0 +1,201 @@
+JOB_NUMBER,SERVICE_LINE,SERVICE_TYPE,Labor,LINE_ITEM_TYPE,ITEM_NAME,QUANTITY,UNIT_PRICE
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Mini Excavator,3,645
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Dump trailer and Disposal,1,1575
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Hydro Jetter Large,2,475
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Camera Scope,2,250
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Concrete Buggy,1,495
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Covered trailer 10 x 8,5,75
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Hydro Jetter Small,1,350
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Mechanical Tamper,1,275
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Rotary Hammer,4,65
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Blower (remove dust/debris from interior of store),2,95
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Concrete Saw,1,175
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Jackhammer,1,175
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Equipment,Transom,1,115
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Containment / Barricade,1,1770
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Concrete,5,231.89
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,"Rebar 1/2""",16,24.84
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,2 Way cleanout,2,177.5
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Visqueen / tarps,2,145
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Doyle rods,42,6.88
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,2 x 4 x 8,42,5.37
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Crushed concrete backfill,1.5,105
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Fernco Coupling,3,47.38
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Caulk,12,11.19
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Sand backfill,1.5,85
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,"4"" PVC pipe hanger",9,13.75
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,PVC 4'' Coupling,5,21.76
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,"PVC Pipe 4"" sch 40",5,21.76
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Hanger Bracket,9,8.99
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Threaded Rod 3/8,4,15.77
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Fasteners,4,15.11
+JOB-250701-2226,Plumbing,Extensive Clog,81.46,Material,Glue/Cleaner/Primer,1,38.99
+JOB-250804-0568,Handyman,Tile Repair and Replacement,6.97,Equipment,trowel,1,50
+JOB-250804-0568,Handyman,Tile Repair and Replacement,6.97,Material,porcelain tile,22,20
+JOB-250804-0568,Handyman,Tile Repair and Replacement,6.97,Material,removal and disposal of broken tiles,1,300
+JOB-250804-0568,Handyman,Tile Repair and Replacement,6.97,Material,large format tile thinset,1,110
+JOB-250804-0568,Handyman,Tile Repair and Replacement,6.97,Material,black grout,1,89.99
+JOB-250804-0568,Handyman,Tile Repair and Replacement,6.97,Material,buckets,3,5
+JOB-250804-0568,Handyman,Tile Repair and Replacement,6.97,Material,sponges,3,1.31
+JOB-250805-2490,Handyman,General Carpentry,2,Equipment,undocumentedlabors,2,85
+JOB-250805-2490,Handyman,General Carpentry,2,Equipment,undocumentedlabors,2,85
+JOB-250805-2490,Handyman,General Carpentry,2,Material,1 x 4 straps,4,25
+JOB-250805-2490,Handyman,General Carpentry,2,Material,1 x 4 straps,4,25
+JOB-250805-2490,Handyman,General Carpentry,2,Material,Mounting Hardware,1,75
+JOB-250813-0916,Electrical,Exterior Lighting,3.13,Equipment,Fuel Surcharge,1,11
+JOB-250813-0916,Electrical,Exterior Lighting,3.13,Material,Intermatic TC,1,198.84
+JOB-250813-0916,Electrical,Exterior Lighting,3.13,Material,Electrical Supplies,1,27.49
+JOB-250723-8761,Electrical,Exterior Lighting,0,Equipment,Hours of Electrician's with Bucket Truck,2.75,180
+JOB-250723-8761,Electrical,Exterior Lighting,0,Equipment,Travel for Bucket Truck,1,180
+JOB-250723-8761,Electrical,Exterior Lighting,0,Material,Underground circuit locator,1,308.25
+JOB-250711-7286,Handyman,General Carpentry,9,Equipment,Cleanup and Disposal Fee,1,400
+JOB-250711-7286,Handyman,General Carpentry,9,Equipment,Service fee,1,120
+JOB-250711-7286,Handyman,General Carpentry,9,Equipment,2 techs,4,25
+JOB-250711-7286,Handyman,General Carpentry,9,Material,Disposal fee,1,350
+JOB-250814-2834,Plumbing,Basic Clog,0.25,Equipment,Auger 100 Ft Cable,1,250
+JOB-250814-2834,Plumbing,Basic Clog,0.25,Equipment,Auger 100 Ft Cable,1,250
+JOB-250814-2834,Plumbing,Basic Clog,0.25,Material,Regular Tech,4,50
+JOB-250814-2834,Plumbing,Basic Clog,0.25,Material,Regular Tech,4,50
+JOB-250814-2834,Plumbing,Basic Clog,0.25,Material,Helper Tech,4,22
+JOB-250814-2834,Plumbing,Basic Clog,0.25,Material,Helper Tech,4,22
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Equipment,New hinges,2,75
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Equipment,New hinges,2,75
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Equipment,New hinges,2,75
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Equipment,New hinges,2,75
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Material,LCN door closer,1,380
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Material,LCN door closer,1,380
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Material,LCN door closer,1,380
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Material,LCN door closer,1,380
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Material,Door closer,1,350
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Material,Door closer,1,350
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Material,Trim for door(weatherstripping,1,75
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Material,Trim for door(weatherstripping,1,75
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Material,New hinges,3,22
+JOB-250812-0381,Handyman,Assembly - Fixtures/Goods,0.02,Material,New hinges,3,22
+JOB-250801-7899,HVAC,A/C Unit Repair and Replacement,10.38,Equipment,Wall mount temperature regulating thermostat,1,650
+JOB-250801-7899,HVAC,A/C Unit Repair and Replacement,10.38,Material,8 hours of labor for technician for condenser coil cleaning and belt replacement ,8,100
+JOB-250801-7899,HVAC,A/C Unit Repair and Replacement,10.38,Material,hours of labor for apprentice for condenser coil cleaning and belt replacement ,7,90
+JOB-250801-7899,HVAC,A/C Unit Repair and Replacement,10.38,Material,Hours of labor thermostat replacement,4,100
+JOB-250814-2743,Janitorial,Restroom Cleaning,1,Equipment,Washer pressure ,1,0
+JOB-250814-2743,Janitorial,Restroom Cleaning,1,Equipment,Steaming machine ,1,0
+JOB-250814-2743,Janitorial,Restroom Cleaning,1,Material,Degreasing liquids ,1,0
+JOB-250812-0727,Plumbing,Leak Detection and Repair,5.9,Equipment,Vacuum,1,5000
+JOB-250812-0727,Plumbing,Leak Detection and Repair,5.9,Equipment,Propress,1,350
+JOB-250812-0727,Plumbing,Leak Detection and Repair,5.9,Equipment,Cleanup and Disposal Fees,1,250
+JOB-250812-0727,Plumbing,Leak Detection and Repair,5.9,Equipment,Cleanup and Disposal Fees,1,225
+JOB-250812-0727,Plumbing,Leak Detection and Repair,5.9,Equipment,Vacuum,1,150
+JOB-250812-0727,Plumbing,Leak Detection and Repair,5.9,Material,Copper Pipe,1,250
+JOB-250808-6906,Plumbing,Leak Detection and Repair,3.85,Equipment,Propress,1,350
+JOB-250808-6906,Plumbing,Leak Detection and Repair,3.85,Material,Copper Pipe,1,2500
+JOB-250808-6906,Plumbing,Leak Detection and Repair,3.85,Material,Backflow Repair Kit,1,1500
+JOB-250728-1647,Electrical,Wiring Installation,3.97,Equipment,Boom Lift-Over 30',1,865
+JOB-250728-1647,Electrical,Wiring Installation,3.97,Equipment,Greenlee 854 electric conduit bender,1,300
+JOB-250728-1647,Electrical,Wiring Installation,3.97,Material,2 inch emt conduit,10,42.77
+JOB-250728-1647,Electrical,Wiring Installation,3.97,Material,L abor helper,7.48,40
+JOB-250728-1647,Electrical,Wiring Installation,3.97,Material,L abor Regular,3.55,79
+JOB-250728-1647,Electrical,Wiring Installation,3.97,Material,beam clamp,15,12
+JOB-250728-1647,Electrical,Wiring Installation,3.97,Material,conduit supports,15,7
+JOB-250728-1647,Electrical,Wiring Installation,3.97,Material,90 degree emt bends,4,21
+JOB-250728-1647,Electrical,Wiring Installation,3.97,Material,"2"" emt couplings",9,7.66
+JOB-250728-1647,Electrical,Wiring Installation,3.97,Material,weatherhead,1,24
+JOB-250728-1647,Electrical,Wiring Installation,3.97,Material,strut,1,19.99
+JOB-250806-0512,HVAC,Refrigeration Repair and Replacement,3.67,Equipment,TRAVEL,1,100
+JOB-250806-0512,HVAC,Refrigeration Repair and Replacement,3.67,Equipment,ADJUSTMENT TO BILL 1/4 HOUR,1,9
+JOB-250806-0512,HVAC,Refrigeration Repair and Replacement,3.67,Material,"TRUE811135-Door Gasket, Black",2,132.28
+JOB-250806-0512,HVAC,Refrigeration Repair and Replacement,3.67,Material,"TRUE921376-Run Capacitor, 117- 7114",1,157.71
+JOB-250806-0512,HVAC,Refrigeration Repair and Replacement,3.67,Material,"TRUE997806-Relay, Start, EPTC 103N0058",1,94.65
+JOB-250806-0512,HVAC,Refrigeration Repair and Replacement,3.67,Material,SHIPPING AND HANDLING,1,17.45
+JOB-250806-0512,HVAC,Refrigeration Repair and Replacement,3.67,Material,FEE,1,6
+JOB-250807-6039,Handyman,General Carpentry,0.38,Equipment,undocumentedlabors 2techs,4,125
+JOB-250807-6039,Handyman,General Carpentry,0.38,Equipment,undocumentedlabors 2techs,4,125
+JOB-250807-6039,Handyman,General Carpentry,0.38,Material,mop,2,60
+JOB-250807-6039,Handyman,General Carpentry,0.38,Material,mop,2,60
+JOB-250807-6039,Handyman,General Carpentry,0.38,Material,shock vacuum,1,70
+JOB-250807-6039,Handyman,General Carpentry,0.38,Material,shock vacuum,1,70
+JOB-250710-6002,Electrical,Lighting PMI,1.02,Equipment,undocumented labors,6,80
+JOB-250710-6002,Electrical,Lighting PMI,1.02,Material,600 amp SPD,1,1900
+JOB-250710-6002,Electrical,Lighting PMI,1.02,Material,600 amp SPD,1,1900
+JOB-250812-0361,Electrical,Interior Lighting,7.02,Equipment,Shipping and disposal,1,45
+JOB-250812-0361,Electrical,Interior Lighting,7.02,Material,Tork timer,1,190.85
+JOB-250812-0361,Electrical,Interior Lighting,7.02,Material,"Wires, wire connectors and fasteners",1,33.87
+JOB-250731-5774,Handyman,General Carpentry,19.13,Equipment,Helper Labr,9,25
+JOB-250731-5774,Handyman,General Carpentry,19.13,Equipment,Disposal,1,110
+JOB-250731-5774,Handyman,General Carpentry,19.13,Equipment,Shipping,1,85
+JOB-250731-5774,Handyman,General Carpentry,19.13,Material,LATICRETE NXT Level Plus Grey 55LB,2,177.11
+JOB-250731-5774,Handyman,General Carpentry,19.13,Material,"Schluter DESIGNBASE-SL Tile Edging Trim - 2-3/8""  48"" Brushed Stainless Appearance (AEEB)",3,91.27
+JOB-250731-5774,Handyman,General Carpentry,19.13,Material,Stair Warehouse High Strength Adhesive for Stainless Parts,1,93.54
+JOB-250731-5774,Handyman,General Carpentry,19.13,Material,Bostik Lock A195 VCT Flooring Adhesive,1,71.92
+JOB-250731-5774,Handyman,General Carpentry,19.13,Material,Loctite Construction Adhesive - 10 oz,2,25.6
+JOB-250731-5774,Handyman,General Carpentry,19.13,Material,"Screws, lubricant, cleaning solution, drop cloths, connectors",1,47.43
+JOB-250731-5774,Handyman,General Carpentry,19.13,Material,"Door Sweep - Rubber, 48 x 7⁄16""",1,35.21
+JOB-250618-1696,Electrical,Interior Lighting,3.4,Equipment,Disposal Fees,1,30
+JOB-250618-1696,Electrical,Interior Lighting,3.4,Material,"Nora NULS-LED3340W Low Profile Linear Under Cabinet Light, White Finish (4000K, 33"")",6,75.12
+JOB-250618-1696,Electrical,Interior Lighting,3.4,Material,Tech,2.7,60
+JOB-250618-1696,Electrical,Interior Lighting,3.4,Material,"Wires, wire connectors",1,32.99
+JOB-250618-1696,Electrical,Interior Lighting,3.4,Material,Mounting hardware,1,28.75
+JOB-250626-9047,Handyman,Pest Control,0.37,Equipment,flate rate,1,25
+JOB-250626-9047,Handyman,Pest Control,0.37,Material,Pest services,1,225
+JOB-250805-2361,Plumbing,Extensive Clog,20,Equipment,*add +5.49hrs for Regular,5.49,53
+JOB-250805-2361,Plumbing,Extensive Clog,20,Equipment,*Add 10hrs for Helper,10,27
+JOB-250805-2361,Plumbing,Extensive Clog,20,Equipment,Disposal Fees,1,15
+JOB-250805-2361,Plumbing,Extensive Clog,20,Material,Ultima Sensor-Operated 1.28 GPF Toilet Diaphragm-Type Flush Valve,2,517
+JOB-250805-2361,Plumbing,Extensive Clog,20,Material,Regal 186-0.5 XL Flush Valve for 0.5 GPF Urinal,1,334
+JOB-250805-2361,Plumbing,Extensive Clog,20,Material,Faucet supply lines,2,7.47
+JOB-250805-2361,Plumbing,Extensive Clog,20,Material,Sink mounting hardware kit,1,12.98
+JOB-250805-2361,Plumbing,Extensive Clog,20,Material,3/8 angle stop valve,1,10.87
+JOB-250805-2361,Plumbing,Extensive Clog,20,Material,Misc. screws/anchors & PTFE tape,1,8.5
+JOB-250805-2361,Plumbing,Extensive Clog,20,Material,Silicone sealant,1,7.89
+JOB-250805-2361,Plumbing,Extensive Clog,20,Material,Urinal outlet gasket,1,6.84
+JOB-250805-2361,Plumbing,Extensive Clog,20,Material,Wax ring kits,1,4.78
+JOB-250805-2361,Plumbing,Extensive Clog,20,Material,Plumber’s putty,1,3.97
+JOB-250808-6368,Handyman,Door Replacement and Installation,12.3,Equipment,Additional Assistance,2,44
+JOB-250808-6368,Handyman,Door Replacement and Installation,12.3,Equipment,Ladder Rental,1,75
+JOB-250808-6368,Handyman,Door Replacement and Installation,12.3,Equipment,Assistance,2,22
+JOB-250808-6368,Handyman,Door Replacement and Installation,12.3,Equipment,Logistics,2,22
+JOB-250808-6368,Handyman,Door Replacement and Installation,12.3,Material,Cualk,6,18
+JOB-250808-6368,Handyman,Door Replacement and Installation,12.3,Material,Masonry Caulk,5,17
+JOB-250808-6368,Handyman,Door Replacement and Installation,12.3,Material,Adhesive grout,4,17.59
+JOB-250731-4525,Locksmith,Gate Lock Removal and Replacement,0.38,Equipment,Cleanup and Disposal Fees,1,30
+JOB-250731-4525,Locksmith,Gate Lock Removal and Replacement,0.38,Material,demo tools,1,176.18
+JOB-250806-1855,Fire Life Safety,Fire Alarm Repair,5.32,Equipment,Disposal Fees,1,32.74
+JOB-250806-1855,Fire Life Safety,Fire Alarm Repair,5.32,Material,smoke detector,1,199
+JOB-250731-5620,Handyman,General Equipment Repair,0.43,Equipment,Water filter replacement hrs,1,220
+JOB-250731-5620,Handyman,General Equipment Repair,0.43,Material,Elkay water filters,1,330
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Equipment,jetter,1,350
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Equipment,Jetter,1,350
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Equipment,Cable Machine,1,150
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Equipment,cable machine,1,150
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,urinal,1,587.53
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,flush valve,1,232.25
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,labr adjustment,2,63
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,vacuum breaker,1,25.67
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,Vacuum Breaker ,1,25.67
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,t bolts,1,21.67
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,bowl gasket,1,16.65
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,Bowel Gasket,1,16.65
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,tank to bowl gasket,1,13.21
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,caulk,1,12.99
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,caulk,1,12.99
+JOB-250806-1880,Plumbing,Basic Clog,6.4,Material,Caulk,1,12.99
+JOB-250811-1805,HVAC,Refrigeration Repair and Replacement,0.6,Equipment,ADJUSTMENT 1/4 HOUR,1,16.2
+JOB-250811-1805,HVAC,Refrigeration Repair and Replacement,0.6,Material,FEE,1,6
+JOB-250811-1065,HVAC,Refrigeration Repair and Replacement,0.82,Equipment,ADJUSTMENT 1/4 HOUR,1,19.8
+JOB-250811-1065,HVAC,Refrigeration Repair and Replacement,0.82,Material,FEE,1,6
+JOB-250728-0750,Plumbing,Extensive Clog,16,Equipment,Camera scope,1,225
+JOB-250728-0750,Plumbing,Extensive Clog,16,Equipment,large drain machine,1,150
+JOB-250728-0750,Plumbing,Extensive Clog,16,Material,Regular emergency tech,8,90
+JOB-250728-0750,Plumbing,Extensive Clog,16,Material,helper emergency tech,8,55
+JOB-250815-7443,Fire Life Safety,Fire Alarm PMI,1.35,Equipment,Disposal Fees,1,45
+JOB-250815-7443,Fire Life Safety,Fire Alarm PMI,1.35,Material,12/7ah,3,51
+JOB-250818-1982,Construction,Concrete Floor Repair,2.58,Equipment,clean up,1,100
+JOB-250818-1982,Construction,Concrete Floor Repair,2.58,Material,concrete,1,95
+JOB-250818-1982,Construction,Concrete Floor Repair,2.58,Material,level and finish blend,1,75
+JOB-250818-1982,Construction,Concrete Floor Repair,2.58,Material,concrete prime,1,65
+JOB-250818-1982,Construction,Concrete Floor Repair,2.58,Material,marshmallow float tool,1,45
+JOB-250818-1982,Construction,Concrete Floor Repair,2.58,Material,sponge,1,9
+JOB-250812-2012,Fire Life Safety,Fire Alarm Repair,2.33,Equipment,Disposal Fees,1,1
+JOB-250812-2012,Fire Life Safety,Fire Alarm Repair,2.33,Material,tamper wire,1,129.99
+JOB-250815-7107,Handyman,Floor Repair and Replacement,0.2,Equipment,Tech1,1,47
+JOB-250815-7107,Handyman,Floor Repair and Replacement,0.2,Material,Caulk,1,20
+JOB-250711-6646,Construction,Water Damage Repair,1.88,Equipment,Lead Technician,90,50
+JOB-250711-6646,Construction,Water Damage Repair,1.88,Equipment,Helper,90,25

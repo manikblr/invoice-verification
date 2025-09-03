@@ -32,9 +32,11 @@ export interface IngestResult {
   raw: any;
   confidence: number;
   parseDurationMs: number;
-  // For API compatibility
+  // For API compatibility and enhanced results
   sources?: IngestResult[];
   canonicalLinks?: Array<{ canonicalItemId: string; confidence: number }>;
+  classifications?: Array<{ kind: 'material' | 'equipment'; confidence: number; reasoning: string }>;
+  canonicalItems?: Array<{ id: string; canonicalName: string; kind: 'material' | 'equipment' }>;
 }
 
 export class WebIngestQueue {
@@ -164,7 +166,7 @@ export class WebIngestQueue {
       });
 
       if (result && result.length > 0) {
-        // Process results through database pipeline
+        // Process results through enhanced database pipeline with classification
         const { processWebIngestResults } = await import('./database');
         const dbResult = await processWebIngestResults(result);
 
@@ -176,7 +178,16 @@ export class WebIngestQueue {
         job.result = bestResult;
         job.status = 'completed';
         
-        console.log(`[Web Ingest Queue] Job ${job.id} completed with ${result.length} results, ${dbResult.externalItems.length} items saved, ${dbResult.canonicalLinks.length} links created`);
+        console.log(`[Web Ingest Queue] Job ${job.id} completed with ${result.length} results:`);
+        console.log(`  - ${dbResult.externalItems.length} external items saved`);
+        console.log(`  - ${dbResult.canonicalItems.length} canonical items created/found`);
+        console.log(`  - ${dbResult.canonicalLinks.length} links created`);
+        console.log(`  - ${dbResult.classifications.length} items classified`);
+        
+        // Log classification summary
+        const materialCount = dbResult.classifications.filter(c => c.kind === 'material').length;
+        const equipmentCount = dbResult.classifications.filter(c => c.kind === 'equipment').length;
+        console.log(`  - Classifications: ${materialCount} materials, ${equipmentCount} equipment`);
 
         // Trigger WEB_INGESTED event and matcher retry
         this.triggerWebIngestedEvent(job.lineItemId, result.length);

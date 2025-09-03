@@ -43,14 +43,6 @@ export default function Navigation() {
               )
             })}
           </div>
-          
-          <div className="text-xs text-gray-500">
-            <div className="flex items-center space-x-4">
-              <span>✅ Langfuse Integration</span>
-              <span>✅ Service Context Rules</span>
-              <span>✅ Status Pipeline</span>
-            </div>
-          </div>
         </div>
       </div>
     </nav>

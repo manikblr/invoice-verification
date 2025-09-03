@@ -3,8 +3,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { PreValidationResult, ValidationInput } from './pre-validation';
-import { performEnhancedValidation } from './llm-classifier';
+import { PreValidationResult, ValidationInput, preValidateItemEnhanced } from './pre-validation';
 
 // Supabase client setup
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -19,6 +18,7 @@ export interface ValidationRequest {
   itemDescription?: string;
   serviceLine?: string;
   serviceType?: string;
+  scopeOfWork?: string;
   userId?: string;
 }
 
@@ -45,6 +45,7 @@ async function persistValidationEvent(
         reasons: result.reasons,
         score: result.score,
         blacklisted_term: result.blacklistedTerm,
+        llm_reasoning: result.llmReasoning,
       })
       .select('id')
       .single();
@@ -112,7 +113,7 @@ async function checkExistingValidation(lineItemId: string): Promise<PreValidatio
   try {
     const { data, error } = await supabase
       .from('item_validation_events')
-      .select('verdict, reasons, score, blacklisted_term, created_at')
+      .select('verdict, reasons, score, blacklisted_term, llm_reasoning, created_at')
       .eq('line_item_id', lineItemId)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -132,6 +133,7 @@ async function checkExistingValidation(lineItemId: string): Promise<PreValidatio
         reasons: data.reasons as string[],
         score: data.score,
         blacklistedTerm: data.blacklisted_term,
+        llmReasoning: data.llm_reasoning,
       };
     }
 
@@ -149,7 +151,7 @@ export async function validateLineItem(request: ValidationRequest): Promise<Vali
   const startTime = Date.now();
   
   try {
-    const { lineItemId, itemName, itemDescription, serviceLine, serviceType } = request;
+    const { lineItemId, itemName, itemDescription, serviceLine, serviceType, scopeOfWork } = request;
     
     // Check if Supabase is configured
     if (!supabase) {
@@ -181,10 +183,11 @@ export async function validateLineItem(request: ValidationRequest): Promise<Vali
       description: itemDescription,
       serviceLine,
       serviceType,
+      scopeOfWork,
     };
 
-    // Perform enhanced validation (rule-based + LLM)
-    const validationResult = await performEnhancedValidation(validationInput);
+    // Perform enhanced validation with GPT-5 (rule-based + GPT-5 relevance checking)
+    const validationResult = await preValidateItemEnhanced(validationInput);
 
     // Persist validation event
     const validationEventId = await persistValidationEvent(lineItemId, validationResult);

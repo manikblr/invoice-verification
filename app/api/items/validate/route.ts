@@ -11,6 +11,7 @@ const SingleValidationRequestSchema = z.object({
   itemDescription: z.string().optional(),
   serviceLine: z.string().optional(),
   serviceType: z.string().optional(),
+  scopeOfWork: z.string().optional(),
   userId: z.string().optional(),
 });
 
@@ -53,6 +54,7 @@ export async function POST(request: NextRequest) {
         itemDescription: item.itemDescription,
         serviceLine: item.serviceLine,
         serviceType: item.serviceType,
+        scopeOfWork: item.scopeOfWork,
         userId: item.userId || userId,
       }));
       
@@ -68,6 +70,7 @@ export async function POST(request: NextRequest) {
         itemDescription: singleRequest.itemDescription,
         serviceLine: singleRequest.serviceLine,
         serviceType: singleRequest.serviceType,
+        scopeOfWork: singleRequest.scopeOfWork,
         userId: singleRequest.userId || userId,
       };
       
@@ -187,6 +190,7 @@ export async function GET() {
           itemDescription: 'White PVC pipe for plumbing installation',
           serviceLine: 'Plumbing',
           serviceType: 'Installation',
+          scopeOfWork: 'Replace old plumbing fixtures in office building',
         },
         expectedVerdict: 'APPROVED',
       },

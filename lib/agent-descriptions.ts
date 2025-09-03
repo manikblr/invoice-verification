@@ -156,70 +156,82 @@ export const AGENT_DESCRIPTIONS: Record<string, AgentDescription> = {
 
   'Pre-Validation Agent': {
     name: 'Pre-Validation Agent',
-    purpose: 'Performs initial validation checks before main processing pipeline',
-    description: 'Conducts blacklist checks, structural validation, and LLM-powered content classification as the first stage. Prevents invalid submissions from entering the main pipeline.',
+    purpose: 'Enhanced GPT-4o-mini relevance validation with smart explanation prompting for uncertain items',
+    description: 'Advanced pre-validation using GPT-4o-mini for fast, accurate validation to distinguish between valid FM items with unclear relevance vs invalid items. Generates specific user questions for items that appear valid but may not be relevant to the service context.',
     stage: 'preprocessing', 
     icon: '🔍',
     tools: [
-      'Blacklist checker',
-      'Structural validator',
-      'LLM classifier integration',
-      'Pre-filtering logic'
+      'Enhanced GPT-4o-mini relevance validation via OpenRouter (2s timeout, 150 max tokens)',
+      'Smart confidence thresholds (0.7+ approve, 0.4-0.6 explain, 0.3- reject)',
+      'Contextual explanation prompt generation',
+      'Service context matching (scope, service line, service type)',
+      'Rule-based blacklist checker',
+      'LLM reasoning integration'
     ],
     dataSources: [
+      'openrouter-api',
+      'service-context-database',
       'blacklist-items',
       'validation-rules',
-      'content-policies',
-      'structural-schemas'
+      'content-policies'
     ],
     inputs: [
-      'Raw item submissions',
-      'Basic item metadata',
-      'User context',
-      'Submission source'
+      'Item names and descriptions',
+      'Service line context',
+      'Service type context',
+      'Scope of work details',
+      'User submission metadata'
     ],
     outputs: [
-      'Pre-validation status',
-      'Blacklist match results',
-      'Structural validation results',
-      'Content classification scores'
+      'Enhanced pre-validation results with smart relevance thresholds',
+      'Service context relevance scores (0.0-1.0)',
+      'GPT-4o-mini confidence ratings and reasoning (optimized for speed)',
+      'Contextual user explanation prompts for uncertain relevance',
+      'Specific questions targeting unclear FM item usage',
+      'Fallback rule-based results'
     ],
-    version: '1.5.0',
-    lastUpdated: '2024-01-18'
+    version: '2.1.0',
+    lastUpdated: '2024-09-03'
   },
 
   'Web Search & Ingest Agent': {
     name: 'Web Search & Ingest Agent',
-    purpose: 'Searches external vendor websites and ingests new product data',
-    description: 'Queue-based system that searches multiple vendor sites (Grainger, Home Depot, Amazon Business) when canonical matches fail. Uses deterministic parsing with CSS selectors and creates canonical item links.',
+    purpose: 'Enhanced web search with GPT-5 material/equipment classification and canonical item creation',
+    description: 'Advanced queue-based system that searches multiple vendor sites and uses GPT-5 to classify items as materials or equipment. Automatically creates canonical items with proper classification and rich metadata for downstream agents.',
     stage: 'ingestion',
     icon: '🌐',
     tools: [
-      'Multi-vendor web scraping',
-      'CSS selector parsing',
-      'Queue-based processing',
-      'Anti-bot measures'
+      'GPT-5 material/equipment classifier via OpenRouter',
+      'Multi-vendor web scraping (Grainger, Home Depot, Amazon Business)',
+      'Intelligent canonical item creation with kind field',
+      'Rule-based classification fallback',
+      'Queue-based processing with batch support',
+      'Automatic tag generation and duplicate detection'
     ],
     dataSources: [
-      'vendor-websites',
+      'openrouter-api',
+      'vendor-websites (Grainger, Home Depot, Amazon Business)',
+      'canonical-items-database',
+      'external-item-sources',
       'product-catalogs',
-      'pricing-feeds',
-      'canonical-mappings'
+      'pricing-feeds'
     ],
     inputs: [
-      'Unmatched item names',
+      'Unmatched item names and descriptions',
+      'Vendor context and URLs',
       'Search priority levels',
-      'Vendor preferences',
-      'Category hints'
+      'Batch processing requests'
     ],
     outputs: [
-      'New product discoveries',
-      'Canonical item links',
-      'Pricing data updates',
-      'Vendor availability info'
+      'Classified items (material/equipment/labor)',
+      'GPT-5 classification confidence scores',
+      'Auto-created canonical items with rich metadata',
+      'External item sources with pricing',
+      'Intelligent tags for searchability',
+      'Classification reasoning and fallback results'
     ],
-    version: '1.3.0',
-    lastUpdated: '2024-01-12'
+    version: '2.0.0',
+    lastUpdated: '2024-09-03'
   },
 
   'Explanation Agent': {

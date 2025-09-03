@@ -6,6 +6,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { IngestResult } from './queue';
 import { normalizeExternalItem, NormalizedExternalItem } from './normalizer';
+import { classifyItem, ItemClassification, ClassificationInput } from './item-classifier';
+import { aggregatePricesFromSources, PriceRangeData } from './price-aggregator';
 
 // Supabase client setup
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -322,20 +324,330 @@ export async function getExternalItemsByVendor(vendor: string, limit = 50): Prom
   }
 }
 
+export interface CanonicalItemRecord {
+  id: string;
+  kind: 'material' | 'equipment';
+  canonicalName: string;
+  defaultUom?: string;
+  tags: string[];
+  isActive: boolean;
+  createdAt: Date;
+  classification?: ItemClassification;
+}
+
 /**
- * Complete web ingest pipeline: upsert items and create links
+ * Create canonical items from classified web search results
+ */
+export async function createCanonicalItemsFromWebResults(
+  externalItems: ExternalItemRecord[], 
+  classifications: ItemClassification[],
+  createPriceRanges: boolean = true
+): Promise<CanonicalItemRecord[]> {
+  if (!supabase) {
+    console.warn('[Web Ingest Database] Supabase not configured, skipping canonical item creation');
+    return [];
+  }
+
+  if (externalItems.length === 0 || classifications.length !== externalItems.length) {
+    console.warn('[Web Ingest Database] Mismatched external items and classifications');
+    return [];
+  }
+
+  try {
+    const canonicalItems: CanonicalItemRecord[] = [];
+
+    for (let i = 0; i < externalItems.length; i++) {
+      const externalItem = externalItems[i];
+      const classification = classifications[i];
+
+      try {
+        // Normalize the canonical name
+        const canonicalName = normalizeCanonicalName(externalItem.itemName);
+        
+        // Check if canonical item already exists (case-insensitive)
+        const { data: existingItem } = await supabase
+          .from('canonical_items')
+          .select('id, kind, canonical_name')
+          .ilike('canonical_name', canonicalName)
+          .eq('kind', classification.kind)
+          .single();
+
+        if (existingItem) {
+          console.log(`[Web Ingest Database] Canonical item already exists: ${existingItem.canonical_name} (${existingItem.kind})`);
+          
+          canonicalItems.push({
+            id: existingItem.id,
+            kind: existingItem.kind as 'material' | 'equipment',
+            canonicalName: existingItem.canonical_name,
+            defaultUom: externalItem.normalizedUnitOfMeasure || undefined,
+            tags: [], // Existing tags would need to be fetched separately
+            isActive: true,
+            createdAt: new Date(),
+            classification
+          });
+          continue;
+        }
+
+        // Create new canonical item
+        const tags = generateTagsForItem(externalItem.itemName, classification.kind, externalItem.sourceVendor);
+        
+        const newCanonicalItem = {
+          kind: classification.kind,
+          canonical_name: canonicalName,
+          default_uom: externalItem.normalizedUnitOfMeasure || getDefaultUomForKind(classification.kind),
+          tags: JSON.stringify(tags),
+          is_active: true,
+        };
+
+        const { data: createdItem, error: createError } = await supabase
+          .from('canonical_items')
+          .insert(newCanonicalItem)
+          .select()
+          .single();
+
+        if (createError) {
+          console.error(`[Web Ingest Database] Failed to create canonical item for ${externalItem.itemName}:`, createError);
+          continue;
+        }
+
+        if (createdItem) {
+          canonicalItems.push({
+            id: createdItem.id,
+            kind: createdItem.kind as 'material' | 'equipment',
+            canonicalName: createdItem.canonical_name,
+            defaultUom: createdItem.default_uom,
+            tags,
+            isActive: createdItem.is_active,
+            createdAt: new Date(createdItem.created_at),
+            classification
+          });
+
+          console.log(`[Web Ingest Database] Created canonical ${classification.kind}: ${canonicalName} (confidence: ${classification.confidence})`);
+
+          // Create price range from web-sourced prices
+          if (createPriceRanges) {
+            await createPriceRangeFromWebSources(createdItem.id, externalItems, i);
+          }
+        }
+
+      } catch (itemError) {
+        console.error(`[Web Ingest Database] Error processing external item ${externalItem.id}:`, itemError);
+        continue;
+      }
+    }
+
+    console.log(`[Web Ingest Database] Created/found ${canonicalItems.length} canonical items from ${externalItems.length} external items`);
+    return canonicalItems;
+
+  } catch (error) {
+    console.error('[Web Ingest Database] Error creating canonical items:', error);
+    throw error;
+  }
+}
+
+/**
+ * Normalize item name for canonical storage
+ */
+function normalizeCanonicalName(itemName: string): string {
+  return itemName
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // Remove special characters except hyphens
+    .replace(/\s+/g, ' ')      // Normalize whitespace
+    .trim()
+    .substring(0, 100);        // Limit length
+}
+
+/**
+ * Generate searchable tags for an item
+ */
+function generateTagsForItem(itemName: string, kind: 'material' | 'equipment', vendor: string): string[] {
+  const tags: string[] = [];
+  
+  // Add kind tag
+  tags.push(kind);
+  
+  // Add vendor tag
+  tags.push(vendor.toLowerCase());
+  
+  // Extract meaningful words from item name
+  const words = itemName
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter(word => word.length > 2 && !isStopWord(word));
+  
+  tags.push(...words.slice(0, 5)); // Limit to 5 words
+  
+  // Add category-specific tags based on keywords
+  const categoryTags = getCategoryTags(itemName, kind);
+  tags.push(...categoryTags);
+  
+  // Remove duplicates
+  return Array.from(new Set(tags));
+}
+
+/**
+ * Get category tags based on item characteristics
+ */
+function getCategoryTags(itemName: string, kind: 'material' | 'equipment'): string[] {
+  const name = itemName.toLowerCase();
+  const tags: string[] = [];
+  
+  if (kind === 'material') {
+    if (/pipe|plumb|water/i.test(name)) tags.push('plumbing');
+    if (/wire|electric|outlet|switch/i.test(name)) tags.push('electrical');
+    if (/hvac|air|filter|duct/i.test(name)) tags.push('hvac');
+    if (/screw|bolt|fastener|hardware/i.test(name)) tags.push('fasteners');
+    if (/clean|chemical|lubricant/i.test(name)) tags.push('chemicals');
+  } else if (kind === 'equipment') {
+    if (/drill|saw|tool/i.test(name)) tags.push('power-tools');
+    if (/wrench|hammer|hand/i.test(name)) tags.push('hand-tools');
+    if (/meter|gauge|test/i.test(name)) tags.push('measurement');
+    if (/safety|protect/i.test(name)) tags.push('safety');
+    if (/light|lamp|fixture/i.test(name)) tags.push('lighting');
+  }
+  
+  return tags;
+}
+
+/**
+ * Check if word is a stop word
+ */
+function isStopWord(word: string): boolean {
+  const stopWords = new Set(['the', 'and', 'for', 'with', 'inch', 'pack', 'set', 'piece']);
+  return stopWords.has(word.toLowerCase());
+}
+
+/**
+ * Get default unit of measure for item kind
+ */
+function getDefaultUomForKind(kind: 'material' | 'equipment'): string {
+  switch (kind) {
+    case 'material':
+      return 'each'; // Most materials are counted as individual pieces
+    case 'equipment':
+      return 'each'; // Equipment is typically rented/counted as individual items
+    default:
+      return 'each';
+  }
+}
+
+/**
+ * Create price range from web-sourced external items
+ */
+async function createPriceRangeFromWebSources(
+  canonicalItemId: string,
+  externalItems: ExternalItemRecord[],
+  currentIndex: number
+): Promise<void> {
+  if (!supabase) {
+    console.warn('[Web Ingest Database] Supabase not configured, skipping price range creation');
+    return;
+  }
+
+  try {
+    // Get prices from related external items (same search batch)
+    const relatedItems = externalItems.slice(
+      Math.max(0, currentIndex - 2),
+      Math.min(externalItems.length, currentIndex + 3)
+    );
+
+    // Aggregate prices from multiple sources
+    const priceRange = aggregatePricesFromSources(relatedItems, canonicalItemId);
+    
+    if (!priceRange || priceRange.sampleSize === 0) {
+      console.log(`[Web Ingest Database] No valid prices to create range for canonical item ${canonicalItemId}`);
+      return;
+    }
+
+    // Check if price range already exists
+    const { data: existingRange } = await supabase
+      .from('item_price_ranges')
+      .select('id')
+      .eq('canonical_item_id', canonicalItemId)
+      .eq('currency', priceRange.currency)
+      .single();
+
+    if (existingRange) {
+      // Update existing range with new data
+      const { error: updateError } = await supabase
+        .from('item_price_ranges')
+        .update({
+          min_price: priceRange.minPrice,
+          max_price: priceRange.maxPrice,
+          source: `Web Search (${priceRange.vendors.join(', ')})`,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingRange.id);
+
+      if (updateError) {
+        console.error(`[Web Ingest Database] Failed to update price range:`, updateError);
+      } else {
+        console.log(`[Web Ingest Database] Updated price range for ${canonicalItemId}: $${priceRange.minPrice.toFixed(2)} - $${priceRange.maxPrice.toFixed(2)}`);
+      }
+    } else {
+      // Create new price range
+      const { error: createError } = await supabase
+        .from('item_price_ranges')
+        .insert({
+          canonical_item_id: canonicalItemId,
+          currency: priceRange.currency,
+          min_price: priceRange.minPrice,
+          max_price: priceRange.maxPrice,
+          source: `Web Search (${priceRange.vendors.join(', ')})`,
+        });
+
+      if (createError) {
+        console.error(`[Web Ingest Database] Failed to create price range:`, createError);
+      } else {
+        console.log(`[Web Ingest Database] Created price range for ${canonicalItemId}: $${priceRange.minPrice.toFixed(2)} - $${priceRange.maxPrice.toFixed(2)} (${priceRange.sampleSize} prices, ${priceRange.confidence.toFixed(2)} confidence)`);
+      }
+    }
+  } catch (error) {
+    console.error(`[Web Ingest Database] Error creating price range for ${canonicalItemId}:`, error);
+  }
+}
+
+/**
+ * Enhanced web ingest pipeline with material/equipment classification
  */
 export async function processWebIngestResults(results: IngestResult[]): Promise<{
   externalItems: ExternalItemRecord[];
+  canonicalItems: CanonicalItemRecord[];
   canonicalLinks: CanonicalItemLink[];
+  classifications: ItemClassification[];
 }> {
-  console.log(`[Web Ingest Database] Processing ${results.length} ingest results`);
+  console.log(`[Web Ingest Database] Processing ${results.length} ingest results with classification`);
 
+  // Step 1: Upsert external items
   const externalItems = await upsertExternalItems(results);
+  
+  // Step 2: Classify items as material or equipment
+  const classificationInputs: ClassificationInput[] = externalItems.map(item => ({
+    itemName: item.itemName,
+    vendor: item.sourceVendor,
+    sourceUrl: item.sourceUrl,
+    price: item.lastPrice,
+    unitOfMeasure: item.unitOfMeasure,
+    packQty: item.packQty
+  }));
+  
+  const classifications = await Promise.all(
+    classificationInputs.map(input => classifyItem(input))
+  );
+  
+  // Step 3: Create canonical items with classification
+  const canonicalItems = await createCanonicalItemsFromWebResults(externalItems, classifications);
+  
+  // Step 4: Auto-link external items to canonical items
   const canonicalLinks = await autoLinkToCanonicalItems(externalItems);
+
+  console.log(`[Web Ingest Database] Pipeline complete: ${externalItems.length} external items, ${canonicalItems.length} canonical items, ${canonicalLinks.length} links`);
 
   return {
     externalItems,
+    canonicalItems,
     canonicalLinks,
+    classifications,
   };
 }

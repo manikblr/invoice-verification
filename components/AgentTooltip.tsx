@@ -60,6 +60,22 @@ export default function AgentTooltip({
       stage: 'validation',
       icon: '✅'
     },
+    'Pre-Validation Agent': {
+      purpose: 'Enhanced initial validation with GPT-5 service context relevance validation',
+      description: 'Uses GPT-5 via OpenRouter to assess item relevance against service context (scope, service line, service type). Combines rule-based checks with LLM-powered contextual validation.',
+      tools: ['GPT-5 via OpenRouter', 'Service context matching', 'Rule-based fallback', 'LLM reasoning'],
+      dataSources: ['openrouter-api', 'service-context-database', 'blacklist-items', 'validation-rules'],
+      stage: 'preprocessing',
+      icon: '🔍'
+    },
+    'Web Search & Ingest Agent': {
+      purpose: 'Enhanced web search with GPT-5 material/equipment classification and canonical item creation',
+      description: 'Searches vendor websites and uses GPT-5 to classify items as materials or equipment. Auto-creates canonical items with proper classification for downstream agents.',
+      tools: ['GPT-5 classification via OpenRouter', 'Multi-vendor scraping', 'Canonical item creation', 'Rule-based fallback'],
+      dataSources: ['openrouter-api', 'vendor-websites', 'canonical-items-database', 'external-item-sources'],
+      stage: 'ingestion',
+      icon: '🌐'
+    },
     'CrewAI Agent Pipeline': {
       purpose: 'Orchestrates the complete multi-agent validation workflow',
       description: 'Coordinates all specialized agents in sequence to provide comprehensive invoice validation.',

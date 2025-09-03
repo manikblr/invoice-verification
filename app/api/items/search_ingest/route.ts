@@ -175,6 +175,9 @@ export async function GET(request: NextRequest) {
             // Match implementation.md format
             ingested: job.result.sources?.length || (job.result.vendor ? 1 : 0),
             links: job.result.canonicalLinks?.length || 0,
+            // Enhanced with classification info
+            classifications: job.result.classifications?.length || 0,
+            canonicalItems: job.result.canonicalItems?.length || 0,
           } : null,
         };
       } else {
@@ -196,6 +199,8 @@ export async function GET(request: NextRequest) {
         result: job.result ? {
           ingested: job.result.sources?.length || 0,
           links: job.result.canonicalLinks?.length || 0,
+          classifications: job.result.classifications?.length || 0,
+          canonicalItems: job.result.canonicalItems?.length || 0,
         } : null,
       }));
     }
@@ -204,6 +209,8 @@ export async function GET(request: NextRequest) {
       'Multi-vendor web search (Grainger, Home Depot, Amazon Business)',
       'Queue-based processing with retry logic', 
       'Deterministic parsing (CSS selectors, no LLM)',
+      'GPT-5 material/equipment classification',
+      'Automatic canonical item creation with classification',
       'Automatic canonical item linking',
       'Rate limiting and anti-bot measures',
       'Langfuse tracing integration',
