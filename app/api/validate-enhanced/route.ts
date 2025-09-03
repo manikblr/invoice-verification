@@ -676,7 +676,15 @@ async function runWebSearchAgent(item: any, lineItemId: string, matchConfidence:
   }
 }
 
-async function runPriceLearnerAgent(item: any, canonicalItemId: string | null, lineItemId: string, webSearchPriceRange: any = null) {
+async function runPriceLearnerAgent(item: any, canonicalItemId: string | null, lineItemId: string, webSearchPriceRange: any = null): Promise<{
+  isValid: boolean;
+  message: string;
+  variance: number;
+  expectedRange: any;
+  source: string;
+  canonicalItemId?: string | null;
+  priceComparison: 'within-range' | 'cheaper' | 'costlier';
+}> {
   // Enhanced price validation with web search integration
   const unitPrice = item.unitPrice
   
@@ -686,7 +694,8 @@ async function runPriceLearnerAgent(item: any, canonicalItemId: string | null, l
       message: 'No canonical item for price validation',
       variance: 0,
       expectedRange: null,
-      source: 'no-match'
+      source: 'no-match',
+      priceComparison: 'within-range'
     }
   }
   
