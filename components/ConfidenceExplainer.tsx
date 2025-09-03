@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 interface ConfidenceExplainerProps {
   confidenceScore: number
-  status: 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT'
+  status: 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT' | 'ERROR'
   itemName?: string
   className?: string
 }
@@ -68,6 +68,8 @@ export default function ConfidenceExplainer({
         return `⚠️ This item needs review because its ${confidencePercentage}% confidence score falls between ${thresholds.needsReview}% and ${thresholds.approve}%.`
       case 'REJECT':
         return `❌ This item was rejected because its ${confidencePercentage}% confidence score is below our ${thresholds.needsReview}% minimum threshold.`
+      case 'ERROR':
+        return `🚨 An error occurred during validation. Please check the item details and try again.`
     }
   }
   
