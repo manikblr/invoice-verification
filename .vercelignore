@@ -6,10 +6,10 @@ venv/
 
 # Heavy Python directories that cause deployment timeouts
 agents/
-llm/
 obs/
 tools/
 tests/
+# Note: lib/llm/ contains TypeScript services and should NOT be ignored
 
 # Python cache
 __pycache__/
