@@ -377,7 +377,27 @@ async function performLLMRelevanceValidation(
     }
     
     // Medium confidence (0.4-0.6) - valid FM item but questionable relevance
-    // This is the key enhancement: ask for specific explanation
+    // If additional context was provided, make final decision instead of asking again
+    if (description && description.trim()) {
+      // User provided context - make final decision based on confidence
+      if (relevanceResult.confidence >= 0.6) {
+        return {
+          verdict: 'APPROVED',
+          score: relevanceResult.confidence,
+          reasons: ['GPT-5: Approved with user context'],
+          llmReasoning: relevanceResult.reasoning,
+        };
+      } else {
+        return {
+          verdict: 'REJECTED',
+          score: relevanceResult.confidence,
+          reasons: ['GPT-5: Insufficient confidence even with user context'],
+          llmReasoning: relevanceResult.reasoning,
+        };
+      }
+    }
+    
+    // No context provided yet - ask for explanation
     return {
       verdict: 'NEEDS_REVIEW',
       score: relevanceResult.confidence,

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Form Validation Test</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+</head>
+<body>
+    <div id="test">
+        <h1>Testing Form Validation</h1>
+        <form id="testForm">
+            <label>Scope of Work * <input type="text" id="scope" required></label><br><br>
+            
+            <label>Service Line * 
+                <select id="serviceLine" required>
+                    <option value="">Select Service Line</option>
+                    <option value="1">Handyman</option>
+                    <option value="2">Electrical</option>
+                </select>
+            </label><br><br>
+            
+            <label>Service Type * 
+                <select id="serviceType" required>
+                    <option value="">Select Service Type</option>
+                    <option value="1">General Carpentry</option>
+                    <option value="2">Exterior Lighting</option>
+                </select>
+            </label><br><br>
+            
+            <label>Item Name <input type="text" id="itemName"></label><br><br>
+            <label>Price <input type="number" id="price"></label><br><br>
+            
+            <button type="submit">Validate Invoice</button>
+        </form>
+        
+        <script>
+            document.getElementById('testForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const scope = document.getElementById('scope').value;
+                const serviceLine = document.getElementById('serviceLine').value;
+                const serviceType = document.getElementById('serviceType').value;
+                
+                console.log('Form submitted with:');
+                console.log('Scope:', scope);
+                console.log('Service Line:', serviceLine);
+                console.log('Service Type:', serviceType);
+                
+                if (!scope.trim()) {
+                    alert('Scope of Work is required');
+                    return false;
+                }
+                
+                if (!serviceLine) {
+                    alert('Service Line is required');
+                    return false;
+                }
+                
+                if (!serviceType) {
+                    alert('Service Type is required'); 
+                    return false;
+                }
+                
+                alert('All validations passed! Form would submit.');
+                return false;
+            });
+        </script>
+    </div>
+</body>
+</html>

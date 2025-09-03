@@ -125,7 +125,7 @@ export default function ValidationPipelineForm() {
     lineItem: LineItem | null
   }>({ isOpen: false, lineItem: null })
 
-  const { register, control, handleSubmit, watch, setValue } = useForm<ValidationPipelineFormData>({
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<ValidationPipelineFormData>({
     defaultValues: {
       scope_of_work: '',
       service_line_id: 0,
@@ -191,6 +191,16 @@ export default function ValidationPipelineForm() {
   )
 
   const onSubmit = async (data: ValidationPipelineFormData) => {
+    // Check for mandatory fields
+    if (!data.service_line_id || data.service_line_id === 0) {
+      alert('Please select a Service Line');
+      return;
+    }
+    if (!data.service_type_id || data.service_type_id === 0) {
+      alert('Please select a Service Type');
+      return;
+    }
+    
     setIsSubmitting(true)
     try {
       // Filter out blank items
@@ -363,26 +373,41 @@ export default function ValidationPipelineForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Service Line
+              Service Line <span className="text-red-500">*</span>
             </label>
             <select
-              {...register('service_line_id', { valueAsNumber: true })}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              {...register('service_line_id', { 
+                valueAsNumber: true,
+                required: 'Service Line is required',
+                validate: (value) => value > 0 || 'Please select a valid service line'
+              })}
+              className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.service_line_id ? 'border-red-500' : 'border-gray-300'
+              }`}
             >
               <option value={0}>Select Service Line</option>
               {(meta?.service_lines || []).map((line: any) => (
                 <option key={line.id} value={line.id}>{line.name}</option>
               ))}
             </select>
+            {errors.service_line_id && (
+              <p className="mt-1 text-sm text-red-600">{errors.service_line_id.message}</p>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Service Type
+              Service Type <span className="text-red-500">*</span>
             </label>
             <select
-              {...register('service_type_id', { valueAsNumber: true })}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              {...register('service_type_id', { 
+                valueAsNumber: true,
+                required: 'Service Type is required',
+                validate: (value) => value > 0 || 'Please select a valid service type'
+              })}
+              className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.service_type_id ? 'border-red-500' : 'border-gray-300'
+              }`}
               disabled={!selectedServiceLineId}
             >
               <option value={0}>Select Service Type</option>
@@ -390,6 +415,9 @@ export default function ValidationPipelineForm() {
                 <option key={type.id} value={type.id}>{type.name}</option>
               ))}
             </select>
+            {errors.service_type_id && (
+              <p className="mt-1 text-sm text-red-600">{errors.service_type_id.message}</p>
+            )}
           </div>
         </div>
 
@@ -488,11 +516,17 @@ export default function ValidationPipelineForm() {
           
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !Number(watch('service_line_id')) || !Number(watch('service_type_id'))}
             className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
           >
             {isSubmitting ? '🔄 Processing Pipeline...' : '🚀 Start Validation Pipeline'}
           </button>
+          
+          {(!Number(watch('service_line_id')) || !Number(watch('service_type_id'))) && (
+            <p className="mt-2 text-sm text-red-600">
+              Please select Service Line and Service Type to continue
+            </p>
+          )}
           
           {!isReadyForSubmission() && currentItems.some(item => item.name?.trim()) && (
             <button

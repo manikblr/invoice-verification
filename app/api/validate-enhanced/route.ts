@@ -35,6 +35,21 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       )
     }
+    
+    // Validate mandatory service fields
+    if (!body.serviceLineId || body.serviceLineId <= 0) {
+      return NextResponse.json(
+        { error: 'Service Line is required' },
+        { status: 400 }
+      )
+    }
+    
+    if (!body.serviceTypeId || body.serviceTypeId <= 0) {
+      return NextResponse.json(
+        { error: 'Service Type is required' },
+        { status: 400 }
+      )
+    }
 
     // Create validation session
     const sessionId = await createValidationSession(invoiceId, body, traceId)
@@ -237,8 +252,11 @@ async function executeValidationWithTracing(
         continue
       }
       
-      // If pre-validation needs review and has explanation prompt, stop here for user input
-      if (preValidationResult.status === 'NEEDS_REVIEW' && 'explanationPrompt' in preValidationResult && preValidationResult.explanationPrompt) {
+      // If pre-validation needs review and has explanation prompt (and no context provided yet), stop here
+      if (preValidationResult.status === 'NEEDS_REVIEW' && 
+          'explanationPrompt' in preValidationResult && 
+          preValidationResult.explanationPrompt &&
+          !item.additionalContext) {
         console.log(`[Pipeline] Stopping for user explanation on item "${item.name}"`)
         processedItems.push({
           lineItemId,
@@ -249,6 +267,22 @@ async function executeValidationWithTracing(
           agentContributions: [],
           explanationPrompt: preValidationResult.explanationPrompt,
           rejectionReason: preValidationResult.message,
+          rejectionSource: 'pre-validation'
+        })
+        continue
+      }
+      
+      // If pre-validation still returns NEEDS_REVIEW even with context, reject it
+      if (preValidationResult.status === 'NEEDS_REVIEW' && item.additionalContext) {
+        console.log(`[Pipeline] Pre-validation inconclusive even with context - rejecting item "${item.name}"`)
+        processedItems.push({
+          lineItemId,
+          item,
+          status: 'REJECT',
+          reasons: ['Pre-validation inconclusive even with additional context'],
+          confidence: preValidationResult.confidence || 0.3,
+          agentContributions: [],
+          rejectionReason: 'Insufficient confidence with user context',
           rejectionSource: 'pre-validation'
         })
         continue

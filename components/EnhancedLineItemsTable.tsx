@@ -16,7 +16,6 @@ export default function EnhancedLineItemsTable({
   className = '' 
 }: EnhancedLineItemsTableProps) {
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
-  const [filterStatus, setFilterStatus] = useState<'all' | 'ALLOW' | 'NEEDS_REVIEW' | 'REJECT'>('all')
 
   const toggleItemExpansion = (index: number) => {
     const newExpanded = new Set(expandedItems)
@@ -28,9 +27,6 @@ export default function EnhancedLineItemsTable({
     setExpandedItems(newExpanded)
   }
 
-  const filteredLines = result.lines.filter(line => 
-    filterStatus === 'all' || line.status === filterStatus
-  )
 
   const getOverallStatusColor = (status: string) => {
     switch (status) {
@@ -124,116 +120,8 @@ export default function EnhancedLineItemsTable({
         />
       )}
 
-      {/* Filters */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-gray-700">Filter by status:</span>
-            <div className="flex space-x-2">
-              {(['all', 'ALLOW', 'NEEDS_REVIEW', 'REJECT'] as const).map(status => (
-                <button
-                  key={status}
-                  onClick={() => setFilterStatus(status)}
-                  className={`px-3 py-1 text-sm rounded-lg border ${
-                    filterStatus === status
-                      ? 'bg-blue-50 border-blue-300 text-blue-700'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {status === 'all' ? 'All' : 
-                   status === 'ALLOW' ? '✅ Approved' :
-                   status === 'NEEDS_REVIEW' ? '⚠️ Review' :
-                   '❌ Rejected'}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          <div className="text-sm text-gray-600">
-            Showing {filteredLines.length} of {result.lines.length} items
-          </div>
-        </div>
-      </div>
 
 
-      {/* Enhanced Line Items */}
-      <div className="space-y-4">
-        <h4 className="text-lg font-semibold text-gray-900">📋 Item-by-Item Analysis</h4>
-        
-        {filteredLines.map((line: EnhancedLineItemResult, index) => (
-          <div key={index} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            {/* Item Header - Always Visible */}
-            <div 
-              className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => toggleItemExpansion(index)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <button className="text-gray-400 hover:text-gray-600">
-                    {expandedItems.has(index) ? '▼' : '▶'}
-                  </button>
-                  <div>
-                    <h5 className="font-medium text-gray-900">
-                      {line.type === 'labor' ? 
-                        `Labor: ${line.input.quantity} hours` : 
-                        line.input.name
-                      }
-                    </h5>
-                    <div className="text-sm text-gray-500 mt-1">
-                      {line.type !== 'labor' && 
-                        `${line.input.quantity} × $${line.input.unitPrice} = $${(line.input.quantity * line.input.unitPrice).toFixed(2)}`
-                      }
-                      <span className="ml-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded capitalize">
-                        {line.type}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3">
-                  <div className="text-right">
-                    <div className={`px-3 py-1 rounded-lg text-sm font-medium border ${getOverallStatusColor(line.status)}`}>
-                      {getOverallStatusIcon(line.status)} {
-                        line.status === 'ALLOW' ? 'Approved' : 
-                        line.status === 'NEEDS_REVIEW' ? 'Needs Review' : 
-                        'Rejected'
-                      }
-                    </div>
-                    <div className="mt-1">
-                      <ConfidenceExplainer 
-                        confidenceScore={line.confidenceScore}
-                        status={line.status}
-                        itemName={line.input.name}
-                        className="inline-block"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Quick Summary - Always Visible */}
-              <div className="mt-3 p-3 bg-gray-50 rounded text-sm text-gray-700">
-                {line.explanation.summary}
-              </div>
-            </div>
-            
-            {/* Expanded Content */}
-            {expandedItems.has(index) && (
-              <div className="border-t border-gray-200">
-                <ExplanationCard
-                  itemName={line.input.name}
-                  status={line.status}
-                  explanation={line.explanation}
-                  agentContributions={line.agentContributions}
-                  decisionFactors={line.decisionFactors}
-                  confidenceScore={line.confidenceScore}
-                  className="border-0 rounded-none"
-                />
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
 
       {/* Footer Information */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">

@@ -400,11 +400,11 @@ interface AgentExecution {
 ## Data Sources & Integration
 
 ### Primary Databases
-- **Canonical Items**: 50,000+ standardized FM items with specifications
+- **Canonical Items**: 5000+ standardized FM items with specifications
 - **Price History**: 18 months of historical pricing data
 - **Service Context**: Service line/type mappings and scope definitions
 - **Blacklist Database**: Prohibited terms, spam patterns, policy violations
-- **Synonym Cache**: 25,000+ approved item name variations
+- **Synonym Cache**: XYZ+ approved item name variations
 
 ### External Integrations
 - **OpenRouter API**: Multi-provider LLM access (GPT-4o-mini primary)
@@ -609,73 +609,8 @@ HIGH_CONFIDENCE_BYPASS=0.8
 - **AI Services**: OpenRouter for multi-provider LLM access
 - **Monitoring**: Real-time performance and error tracking
 
-### Development Workflow
-- **Feature Branches**: Isolated agent improvements
-- **Automated Testing**: CI/CD with comprehensive test suite
-- **Staged Deployment**: Canary releases for agent modifications
-- **Performance Monitoring**: Regression testing for each deployment
-- **A/B Testing**: Compare agent modifications in production
+#
 
 ---
 
-## Future Enhancement Roadmap
 
-### Short-term Improvements (Q1 2025)
-- **Enhanced Price Intelligence**: ML-based price prediction models
-- **Advanced Semantic Matching**: Embedding-based similarity search
-- **Smart Caching**: Predictive pre-loading for common items
-- **Batch Optimization**: Parallel processing for multiple items
-
-### Medium-term Vision (Q2-Q3 2025)
-- **Custom Model Training**: Company-specific AI models
-- **Dynamic Rule Learning**: Automatic rule generation from patterns
-- **Predictive Analytics**: Fraud detection and trend analysis
-- **Advanced Workflows**: Multi-step approval processes
-
-### Long-term Goals (2025+)
-- **Multi-tenant Architecture**: Organization-specific configurations
-- **Enterprise Integration**: Deep ERP and procurement system connectivity
-- **Advanced AI**: Custom neural networks for domain-specific tasks
-- **Global Deployment**: Multi-region support with compliance
-
----
-
-## Appendix: Agent Execution Examples
-
-### Example 1: Fast Rejection (Pre-Validation)
-```
-Input: "nothing"
-Pre-Validation Agent: 
-  - Generic term detection → REJECT in 15ms
-  - Reason: "Too generic - single generic term"
-  - Pipeline: STOP (no further processing)
-Result: Fast rejection, total time 15ms
-```
-
-### Example 2: Standard Approval Flow
-```
-Input: "1 inch copper pipe fitting"
-Pre-Validation: APPROVE (FM keyword match, 376ms)
-Item Validator: APPROVE (structure valid, <1ms)
-Item Matcher: 88% match to canonical item (45ms)
-Price Learner: Within range ±15% (12ms)
-Rule Applier: AUTO_APPROVE (8ms)
-Explanation: "Approved - standard FM material" (25ms)
-Result: ALLOW, total time 466ms
-```
-
-### Example 3: Complex Review Flow
-```
-Input: "Industrial hydraulic pump"
-Pre-Validation: NEEDS_REVIEW (valid item, unclear service relevance, 523ms)
-Pipeline: STOP for user explanation
-Explanation Prompt: "How will this pump be used in your Basic Clog service?"
-Result: Awaiting user clarification
-```
-
----
-
-**Document Version**: 3.0  
-**Last Updated**: September 2025  
-**Architecture Status**: ✅ Production Ready  
-**Performance**: ✅ Optimized (5.4s avg per item)**
