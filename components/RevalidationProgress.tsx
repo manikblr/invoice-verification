@@ -126,7 +126,7 @@ export default function RevalidationProgress({
           stepIndex++
         }, executionTimes[stepIndex as keyof typeof executionTimes] || 300)
 
-      }, executionTimes[stepIndex as keyof typeof executionTimes] || 300)
+      }, 300)
 
       return progressInterval
     }
