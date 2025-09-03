@@ -722,7 +722,7 @@ async function runPriceLearnerAgent(item: any, canonicalItemId: string | null, l
   
   // Calculate variance and determine if price is cheaper or costlier
   let variance = 0
-  let priceComparison = 'within-range'
+  let priceComparison: 'within-range' | 'cheaper' | 'costlier' = 'within-range'
   let message = ''
   
   const sourceDescription = source === 'web-search' ? 'web-discovered market data' :
