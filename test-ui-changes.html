@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Transparency Test</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Testing Agent Transparency UI Changes</h1>
+    <p>This test validates the "How We Validated" section appears prominently in the results.</p>
+    
+    <div id="test-results"></div>
+    
+    <script>
+        async function testUIChanges() {
+            const testData = {
+                scopeOfWork: "Office renovation requiring construction materials",
+                serviceLineId: "construction-materials", 
+                serviceTypeId: "facility-maintenance",
+                laborHours: 40,
+                includeAgentTraces: true,
+                explanationLevel: 3,
+                items: [
+                    {
+                        name: "mud",
+                        type: "material", 
+                        quantity: 5,
+                        unitPrice: 25.50,
+                        unit: "gallons"
+                    }
+                ]
+            };
+            
+            try {
+                console.log('Sending test request to localhost:3001/api/validate-enhanced');
+                const response = await axios.post('http://localhost:3001/api/validate-enhanced', testData);
+                console.log('Response received:', response.status);
+                
+                const results = document.getElementById('test-results');
+                
+                // Check if agent traces are present
+                if (response.data.agentTraces && response.data.agentTraces.length > 0) {
+                    results.innerHTML += '<p style="color: green;">✅ Agent traces found: ' + response.data.agentTraces.length + ' agents</p>';
+                } else {
+                    results.innerHTML += '<p style="color: red;">❌ No agent traces found</p>';
+                }
+                
+                // Check execution summary
+                if (response.data.executionSummary) {
+                    results.innerHTML += '<p style="color: green;">✅ Execution summary present</p>';
+                    results.innerHTML += '<p>Total agents: ' + response.data.executionSummary.totalAgents + '</p>';
+                    results.innerHTML += '<p>Average confidence: ' + Math.round(response.data.executionSummary.averageConfidence * 100) + '%</p>';
+                } else {
+                    results.innerHTML += '<p style="color: red;">❌ Execution summary missing</p>';
+                }
+                
+                // Check line item structure
+                if (response.data.lines && response.data.lines.length > 0) {
+                    results.innerHTML += '<p style="color: green;">✅ Line items present: ' + response.data.lines.length + '</p>';
+                    
+                    const mudItem = response.data.lines.find(line => 
+                        line.input && line.input.name && line.input.name.toLowerCase().includes('mud')
+                    );
+                    
+                    if (mudItem) {
+                        results.innerHTML += '<p style="color: green;">✅ "Mud" item found with status: ' + mudItem.status + '</p>';
+                    } else {
+                        results.innerHTML += '<p style="color: red;">❌ "Mud" item not found or missing name</p>';
+                    }
+                } else {
+                    results.innerHTML += '<p style="color: red;">❌ No line items found</p>';
+                }
+                
+                results.innerHTML += '<p style="color: blue;">✅ API test completed successfully!</p>';
+                results.innerHTML += '<p><strong>Next:</strong> Visit <a href="http://localhost:3001" target="_blank">http://localhost:3001</a> and enter "mud" as a material to see the UI changes.</p>';
+                
+            } catch (error) {
+                console.error('Test failed:', error);
+                document.getElementById('test-results').innerHTML = 
+                    '<p style="color: red;">❌ Test failed: ' + error.message + '</p>';
+            }
+        }
+        
+        // Run the test when page loads
+        window.onload = testUIChanges;
+    </script>
+</body>
+</html>
