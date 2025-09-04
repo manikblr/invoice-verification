@@ -1,0 +1,93 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: Invoice Verification
+        - generic [ref=e7]: v2.1 Pipeline
+      - generic [ref=e8]:
+        - link "Home" [ref=e9] [cursor=pointer]:
+          - /url: /
+        - link "History" [ref=e10] [cursor=pointer]:
+          - /url: /history
+  - main [ref=e11]:
+    - generic [ref=e12]:
+      - heading "Invoice Verification System" [level=1] [ref=e13]
+      - paragraph [ref=e14]: Enter your invoice details below and validate them to see which items will be approved, denied, or need additional explanation.
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - text: Scope of Work
+            - generic [ref=e20]: "*"
+          - textbox "Describe the work to be done" [ref=e21]
+        - generic [ref=e22]:
+          - generic [ref=e23]: Labor Hours
+          - spinbutton [ref=e24]: "0"
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - text: Service Line
+            - generic [ref=e27]: "*"
+          - combobox [ref=e28]:
+            - option "Select Service Line" [selected]
+            - option "Appliances"
+            - option "Construction"
+            - option "Electrical"
+            - option "Fire Life Safety"
+            - option "Handyman"
+            - option "HVAC"
+            - option "Inspections"
+            - option "Irrigation"
+            - option "Janitorial"
+            - option "Landscaping"
+            - option "Locksmith"
+            - option "Lot Sweeping"
+            - option "Parking Lot Repair"
+            - option "Plumbing"
+            - option "Pool Maintenance"
+            - option "Portering"
+            - option "Pressure Washing"
+            - option "Security"
+            - option "Showroom Repair"
+            - option "Window Cleaning"
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - text: Service Type
+            - generic [ref=e31]: "*"
+          - combobox [disabled] [ref=e32]:
+            - option "Select Service Type" [selected]
+      - generic [ref=e33]:
+        - generic [ref=e35]:
+          - heading "Materials & Equipment" [level=3] [ref=e36]
+          - paragraph [ref=e37]:
+            - text: Search for any materials or equipment - the system will automatically categorize them
+            - generic [ref=e38]:
+              - text: "💡 Tip: Press"
+              - generic [ref=e39]: Ctrl+Enter
+              - text: to add new item
+        - generic [ref=e41]:
+          - generic [ref=e43]:
+            - generic [ref=e44]: "1"
+            - generic [ref=e45]: "Item #1"
+          - generic [ref=e46]:
+            - generic [ref=e47]:
+              - generic [ref=e50]: Item Name
+              - textbox "Search materials or equipment..." [ref=e52]
+            - generic [ref=e53]:
+              - generic [ref=e54]: Quantity
+              - spinbutton [ref=e55]: "1"
+            - generic [ref=e56]:
+              - generic [ref=e57]: Unit
+              - textbox "Unit (e.g., pcs, ft, hrs)" [ref=e58]: pcs
+            - generic [ref=e59]:
+              - generic [ref=e60]: Unit Price
+              - generic [ref=e61]:
+                - generic [ref=e62]: $
+                - spinbutton [ref=e63]: "0"
+        - button "Add new item" [ref=e65] [cursor=pointer]:
+          - img [ref=e66] [cursor=pointer]
+      - button "🔍 Validate Invoice" [ref=e69] [cursor=pointer]
+  - alert [ref=e70]
+```

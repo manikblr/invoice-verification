@@ -152,43 +152,43 @@ export default function ValidationDetailPage() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center space-x-4 mb-4">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center text-gray-600 hover:text-gray-800"
-          >
-            ← Back
-          </button>
-          <div className="h-6 border-l border-gray-300"></div>
-          <Link
-            href="/history"
-            className="text-blue-600 hover:text-blue-800"
-          >
-            All History
-          </Link>
-        </div>
+          <div className="flex items-center space-x-4 mb-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center text-gray-600 hover:text-gray-800"
+            >
+              ← Back
+            </button>
+            <div className="h-6 border-l border-gray-300"></div>
+            <Link
+              href="/history"
+              className="text-blue-600 hover:text-blue-800"
+            >
+              All History
+            </Link>
+          </div>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Validation Details
-            </h1>
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <code className="bg-gray-100 px-2 py-1 rounded font-mono">
-                {validation.session.invoiceId}
-              </code>
-              <span>•</span>
-              <span>{new Date(validation.session.createdAt).toLocaleString()}</span>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Validation Details
+              </h1>
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <code className="bg-gray-100 px-2 py-1 rounded font-mono">
+                  {validation.session.invoiceId}
+                </code>
+                <span>•</span>
+                <span>{new Date(validation.session.createdAt).toLocaleString()}</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <span className={`px-4 py-2 rounded-lg text-sm font-medium border flex items-center gap-2 ${getStatusColor(validation.session.overallStatus)}`}>
+                <span className="text-lg">{getStatusIcon(validation.session.overallStatus)}</span>
+                <span className="font-semibold">{validation.session.overallStatus}</span>
+              </span>
             </div>
           </div>
-          
-          <div className="flex items-center space-x-3">
-            <span className={`px-4 py-2 rounded-lg text-sm font-medium border flex items-center gap-2 ${getStatusColor(validation.session.overallStatus)}`}>
-              <span className="text-lg">{getStatusIcon(validation.session.overallStatus)}</span>
-              <span className="font-semibold">{validation.session.overallStatus}</span>
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Session Summary */}
@@ -272,7 +272,25 @@ export default function ValidationDetailPage() {
         
         <div className="flex space-x-2">
           <button
-            onClick={() => {/* Export functionality will be implemented */}}
+            onClick={async () => {
+              try {
+                const { exportValidationReport } = await import('@/lib/transparency-api')
+                const blob = await exportValidationReport(validation.session.invoiceId, 'pdf')
+                
+                // Create download link
+                const url = window.URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = `validation-${validation.session.invoiceId}.pdf`
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+                window.URL.revokeObjectURL(url)
+              } catch (error) {
+                console.error('Export failed:', error)
+                alert('Export functionality is currently unavailable')
+              }
+            }}
             className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 flex items-center space-x-2"
           >
             <span>📄</span>

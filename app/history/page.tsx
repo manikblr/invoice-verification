@@ -307,7 +307,7 @@ export default function ValidationHistoryPage() {
                             🕒 {session.totalExecutionTime ? formatExecutionTime(session.totalExecutionTime) : 'N/A'}
                           </div>
                           <div className="text-xs">
-                            🤖 {0} agents
+                            🤖 {session.validationResults?.agentExecutions?.length || 'N/A'} agents
                           </div>
                         </div>
                       </td>

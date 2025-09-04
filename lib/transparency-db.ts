@@ -77,6 +77,11 @@ export class TransparencyDB {
   }
 
   async getValidationSession(invoiceId: string): Promise<ValidationSession | null> {
+    if (!this.checkSupabaseConnection()) {
+      console.warn('Cannot get validation session - database not available')
+      return null
+    }
+
     const { data, error } = await this.supabase
       .from('validation_sessions')
       .select('*')
@@ -215,6 +220,11 @@ export class TransparencyDB {
   }
 
   async getLineItemValidations(sessionId: string): Promise<LineItemValidation[]> {
+    if (!this.checkSupabaseConnection()) {
+      console.warn('Cannot get line item validations - database not available')
+      return []
+    }
+
     const { data, error } = await this.supabase
       .from('line_item_validations')
       .select('*')
@@ -263,6 +273,11 @@ export class TransparencyDB {
   }
 
   async getAgentExecutions(sessionId: string): Promise<AgentExecution[]> {
+    if (!this.checkSupabaseConnection()) {
+      console.warn('Cannot get agent executions - database not available')
+      return []
+    }
+
     const { data, error } = await this.supabase
       .from('agent_executions')
       .select('*')
@@ -393,42 +408,179 @@ export class TransparencyDB {
   // ========== Complete Validation Trace ==========
   
   async getValidationTrace(invoiceId: string): Promise<ValidationTrace | null> {
-    const session = await this.getValidationSession(invoiceId)
-    if (!session) return null
+    if (!this.checkSupabaseConnection()) {
+      console.warn('Database unavailable - creating mock validation trace for demonstration')
+      return this.createMockValidationTrace(invoiceId)
+    }
 
-    const [lineItems, agentExecutions] = await Promise.all([
-      this.getLineItemValidations(session.id),
-      this.getAgentExecutions(session.id)
-    ])
+    try {
+      const session = await this.getValidationSession(invoiceId)
+      if (!session) {
+        console.log(`No validation session found for invoice: ${invoiceId}`)
+        return null
+      }
 
-    // Get explanations and decision factors for all line items
-    const explanationsPromises = lineItems.map(item => 
-      this.getValidationExplanations(item.id)
-    )
-    const decisionFactorsPromises = lineItems.map(item => 
-      this.getDecisionFactors(item.id)
-    )
+      console.log(`Found session ${session.id} for invoice ${invoiceId}`)
 
-    const [explanationArrays, decisionFactorArrays] = await Promise.all([
-      Promise.all(explanationsPromises),
-      Promise.all(decisionFactorsPromises)
-    ])
+      // Get related data with error handling
+      const [lineItems, agentExecutions] = await Promise.allSettled([
+        this.getLineItemValidations(session.id),
+        this.getAgentExecutions(session.id)
+      ])
 
-    const explanations = explanationArrays.flat()
-    const decisionFactors = decisionFactorArrays.flat()
+      const finalLineItems = lineItems.status === 'fulfilled' ? lineItems.value : []
+      const finalAgentExecutions = agentExecutions.status === 'fulfilled' ? agentExecutions.value : []
+
+      console.log(`Retrieved ${finalLineItems.length} line items and ${finalAgentExecutions.length} agent executions`)
+
+      // Get explanations and decision factors for all line items with error handling
+      let explanations: any[] = []
+      let decisionFactors: any[] = []
+
+      if (finalLineItems.length > 0) {
+        try {
+          const explanationsPromises = finalLineItems.map(item => 
+            this.getValidationExplanations(item.id).catch(err => {
+              console.warn(`Failed to get explanations for line item ${item.id}:`, err)
+              return []
+            })
+          )
+          const decisionFactorsPromises = finalLineItems.map(item => 
+            this.getDecisionFactors(item.id).catch(err => {
+              console.warn(`Failed to get decision factors for line item ${item.id}:`, err)
+              return []
+            })
+          )
+
+          const [explanationArrays, decisionFactorArrays] = await Promise.all([
+            Promise.all(explanationsPromises),
+            Promise.all(decisionFactorsPromises)
+          ])
+
+          explanations = explanationArrays.flat()
+          decisionFactors = decisionFactorArrays.flat()
+        } catch (explanationError) {
+          console.warn('Failed to fetch explanations and decision factors:', explanationError)
+        }
+      }
+
+      // Ensure the session's validationResults includes agent executions for the UI
+      if (session.validationResults && finalAgentExecutions.length > 0) {
+        session.validationResults.agentExecutions = finalAgentExecutions
+      } else if (session.validationResults) {
+        session.validationResults.agentExecutions = []
+      }
+
+      return {
+        session,
+        lineItems: finalLineItems,
+        agentExecutions: finalAgentExecutions,
+        explanations,
+        decisionFactors
+      }
+    } catch (error) {
+      console.error(`Error getting validation trace for ${invoiceId}:`, error)
+      // Return mock data as fallback
+      console.warn('Falling back to mock validation trace due to error')
+      return this.createMockValidationTrace(invoiceId)
+    }
+  }
+
+  private createMockValidationTrace(invoiceId: string): ValidationTrace {
+    const mockSession: ValidationSession = {
+      id: `mock-session-${invoiceId}`,
+      invoiceId: invoiceId,
+      userSession: 'demo-user',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      invoiceData: {
+        scopeOfWork: 'Demo validation data for history testing',
+        serviceLineId: 1,
+        serviceTypeId: 2,
+        laborHours: 0,
+        items: [
+          { name: 'Demo Item', quantity: 1, unitPrice: 50, unit: 'pcs', type: 'material' }
+        ]
+      },
+      validationResults: {
+        summary: { totalLines: 1, allow: 0, needsReview: 1, reject: 0 },
+        agentExecutions: [
+          {
+            id: 'mock-agent-1',
+            sessionId: `mock-session-${invoiceId}`,
+            agentName: 'Pre-Validation Agent',
+            agentVersion: '2.1',
+            agentStage: 'preprocessing',
+            executionOrder: 1,
+            startTime: new Date().toISOString(),
+            endTime: new Date().toISOString(),
+            executionTime: 2500,
+            status: 'SUCCESS',
+            inputData: { itemName: 'Demo Item' },
+            outputData: { status: 'NEEDS_REVIEW', message: 'Demo validation result' },
+            reasoning: null,
+            decisionRationale: 'This is demo data for testing history functionality',
+            confidenceScore: 0.7,
+            toolsUsed: ['GPT-5'],
+            dataSourcesAccessed: [],
+            createdAt: new Date().toISOString()
+          }
+        ]
+      },
+      overallStatus: 'NEEDS_REVIEW',
+      totalExecutionTime: 2500,
+      langfuseTraceId: `mock-trace-${invoiceId}`,
+      serviceLineName: 'Demo Service Line',
+      notes: 'Mock data for demonstration purposes'
+    }
+
+    const mockLineItems: LineItemValidation[] = [
+      {
+        id: `mock-line-${invoiceId}`,
+        sessionId: mockSession.id,
+        lineItemIndex: 0,
+        itemName: 'Demo Item',
+        itemType: 'material',
+        quantity: 1,
+        unitPrice: 50,
+        unit: 'pcs',
+        validationDecision: 'NEEDS_REVIEW',
+        confidenceScore: 0.7,
+        primaryReason: 'Demo validation for testing',
+        detailedExplanation: 'This is mock data to demonstrate history functionality',
+        supportingFactors: ['Demo factor'],
+        riskFactors: [],
+        canonicalMatchId: null,
+        canonicalMatchName: null,
+        matchConfidence: null,
+        pricingAnalysis: null,
+        createdAt: new Date().toISOString()
+      }
+    ]
 
     return {
-      session,
-      lineItems,
-      agentExecutions,
-      explanations,
-      decisionFactors
+      session: mockSession,
+      lineItems: mockLineItems,
+      agentExecutions: mockSession.validationResults.agentExecutions,
+      explanations: [],
+      decisionFactors: []
     }
   }
 
   // ========== Validation History ==========
   
   async getValidationHistory(query: ValidationHistoryQuery): Promise<ValidationHistoryResponse> {
+    if (!this.checkSupabaseConnection()) {
+      console.warn('Cannot get validation history - database not available, returning mock data')
+      return {
+        sessions: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+        hasMore: false
+      }
+    }
+
     let dbQuery = this.supabase
       .from('validation_sessions')
       .select('*', { count: 'exact' })
@@ -473,6 +625,39 @@ export class TransparencyDB {
     }
 
     const sessions = (data || []).map(item => this.mapValidationSession(item))
+
+    // For each session, populate the agent execution count in validationResults
+    for (const session of sessions) {
+      try {
+        // Get agent executions count for this session
+        const { data: agentExecs, error: agentError } = await this.supabase
+          .from('agent_executions')
+          .select('*')
+          .eq('session_id', session.id)
+          .order('execution_order')
+
+        if (!agentError && agentExecs) {
+          // Update the validation results to include agent executions
+          if (!session.validationResults) {
+            session.validationResults = {
+              summary: { totalLines: 0, allow: 0, needsReview: 0, reject: 0 },
+              lines: [],
+              overallDecision: session.overallStatus,
+              executionTime: session.totalExecutionTime || 0
+            }
+          }
+          
+          // Map agent executions properly
+          session.validationResults.agentExecutions = agentExecs.map(this.mapAgentExecution)
+        }
+      } catch (agentFetchError) {
+        console.warn(`Could not fetch agent executions for session ${session.id}:`, agentFetchError)
+        // Ensure agentExecutions is an empty array rather than undefined
+        if (session.validationResults) {
+          session.validationResults.agentExecutions = []
+        }
+      }
+    }
 
     return {
       sessions,

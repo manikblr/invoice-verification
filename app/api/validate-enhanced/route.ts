@@ -204,6 +204,7 @@ async function executeValidationWithTracing(
       const preValidationResult = await runPreValidationAgent(item, lineItemId, request)
       const preValidationEnd = new Date()
       console.log(`[Pre-Validation] Result for "${item.name}":`, preValidationResult)
+      console.log(`[Pre-Validation] Has additional context:`, !!item.additionalContext)
       
       // Record complete actual inputs used by Pre-Validation Agent
       const [serviceLine, serviceType] = await Promise.all([

@@ -1,5 +1,7 @@
 'use client'
 
+import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { AgentExecution, ExecutionSummary } from '@/lib/types/transparency'
 
 interface AgentPipelineVisualizationProps {
@@ -13,6 +15,15 @@ export default function AgentPipelineVisualization({
   executionSummary,
   className = ''
 }: AgentPipelineVisualizationProps) {
+  const [hoveredAgent, setHoveredAgent] = useState<number | null>(null)
+  const [tooltipPosition, setTooltipPosition] = useState<{x: number, y: number} | null>(null)
+  const [isClient, setIsClient] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   const getStageColor = (stage: string) => {
     const colors = {
       'preprocessing': 'bg-blue-100 border-blue-300 text-blue-800',
@@ -189,9 +200,64 @@ export default function AgentPipelineVisualization({
     }
   }
 
+  const handleMouseEnter = (index: number, event: React.MouseEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    
+    // Get the table container boundaries
+    const tableContainer = containerRef.current?.querySelector('table')
+    const tableBounds = tableContainer?.getBoundingClientRect()
+    
+    // Estimated tooltip dimensions
+    const tooltipWidth = 400
+    const tooltipHeight = 500
+    
+    let x = rect.right + 15  // Start close to the right of the cell
+    let y = rect.top - 10    // Align with the top of the cell
+    
+    if (tableBounds) {
+      // Check if positioning to the right would overlap with table
+      if (x + tooltipWidth > tableBounds.right) {
+        // Position just outside the right edge of the table
+        x = tableBounds.right + 15
+      }
+      
+      // If there's not enough space to the right of table, try left
+      if (x + tooltipWidth > viewportWidth - 20) {
+        x = tableBounds.left - tooltipWidth - 15
+        
+        // If left side doesn't fit either, position above/below table
+        if (x < 20) {
+          // Check if we can fit below the table
+          if (viewportHeight - tableBounds.bottom >= tooltipHeight + 40) {
+            x = rect.left
+            y = tableBounds.bottom + 15
+          }
+          // Otherwise position above the table
+          else {
+            x = rect.left
+            y = tableBounds.top - tooltipHeight - 15
+          }
+        }
+      }
+    }
+    
+    // Final bounds checking - ensure tooltip is always fully visible
+    x = Math.max(20, Math.min(x, viewportWidth - tooltipWidth - 20))
+    y = Math.max(20, Math.min(y, viewportHeight - tooltipHeight - 20))
+    
+    setTooltipPosition({ x, y })
+    setHoveredAgent(index)
+  }
+
+  const handleMouseLeave = () => {
+    setHoveredAgent(null)
+    setTooltipPosition(null)
+  }
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg overflow-visible ${className}`}>
+    <div ref={containerRef} className={`bg-white border border-gray-200 rounded-lg ${className}`} style={{ overflow: 'visible', position: 'relative' }}>
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
@@ -212,9 +278,9 @@ export default function AgentPipelineVisualization({
 
       {/* Main Content */}
       <div className="p-4 overflow-visible">
-        <div className="overflow-x-auto overflow-y-visible">
+        <div className="overflow-x-auto overflow-y-visible" style={{ overflowY: 'visible' }}>
           <h4 className="text-sm font-medium text-gray-700 mb-3">Agent Execution Details</h4>
-          <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-visible">
+          <table className="min-w-full bg-white border border-gray-200 rounded-lg" style={{ overflow: 'visible' }}>
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -237,10 +303,9 @@ export default function AgentPipelineVisualization({
             <tbody className="bg-white divide-y divide-gray-200">
               {agentExecutions.map((agent, index) => {
                   const agentInfo = getAgentInfo(agent.agentName)
-                  const isLastRows = index >= agentExecutions.length - 2 // Last 2 rows
                   
                   return (
-                    <tr key={agent.id} className="hover:bg-gray-50">
+                    <tr key={agent.id} className="hover:bg-gray-50 relative">
                       <td className="px-4 py-4">
                         <div className="flex items-center space-x-3">
                           <span className="text-2xl">{agentInfo.icon}</span>
@@ -267,8 +332,12 @@ export default function AgentPipelineVisualization({
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4">
-                        <div className="relative group cursor-help">
+                      <td className="px-4 py-4 relative">
+                        <div 
+                          className="relative cursor-help"
+                          onMouseEnter={(e) => handleMouseEnter(index, e)}
+                          onMouseLeave={handleMouseLeave}
+                        >
                           <div className="text-xs text-gray-700 bg-gray-50 p-2 rounded border max-w-xs hover:bg-blue-50 transition-colors">
                             <div className="flex items-center justify-between">
                               <span className="truncate">{agentInfo.prompt}</span>
@@ -276,49 +345,6 @@ export default function AgentPipelineVisualization({
                             </div>
                             <div className="text-xs text-gray-500 mt-1">
                               Model: {agentInfo.model}
-                            </div>
-                          </div>
-                          
-                          {/* Hover Tooltip - Smart positioning: above for last rows, below for others */}
-                          <div className={`absolute right-0 hidden group-hover:block z-[9999] w-96 max-w-screen-sm ${
-                            isLastRows ? 'bottom-full mb-2' : 'top-full mt-2'
-                          }`}>
-                            <div className="bg-white border border-gray-300 rounded-lg shadow-xl p-4">
-                              {/* Arrow - points down for tooltips above, up for tooltips below */}
-                              <div className={`absolute right-4 w-4 h-4 bg-white border-gray-300 transform rotate-45 ${
-                                isLastRows 
-                                  ? '-bottom-2 border-b border-r' // Arrow pointing down
-                                  : '-top-2 border-l border-t'    // Arrow pointing up
-                              }`}></div>
-                              
-                              <div className="mb-3">
-                                <div className="flex items-center space-x-2 mb-1">
-                                  <span className="text-lg">{agentInfo.icon}</span>
-                                  <h4 className="font-semibold text-gray-900">{agent.agentName}</h4>
-                                </div>
-                                <div className="text-sm text-blue-600 font-medium mb-2">{agentInfo.role}</div>
-                              </div>
-                              
-                              <div className="mb-3">
-                                <h5 className="font-medium text-gray-900 mb-1">Full Prompt:</h5>
-                                <div className="text-xs text-gray-700 bg-gray-50 p-3 rounded border max-h-48 overflow-y-auto whitespace-pre-wrap">
-                                  {agentInfo.fullPrompt}
-                                </div>
-                              </div>
-                              
-                              <div className="mb-3">
-                                <h5 className="font-medium text-gray-900 mb-1">LLM Model:</h5>
-                                <div className="text-sm text-green-700 bg-green-50 p-2 rounded border">
-                                  {agentInfo.model}
-                                </div>
-                              </div>
-                              
-                              <div>
-                                <h5 className="font-medium text-gray-900 mb-1">Description:</h5>
-                                <div className="text-xs text-gray-600">
-                                  {agentInfo.description}
-                                </div>
-                              </div>
                             </div>
                           </div>
                         </div>
@@ -356,6 +382,58 @@ export default function AgentPipelineVisualization({
           </table>
         </div>
       </div>
+      
+      {/* Tooltip Portal - Rendered at document body level to avoid ANY clipping */}
+      {isClient && hoveredAgent !== null && tooltipPosition && createPortal(
+        <div 
+          className="fixed z-[10000] w-96 bg-white border border-gray-300 rounded-lg shadow-2xl p-4 max-h-[70vh] overflow-y-auto pointer-events-none"
+          style={{
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y}px`,
+            maxWidth: '90vw',
+            minWidth: '320px'
+          }}
+        >
+          {(() => {
+            const agent = agentExecutions[hoveredAgent]
+            const agentInfo = getAgentInfo(agent.agentName)
+            
+            return (
+              <>
+                <div className="mb-3">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <span className="text-lg">{agentInfo.icon}</span>
+                    <h4 className="font-semibold text-gray-900">{agent.agentName}</h4>
+                  </div>
+                  <div className="text-sm text-blue-600 font-medium mb-2">{agentInfo.role}</div>
+                </div>
+                
+                <div className="mb-3">
+                  <h5 className="font-medium text-gray-900 mb-1">Full Prompt:</h5>
+                  <div className="text-xs text-gray-700 bg-gray-50 p-3 rounded border max-h-48 overflow-y-auto whitespace-pre-wrap">
+                    {agentInfo.fullPrompt}
+                  </div>
+                </div>
+                
+                <div className="mb-3">
+                  <h5 className="font-medium text-gray-900 mb-1">LLM Model:</h5>
+                  <div className="text-sm text-green-700 bg-green-50 p-2 rounded border">
+                    {agentInfo.model}
+                  </div>
+                </div>
+                
+                <div>
+                  <h5 className="font-medium text-gray-900 mb-1">Description:</h5>
+                  <div className="text-xs text-gray-600">
+                    {agentInfo.description}
+                  </div>
+                </div>
+              </>
+            )
+          })()}
+        </div>,
+        document.body
+      )}
     </div>
   )
 }

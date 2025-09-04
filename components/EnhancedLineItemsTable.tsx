@@ -61,7 +61,7 @@ export default function EnhancedLineItemsTable({
 
 
   return (
-    <div className={`mt-8 space-y-6 overflow-visible ${className}`}>
+    <div className={`mt-8 space-y-6 ${className}`} style={{overflow: 'visible', position: 'relative', zIndex: 1}}>
       {/* Enhanced Header */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
