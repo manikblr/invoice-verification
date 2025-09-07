@@ -464,12 +464,7 @@ export class TransparencyDB {
         }
       }
 
-      // Ensure the session's validationResults includes agent executions for the UI
-      if (session.validationResults && finalAgentExecutions.length > 0) {
-        session.validationResults.agentExecutions = finalAgentExecutions
-      } else if (session.validationResults) {
-        session.validationResults.agentExecutions = []
-      }
+      // Agent executions are now returned separately, not as part of validationResults
 
       return {
         session,
@@ -496,7 +491,7 @@ export class TransparencyDB {
       invoiceData: {
         scopeOfWork: 'Demo validation data for history testing',
         serviceLineId: 1,
-        serviceTypeId: 2,
+        serviceTypeName: 'Standard Service',
         laborHours: 0,
         items: [
           { name: 'Demo Item', quantity: 1, unitPrice: 50, unit: 'pcs', type: 'material' }
@@ -504,28 +499,27 @@ export class TransparencyDB {
       },
       validationResults: {
         summary: { totalLines: 1, allow: 0, needsReview: 1, reject: 0 },
-        agentExecutions: [
+        lines: [
           {
-            id: 'mock-agent-1',
+            id: 'mock-line-1',
             sessionId: `mock-session-${invoiceId}`,
-            agentName: 'Pre-Validation Agent',
-            agentVersion: '2.1',
-            agentStage: 'preprocessing',
-            executionOrder: 1,
-            startTime: new Date().toISOString(),
-            endTime: new Date().toISOString(),
-            executionTime: 2500,
-            status: 'SUCCESS',
-            inputData: { itemName: 'Demo Item' },
-            outputData: { status: 'NEEDS_REVIEW', message: 'Demo validation result' },
-            reasoning: null,
-            decisionRationale: 'This is demo data for testing history functionality',
+            lineItemIndex: 0,
+            itemName: 'Demo Item',
+            itemType: 'material',
+            quantity: 1,
+            unitPrice: 50,
+            unit: 'pcs',
+            validationDecision: 'NEEDS_REVIEW',
             confidenceScore: 0.7,
-            toolsUsed: ['GPT-5'],
-            dataSourcesAccessed: [],
+            primaryReason: 'Demo validation result',
+            detailedExplanation: 'This is demo data for testing history functionality',
+            supportingFactors: [],
+            riskFactors: [],
             createdAt: new Date().toISOString()
           }
-        ]
+        ],
+        overallDecision: 'NEEDS_REVIEW',
+        executionTime: 2500
       },
       overallStatus: 'NEEDS_REVIEW',
       totalExecutionTime: 2500,
@@ -561,7 +555,7 @@ export class TransparencyDB {
     return {
       session: mockSession,
       lineItems: mockLineItems,
-      agentExecutions: mockSession.validationResults.agentExecutions,
+      agentExecutions: [], // Mock agent executions for demo
       explanations: [],
       decisionFactors: []
     }
